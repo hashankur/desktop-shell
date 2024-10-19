@@ -20,8 +20,16 @@ export default function AppLauncher() {
           App.toggle_window(WINDOW_NAME)
           app.launch()
         }}>
-          {app.name}
-        </button >
+          <box hexpand={false}>
+            <icon className="AppIcon" icon={app.iconName || ""} />
+            <box className="AppText" vertical valign={Gtk.Align.CENTER}>
+              <label className="AppName" label={app.name} halign={Gtk.Align.START} truncate />
+              {app.description &&
+                <label className="AppDescription" label={app.description} halign={Gtk.Align.START} truncate />
+              }
+            </box>
+          </box>
+        </button>
       )),
   );
 
@@ -31,6 +39,7 @@ export default function AppLauncher() {
     canFocus: true,
     placeholderText: "Search",
     className: "AppLauncher-Input",
+    // primaryIconName: "edit-find",
     onActivate: () => {
       items.get()[0]?.app.launch();
       App.toggle_window(WINDOW_NAME);
@@ -74,7 +83,7 @@ export default function AppLauncher() {
       <box className="AppLauncher-Base" vertical>
         {Entry}
         <scrollable vexpand>
-          <box className="AppLauncher-ItemName" vertical>
+          <box className="AppLauncher-ItemName" vertical spacing={10}>
             {items}
           </box>
         </scrollable>

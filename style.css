@@ -41,17 +41,41 @@ window.Bar button {
 }
 
 .AppLauncher-Input {
-  padding: 10px;
+  padding: 0 20px;
+  margin: 10px 0;
+  min-height: 40px;
 }
 
 .AppLauncher-ItemName>button {
   font-size: 2rem;
-  margin: 5px 0;
-  padding: 10px;
+  padding: 10px 0;
+  min-height: 50px;
 }
 
 .AppLauncher-ItemName>button:focus {
-  color: yellow;
+  color: @accent_bg_color;
+}
+
+.AppLauncher-ItemName>button:hover {
+  color: @accent_bg_color;
+}
+
+.AppIcon {
+  margin: 0 20px;
+  font-size: 42px;
+}
+
+.AppText {
+  padding-right: 20px;
+}
+
+.AppName {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
+.AppDescription {
+  font-size: 0.8em;
 }
 
 /* Dashboard */
