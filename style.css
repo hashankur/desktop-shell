@@ -1,0 +1,99 @@
+* {
+  font-family: "Satoshi Variable", "Iosevka";
+  font-weight: 500;
+  font-size: 16px;
+  border: none;
+}
+
+/* Bar */
+window.Bar {
+  background: transparent;
+  color: @theme_fg_color;
+  font-weight: bold;
+}
+
+window.Bar>centerbox {
+  background: @theme_bg_color;
+  /* border-radius: 10px; */
+  /* margin: 8px; */
+}
+
+window.Bar button {
+  border-radius: 12px;
+  margin: 2px;
+}
+
+/* App Launcher */
+.AppLauncher {
+  background: transparent;
+}
+
+.AppLauncher-Base {
+  min-width: 450px;
+  background: @theme_bg_color;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.AppLauncher-Base>scrollable {
+  min-height: 500px;
+  margin-top: 15px;
+}
+
+.AppLauncher-Input {
+  padding: 10px;
+}
+
+.AppLauncher-ItemName>button {
+  font-size: 2rem;
+  margin: 5px 0;
+  padding: 10px;
+}
+
+.AppLauncher-ItemName>button:focus {
+  color: yellow;
+}
+
+/* Dashboard */
+.Dashboard {
+  background: transparent;
+}
+
+.Dashboard-Base {
+  min-height: 250px;
+
+  background: @theme_bg_color;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px;
+}
+
+/* .Dashboard-Container { */
+/* max-height: 250px; */
+/* } */
+
+.Cover {
+  min-height: 250px;
+  min-width: 250px;
+  border-radius: 12px;
+  background-position: center;
+  background-size: contain;
+}
+
+.Player {
+  margin: 25px;
+}
+
+.Title {
+  font-size: 2em;
+  font-weight: 900;
+}
+
+.Artist {
+  font-size: 1.5em;
+  font-weight: 400;
+}
+
+.Album {
+  margin-top: 20px;
+}
