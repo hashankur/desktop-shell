@@ -3,17 +3,22 @@
   font-weight: 500;
   font-size: 16px;
   border: none;
+  /* border-radius: 0px; */
+}
+
+window {
+  background: transparent;
+}
+
+.base {
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px;
+  background: @theme_bg_color;
 }
 
 /* Bar */
-window.Bar {
-  background: transparent;
-  color: @theme_fg_color;
-  font-weight: bold;
-}
-
-window.Bar>centerbox {
-  background: @theme_bg_color;
+window.Bar > centerbox {
   /* border-radius: 10px; */
   /* margin: 8px; */
 }
@@ -25,17 +30,10 @@ window.Bar button {
 
 /* App Launcher */
 .AppLauncher {
-  background: transparent;
-}
-
-.AppLauncher-Base {
   min-width: 450px;
-  background: @theme_bg_color;
-  border-radius: 12px;
-  padding: 20px;
 }
 
-.AppLauncher-Base>scrollable {
+.AppLauncher > scrollable {
   min-height: 500px;
   margin-top: 15px;
 }
@@ -46,17 +44,17 @@ window.Bar button {
   min-height: 40px;
 }
 
-.AppLauncher-ItemName>button {
+.AppLauncher-ItemName > button {
   font-size: 2rem;
   padding: 10px 0;
   min-height: 50px;
 }
 
-.AppLauncher-ItemName>button:focus {
+.AppLauncher-ItemName > button:focus {
   color: @accent_bg_color;
 }
 
-.AppLauncher-ItemName>button:hover {
+.AppLauncher-ItemName > button:hover {
   color: @accent_bg_color;
 }
 
@@ -78,28 +76,14 @@ window.Bar button {
   font-size: 0.8em;
 }
 
-/* Dashboard */
-.Dashboard {
-  background: transparent;
-}
-
-.Dashboard-Base {
+/* Media */
+.Media {
   min-height: 250px;
-
-  background: @theme_bg_color;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 20px;
 }
-
-/* .Dashboard-Container { */
-/* max-height: 250px; */
-/* } */
 
 .Cover {
   min-height: 250px;
   min-width: 250px;
-  border-radius: 12px;
   background-position: center;
   background-size: contain;
 }
@@ -120,4 +104,28 @@ window.Bar button {
 
 .Album {
   margin-top: 20px;
+}
+
+/* OSD */
+.Osd {
+  min-width: 50px;
+}
+
+.Osd > icon {
+  padding: 20px 0 10px;
+}
+
+.Osd-Slider {
+  min-height: 300px;
+  border-radius: 7px;
+  padding: 0;
+}
+
+trough > slider {
+  background: transparent;
+  box-shadow: none;
+}
+
+trough > highlight {
+  min-width: 50px;
 }
