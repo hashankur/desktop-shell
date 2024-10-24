@@ -138,3 +138,10 @@ trough > highlight {
 .Clipboard-Item > label {
   font-size: 0.9em;
 }
+
+/* Power Menu */
+.PowerMenu-Icon {
+  padding: 20px;
+  margin: 20px;
+  font-size: 3em;
+}

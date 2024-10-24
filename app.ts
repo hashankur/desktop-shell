@@ -6,6 +6,7 @@ import AppLauncher from "./widget/AppLauncher";
 import Clipboard from "./widget/Clipboard";
 import Media from "./widget/Media";
 import OSD from "./widget/OSD";
+import PowerMenu from "./widget/PowerMenu";
 
 App.start({
   css: style,
@@ -16,6 +17,7 @@ App.start({
     Clipboard();
     Media();
     OSD();
+    PowerMenu();
   },
 });
 
