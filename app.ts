@@ -3,6 +3,7 @@ import { App } from "astal/gtk3";
 import { monitorFile } from "astal/file";
 import AppLauncher from "./widget/AppLauncher";
 // import Bar from "./widget/Bar"
+import Clipboard from "./widget/Clipboard";
 import Media from "./widget/Media";
 import OSD from "./widget/OSD";
 
@@ -12,6 +13,7 @@ App.start({
     AppLauncher();
     // Bar(0)
     // Bar(1) // initialize other monitors
+    Clipboard();
     Media();
     OSD();
   },

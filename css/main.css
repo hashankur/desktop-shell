@@ -10,6 +10,14 @@ window {
   background: transparent;
 }
 
+button:focus {
+  color: @accent_bg_color;
+}
+
+button:hover {
+  color: @accent_bg_color;
+}
+
 .base {
   border-radius: 12px;
   padding: 20px;
@@ -48,14 +56,6 @@ window.Bar button {
   font-size: 2rem;
   padding: 10px 0;
   min-height: 50px;
-}
-
-.AppLauncher-ItemName > button:focus {
-  color: @accent_bg_color;
-}
-
-.AppLauncher-ItemName > button:hover {
-  color: @accent_bg_color;
 }
 
 .AppIcon {
@@ -128,4 +128,13 @@ trough > slider {
 
 trough > highlight {
   min-width: 50px;
+}
+
+/* Clipboard */
+.Clipboard-Item {
+  padding: 20px;
+}
+
+.Clipboard-Item > label {
+  font-size: 0.9em;
 }
