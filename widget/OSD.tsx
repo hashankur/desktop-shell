@@ -5,13 +5,14 @@ import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "osd";
 const TIMEOUT = 2000;
+const TRANSITION = Gtk.RevealerTransitionType.SLIDE_LEFT;
 
 function BrightnessSlider() {
   const brightness = Brightness.get_default();
 
   return (
     <revealer
-      transitionType={Gtk.RevealerTransitionType.SLIDE_LEFT}
+      transitionType={TRANSITION}
       setup={(self) => {
         let i = 0;
 
@@ -64,7 +65,7 @@ function VolumeSlider() {
 
   return (
     <revealer
-      transitionType={Gtk.RevealerTransitionType.SLIDE_LEFT}
+      transitionType={TRANSITION}
       setup={(self) => {
         let i = 0;
 

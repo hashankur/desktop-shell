@@ -1,7 +1,25 @@
-import { App, Astal, Gdk, Gtk } from "astal/gtk3";
-import { bind, exec, timeout } from "astal";
+import { App, Astal, Gdk } from "astal/gtk3";
+import { exec } from "astal";
 
 const WINDOW_NAME = "power-menu";
+
+const options = [
+  {
+    name: "Shutdown",
+    icon: "system-shutdown-symbolic",
+    command: "systemctl poweroff",
+  },
+  {
+    name: "Reboot",
+    icon: "view-refresh-symbolic",
+    command: "systemctl reboot",
+  },
+  {
+    name: "Suspend",
+    icon: "preferences-desktop-screensaver-symbolic",
+    command: "systemctl suspend",
+  },
+];
 
 export default function PowerMenu() {
   return (
@@ -21,18 +39,16 @@ export default function PowerMenu() {
       }}
     >
       <box className="base" spacing={20}>
-        <button onClick={() => exec("systemctl suspend")}>
-          <icon className="PowerMenu-Icon" icon="system-shutdown-symbolic" />
-        </button>
-        <button onClick={() => exec("systemctl suspend")}>
-          <icon className="PowerMenu-Icon" icon="view-refresh-symbolic" />
-        </button>
-        <button onClick={() => exec("systemctl suspend")}>
-          <icon
-            className="PowerMenu-Icon"
-            icon="preferences-desktop-screensaver-symbolic"
-          />
-        </button>
+        {options.map((option) => (
+          <button
+            on_Clicked={() => {
+              App.toggle_window(WINDOW_NAME);
+              exec(option.command);
+            }}
+          >
+            <icon className="PowerMenu-Icon" icon={option.icon} />
+          </button>
+        ))}
       </box>
     </window>
   );

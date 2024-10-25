@@ -32,7 +32,6 @@ export default function Clipboard() {
       application={App}
       visible={false}
       keymode={Astal.Keymode.EXCLUSIVE}
-      exclusivity={Astal.Exclusivity.NORMAL}
       layer={Astal.Layer.OVERLAY}
       vexpand={true}
       onKeyPressEvent={(self, event) => {
