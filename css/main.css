@@ -78,18 +78,21 @@ window.Bar button {
 
 /* Media */
 .Media {
-  min-height: 250px;
+  /* min-height: 300px; */
+  min-width: 750px;
+  padding: 5px;
 }
 
 .Cover {
-  min-height: 250px;
-  min-width: 250px;
+  min-height: 300px;
+  min-width: 300px;
   background-position: center;
-  background-size: contain;
+  background-size: cover;
+  border-radius: 7px 0 0 7px;
 }
 
 .Player {
-  margin: 25px;
+  margin: 0 40px;
 }
 
 .Title {
