@@ -38,7 +38,7 @@ export default function PowerMenu() {
         }
       }}
     >
-      <box className="base" spacing={20}>
+      <box className="base" spacing={10}>
         {options.map((option) => (
           <button
             on_Clicked={() => {

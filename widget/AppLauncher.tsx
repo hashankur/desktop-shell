@@ -92,7 +92,7 @@ export default function AppLauncher() {
       <box className="AppLauncher base" vertical>
         {Entry}
         <scrollable vexpand>
-          <box className="AppLauncher-ItemName" vertical spacing={10}>
+          <box className="AppLauncher-ItemName" vertical spacing={5}>
             {items}
           </box>
         </scrollable>

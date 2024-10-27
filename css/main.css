@@ -10,6 +10,10 @@ window {
   background: transparent;
 }
 
+button {
+  border-radius: 7px;
+}
+
 button:focus {
   color: @accent_bg_color;
 }
@@ -20,7 +24,7 @@ button:hover {
 
 .base {
   border-radius: 12px;
-  padding: 20px;
+  padding: 10px;
   margin: 20px;
   background: @theme_bg_color;
 }
@@ -42,13 +46,12 @@ window.Bar button {
 }
 
 .AppLauncher > scrollable {
-  min-height: 500px;
-  margin-top: 15px;
+  min-height: 510px;
 }
 
 .AppLauncher-Input {
   padding: 0 20px;
-  margin: 10px 0;
+  margin: 5px 0 10px;
   min-height: 40px;
 }
 
