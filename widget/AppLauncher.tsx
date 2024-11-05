@@ -9,8 +9,11 @@ const apps = new AstalApps.Apps();
 const query = Variable<string>("");
 
 export default function AppLauncher() {
-  const items = query((query) =>
-    apps.fuzzy_query(query).map((app: AstalApps.Application) => (
+  let appData: AstalApps.Application[] = [];
+
+  const items = query((query) => {
+    appData = apps.fuzzy_query(query);
+    return appData.map((app: AstalApps.Application) => (
       <button
         on_Clicked={() => {
           App.toggle_window(WINDOW_NAME);
@@ -37,8 +40,8 @@ export default function AppLauncher() {
           </box>
         </box>
       </button>
-    )),
-  );
+    ));
+  });
 
   const Entry = new Widget.Entry({
     text: bind(query),
@@ -48,7 +51,7 @@ export default function AppLauncher() {
     className: "AppLauncher-Input",
     // primaryIconName: "edit-find",
     onActivate: () => {
-      // items.get()[0]?.app.launch(); // TODO: fix launch first item on press enter
+      appData[0]?.launch();
       App.toggle_window(WINDOW_NAME);
     },
     setup: (self) => {
