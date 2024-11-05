@@ -4,10 +4,7 @@ import AstalApps from "gi://AstalApps";
 
 const WINDOW_NAME = "app-launcher";
 
-const apps = new AstalApps.Apps({
-  includeEntry: true,
-  includeExecutable: true,
-});
+const apps = new AstalApps.Apps();
 
 const query = Variable<string>("");
 
