@@ -19,24 +19,23 @@ export default function Media() {
                   (cover) => `background-image: url('${cover}');`,
                 )}
               />
-              <box vertical className="Player" valign={Gtk.Align.CENTER} expand>
+              <box vertical className="Player" valign={Gtk.Align.CENTER}>
                 <label
-                  halign={Gtk.Align.START}
                   label={bind(spotify, "title")}
                   className="Title"
-                  truncate
-                  // wrap
+                  xalign={0.0} // Align label left
+                  wrap
                 />
                 <label
-                  halign={Gtk.Align.START}
                   label={bind(spotify, "artist")}
                   className="Artist"
+                  xalign={0.0}
                   truncate
                 />
                 <label
-                  halign={Gtk.Align.START}
                   label={bind(spotify, "album")}
                   className="Album"
+                  xalign={0.0}
                   truncate
                 />
               </box>

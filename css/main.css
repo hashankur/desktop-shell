@@ -127,9 +127,8 @@ window.Bar button {
   padding: 0;
 }
 
-trough > slider {
-  background: transparent;
-  box-shadow: none;
+slider {
+  all: unset;
 }
 
 trough > highlight {
