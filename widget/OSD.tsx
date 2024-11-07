@@ -1,7 +1,7 @@
-import { App, Astal, Gtk } from "astal/gtk3";
 import { bind, timeout } from "astal";
-import Brightness from "../lib/brightness";
+import { App, Astal, Gtk } from "astal/gtk3";
 import Wp from "gi://AstalWp";
+import Brightness from "../lib/brightness";
 
 const WINDOW_NAME = "osd";
 const TIMEOUT = 2000;

@@ -1,5 +1,5 @@
-import { App, Astal, Gdk, Gtk } from "astal/gtk3";
 import { bind } from "astal";
+import { App, Astal, Gdk, Gtk } from "astal/gtk3";
 import Mpris from "gi://AstalMpris";
 
 const WINDOW_NAME = "media";
@@ -23,19 +23,19 @@ export default function Media() {
                 <label
                   label={bind(spotify, "title")}
                   className="Title"
-                  xalign={0.0} // Align label left
+                  xalign={0} // Align label left
                   wrap
                 />
                 <label
                   label={bind(spotify, "artist")}
                   className="Artist"
-                  xalign={0.0}
+                  xalign={0}
                   truncate
                 />
                 <label
                   label={bind(spotify, "album")}
                   className="Album"
-                  xalign={0.0}
+                  xalign={0}
                   truncate
                 />
               </box>

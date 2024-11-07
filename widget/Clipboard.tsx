@@ -1,6 +1,6 @@
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
 import { bind, Variable } from "astal";
-import { exec, execAsync, subprocess } from "astal/process";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
+import { exec, execAsync } from "astal/process";
 
 const WINDOW_NAME = "clipboard";
 

@@ -1,5 +1,5 @@
-import { App, Astal, Gdk } from "astal/gtk3";
 import { exec } from "astal";
+import { App, Astal, Gdk } from "astal/gtk3";
 
 const WINDOW_NAME = "power-menu";
 

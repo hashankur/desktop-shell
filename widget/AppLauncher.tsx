@@ -1,19 +1,19 @@
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
 import { bind, Variable } from "astal";
-import AstalApps from "gi://AstalApps";
+import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
+import Apps from "gi://AstalApps";
 
 const WINDOW_NAME = "app-launcher";
 
-const apps = new AstalApps.Apps();
+const apps = new Apps.Apps();
 
 const query = Variable<string>("");
 
 export default function AppLauncher() {
-  let appData: AstalApps.Application[] = [];
+  let appData: Apps.Application[] = [];
 
   const items = query((query) => {
     appData = apps.fuzzy_query(query);
-    return appData.map((app: AstalApps.Application) => (
+    return appData.map((app: Apps.Application) => (
       <button
         on_Clicked={() => {
           App.toggle_window(WINDOW_NAME);
@@ -23,17 +23,12 @@ export default function AppLauncher() {
         <box hexpand={false}>
           <icon className="AppIcon" icon={app.iconName || ""} />
           <box className="AppText" vertical valign={Gtk.Align.CENTER}>
-            <label
-              className="AppName"
-              label={app.name}
-              halign={Gtk.Align.START}
-              truncate
-            />
+            <label className="AppName" label={app.name} xalign={0} truncate />
             {app.description && (
               <label
                 className="AppDescription"
                 label={app.description}
-                halign={Gtk.Align.START}
+                xalign={0}
                 truncate
               />
             )}
