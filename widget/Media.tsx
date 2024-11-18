@@ -1,3 +1,4 @@
+import icons from "@/utils/icons";
 import { bind } from "astal";
 import { App, Astal, Gdk, Gtk } from "astal/gtk3";
 import Mpris from "gi://AstalMpris";
@@ -19,7 +20,7 @@ export default function Media() {
                   (cover) => `background-image: url('${cover}');`,
                 )}
               />
-              <box vertical className="Player" valign={Gtk.Align.CENTER}>
+              <box vertical className="Player">
                 <label
                   label={bind(spotify, "title")}
                   className="Title"
@@ -38,10 +39,34 @@ export default function Media() {
                   xalign={0}
                   truncate
                 />
+                <box expand valign={Gtk.Align.END} halign={Gtk.Align.START}>
+                  <circularprogress
+                    startAt={0.75}
+                    endAt={0.75}
+                    value={bind(spotify, "position").as(
+                      (p) => p / spotify.length,
+                    )}
+                    rounded
+                    className="Progress"
+                  >
+                    <button
+                      onClicked={() => spotify.play_pause()}
+                      css="all: unset;"
+                    >
+                      <icon
+                        icon={bind(spotify, "playbackStatus").as((status) =>
+                          status === Mpris.PlaybackStatus.PLAYING
+                            ? icons.media.playing
+                            : icons.media.stopped,
+                        )}
+                      />
+                    </button>
+                  </circularprogress>
+                </box>
               </box>
             </box>
           ) : (
-            "No media playing"
+            <label label="No media playing" className="Title" />
           ),
         )}
       </>
