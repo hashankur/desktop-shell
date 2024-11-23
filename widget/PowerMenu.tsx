@@ -1,3 +1,4 @@
+import icons from "@/utils/icons";
 import { exec } from "astal";
 import { App, Astal, Gdk } from "astal/gtk3";
 
@@ -6,17 +7,17 @@ const WINDOW_NAME = "power-menu";
 const options = [
   {
     name: "Shutdown",
-    icon: "system-shutdown-symbolic",
+    icon: icons.powermenu.shutdown,
     command: "systemctl poweroff",
   },
   {
     name: "Reboot",
-    icon: "view-refresh-symbolic",
+    icon: icons.powermenu.reboot,
     command: "systemctl reboot",
   },
   {
     name: "Suspend",
-    icon: "preferences-desktop-screensaver-symbolic",
+    icon: icons.powermenu.sleep,
     command: "systemctl suspend",
   },
 ];

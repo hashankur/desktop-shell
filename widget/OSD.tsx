@@ -1,7 +1,8 @@
+import Brightness from "@/lib/brightness";
+import icons from "@/utils/icons";
 import { bind, timeout } from "astal";
 import { App, Astal, Gtk } from "astal/gtk3";
 import Wp from "gi://AstalWp";
-import Brightness from "@/lib/brightness";
 
 const WINDOW_NAME = "osd";
 const TIMEOUT = 2000;
@@ -36,32 +37,14 @@ function BrightnessSlider() {
           drawValue={false}
           inverted
         />
-        <icon icon="display-brightness-symbolic" />
+        <icon icon={icons.brightness.screen} />
       </box>
     </revealer>
   );
 }
 
 function VolumeSlider() {
-  const audio = Wp.get_default().audio;
-
-  const icons = {
-    101: "overamplified",
-    67: "high",
-    34: "medium",
-    1: "low",
-    0: "muted",
-  };
-
-  function getIcon(vol) {
-    const icon = vol.mute
-      ? 0
-      : [101, 67, 34, 1, 0].find(
-          (threshold) => threshold <= audio.defaultSpeaker.volume * 100,
-        );
-
-    return `audio-volume-${icons[icon]}-symbolic`;
-  }
+  const audio = Wp.get_default()?.audio.defaultSpeaker!;
 
   return (
     <revealer
@@ -69,7 +52,7 @@ function VolumeSlider() {
       setup={(self) => {
         let i = 0;
 
-        self.hook(bind(audio.defaultSpeaker, "volume"), () => {
+        self.hook(bind(audio, "volume"), () => {
           self.set_reveal_child(true);
           i++;
           timeout(TIMEOUT, () => {
@@ -84,14 +67,12 @@ function VolumeSlider() {
         <slider
           className="Osd-Slider"
           vertical
-          value={bind(audio.defaultSpeaker, "volume")}
-          onDragged={({ value }) => (audio.defaultSpeaker.volume = value)}
+          value={bind(audio, "volume")}
+          onDragged={({ value }) => (audio.volume = value)}
           drawValue={false}
           inverted
         />
-        <icon
-          icon={bind(audio.defaultSpeaker, "volume").as((vol) => getIcon(vol))}
-        />
+        <icon icon={bind(audio, "volumeIcon")} />
       </box>
     </revealer>
   );
