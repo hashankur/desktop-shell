@@ -22,6 +22,10 @@ button:hover {
   color: @accent_bg_color;
 }
 
+icon {
+  font-size: 14px;
+}
+
 .Progress {
   background: @unfocused_borders;
   min-height: 50px;
@@ -34,6 +38,8 @@ button:hover {
   padding: 10px;
   margin: 20px;
   background: @theme_bg_color;
+.IconLabel {
+  padding-right: 5px;
 }
 
 /* Bar */
@@ -45,6 +51,26 @@ window.Bar > centerbox {
 window.Bar button {
   border-radius: 12px;
   margin: 2px;
+}
+.Workspaces {
+  background: green;
+  min-height: 2px;
+}
+
+.Bar {
+  /* background: @theme_bg_color; */
+  background-color: #0b0e14;
+  padding: 0 20px;
+  min-height: 40px;
+}
+
+.BarBtn {
+  all: unset;
+}
+
+.BarBtn > label {
+  font-size: 14px;
+  font-weight: bold;
 }
 
 /* App Launcher */
@@ -156,4 +182,14 @@ trough > highlight {
   padding: 20px;
   margin: 20px;
   font-size: 3em;
+}
+
+/* Dashboard */
+.Calendar {
+  min-width: 200px;
+  padding: 20px;
+}
+
+calendar {
+  padding: 5px;
 }

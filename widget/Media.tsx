@@ -44,7 +44,7 @@ export default function Media() {
                     startAt={0.75}
                     endAt={0.75}
                     value={bind(spotify, "position").as(
-                      (p) => p / spotify.length,
+                      (position) => position / spotify.length,
                     )}
                     rounded
                     className="Progress"
