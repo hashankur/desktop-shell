@@ -33,11 +33,21 @@ icon {
   font-size: 2px;
 }
 
+.Stats {
+  background: @unfocused_borders;
+  /* min-height: 10px; */
+  /* min-width: 10px; */
+  font-size: 2px;
+}
+
 .base {
   border-radius: 12px;
   padding: 10px;
   margin: 20px;
   background: @theme_bg_color;
+  /* background: #333333; */
+}
+
 .IconLabel {
   padding-right: 5px;
 }
@@ -62,6 +72,8 @@ window.Bar button {
   background-color: #0b0e14;
   padding: 0 20px;
   min-height: 40px;
+  /* border-radius: 0 0 12 12; */
+  /* margin: 0 400; */
 }
 
 .BarBtn {

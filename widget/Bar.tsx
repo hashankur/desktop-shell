@@ -63,17 +63,27 @@ function AudioLevel() {
   return <icon icon={bind(speaker, "volumeIcon")} />;
 }
 
+function secondsToHoursMinutes(time) {
+  time = time.get(); // TODO: Make reactive
+  time = Math.round(time / 60);
+  return `${Math.floor(time / 60)}h ${Math.floor(time % 60)}m remaining`;
+}
+
 function BatteryLevel() {
   const bat = Battery.get_default();
 
   return (
-    <box className="Battery" visible={bind(bat, "isPresent")}>
+    <box
+      className="Battery"
+      visible={bind(bat, "isPresent")}
+      tooltipText={secondsToHoursMinutes(bind(bat, "timeToEmpty"))}
+    >
       <icon className="IconLabel" icon={bind(bat, "batteryIconName")} />
       <label
         css="font-size: 13px;"
         label={bind(bat, "percentage").as((p) => {
           let level = Math.floor(p * 100);
-          return level === 100 ? "Full" : `${level} %`;
+          return level === 100 ? "Full" : `${level}%`;
         })}
       />
     </box>
@@ -83,8 +93,13 @@ function BatteryLevel() {
 function Media() {
   const spotify = Mpris.Player.new("spotify");
 
+  const formattedLabel = Variable.derive(
+    [bind(spotify, "artist"), bind(spotify, "title")],
+    (artist: String, title: String) => artist + " - " + title,
+  );
+
   return (
-    <box className="Media">
+    <>
       {bind(spotify, "available").as((available) =>
         available ? (
           <>
@@ -97,17 +112,71 @@ function Media() {
               )}
             />
             <button className="BarBtn" onClick={() => spotify.play_pause()}>
-              <label
-                label={bind(spotify, "title").as(
-                  () => `${spotify.artist} - ${spotify.title}`,
-                )}
-              />
+              <label label={formattedLabel()} />
             </button>
           </>
         ) : (
           "Nothing Playing"
         ),
       )}
+    </>
+  );
+}
+
+function Stats() {
+  const cpu = Variable(0).poll(5000, [
+    "sh",
+    "-c",
+    "top -bn1 | grep Cpu | sed 's/\\,/\\./g' | awk '{print $2}'",
+  ]);
+  const memory = Variable(0).poll(5000, [
+    "sh",
+    "-c",
+    `free | awk '/^Mem/ {printf("%.2f\\n", ($3/$2) * 100)}'`,
+  ]);
+  const gpu = Variable(0).poll(
+    5000,
+    "cat /sys/class/hwmon/hwmon6/device/gpu_busy_percent",
+  );
+  const temp = Variable(0).poll(
+    5000,
+    "cat /sys/class/thermal/thermal_zone0/temp",
+  );
+
+  return (
+    <box css="padding: 12px 0; margin-right: 20px;" spacing={10}>
+      <circularprogress
+        value={cpu((val) => val / 100)}
+        startAt={0.75}
+        endAt={0.75}
+        tooltipText={cpu((val) => `${val}% used`)}
+        className="Stats"
+        rounded
+      />
+      <circularprogress
+        value={memory((val) => val / 100)}
+        startAt={0.75}
+        endAt={0.75}
+        tooltipText={memory((val) => `${val}% used`)}
+        className="Stats"
+        rounded
+      />
+      <circularprogress
+        value={gpu((val) => val / 100)}
+        startAt={0.75}
+        endAt={0.75}
+        tooltipText={gpu((val) => `${val}%`)}
+        className="Stats"
+        rounded
+      />
+      <circularprogress
+        value={temp((val) => val / 1000 / 100)}
+        startAt={0.75}
+        endAt={0.75}
+        className="Stats"
+        rounded
+        tooltipText={temp((val) => `${val / 1000}°C`)}
+      />
     </box>
   );
 }
@@ -128,9 +197,13 @@ export default function Bar(monitor: number) {
       <box vertical>
         {/* <box className="Workspaces"></box> */}
         <centerbox className="Bar">
+          {/* Left */}
           <box>
+            <Stats />
             <Media />
           </box>
+
+          {/* Center */}
           <button
             className="BarBtn"
             // onClick={() => exec("gnome-calendar")}
@@ -139,6 +212,8 @@ export default function Bar(monitor: number) {
           >
             <label label={time()} />
           </button>
+
+          {/* Right */}
           <box halign={Gtk.Align.END} spacing={20}>
             <SysTray />
             <Wifi />
