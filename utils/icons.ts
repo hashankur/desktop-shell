@@ -2,6 +2,7 @@ export default {
   media: {
     playing: "media-playback-pause-symbolic",
     paused: "media-playback-start-symbolic",
+  },
   powermenu: {
     sleep: "weather-clear-night-symbolic",
     // reboot: "system-reboot-symbolic",

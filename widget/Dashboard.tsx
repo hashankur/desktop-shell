@@ -23,6 +23,7 @@ class Calendar extends astalify(Gtk.Calendar) {
 
 const WINDOW_NAME = "dashboard";
 
+export default function Dashboard() {
   return (
     <window
       name={WINDOW_NAME}
