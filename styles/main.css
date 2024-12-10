@@ -28,16 +28,16 @@ icon {
 
 .Progress {
   background: @unfocused_borders;
-  min-height: 50px;
-  min-width: 50px;
-  font-size: 2px;
+  min-height: 45px;
+  min-width: 45px;
+  font-size: 1.5px;
 }
 
 .Stats {
   background: @unfocused_borders;
   /* min-height: 10px; */
   /* min-width: 10px; */
-  font-size: 2px;
+  font-size: 1.5px;
 }
 
 .base {
@@ -127,15 +127,15 @@ window.Bar button {
 /* Media */
 .Media {
   /* min-height: 300px; */
-  min-width: 750px;
+  min-width: 800px;
   padding: 5px;
 }
 
 .Cover {
-  min-height: 300px;
-  min-width: 300px;
+  min-height: 350px;
+  min-width: 350px;
   background-position: center;
-  background-size: cover;
+  background-size: contain;
   border-radius: 7px 0 0 7px;
 }
 
@@ -146,6 +146,7 @@ window.Bar button {
 .Title {
   font-size: 2em;
   font-weight: 900;
+  margin-bottom: 10px;
 }
 
 .Artist {
@@ -154,7 +155,7 @@ window.Bar button {
 }
 
 .Album {
-  margin-top: 10px;
+  margin: 10px 0 20px 0;
 }
 
 /* OSD */
