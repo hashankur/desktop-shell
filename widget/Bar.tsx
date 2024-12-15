@@ -184,6 +184,7 @@ export default function Bar(monitor: number) {
       name={WINDOW_NAME}
       monitor={monitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
+      layer={Astal.Layer.TOP}
       keymode={Astal.Keymode.NONE}
       anchor={
         Astal.WindowAnchor.TOP |

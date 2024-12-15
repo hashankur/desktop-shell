@@ -19,7 +19,7 @@ const WINDOW_NAME = "calendar";
 export default function Calendar() {
   return (
     <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.TOP}>
-      <box className="Media base">
+      <box className="base">
         <box className="Calendar">{new Cal({ vexpand: true })}</box>
       </box>
     </Window>

@@ -10,6 +10,7 @@ type Props = {
   monitor?: number;
   anchor?: Astal.WindowAnchor;
   exclusivity?: Astal.Exclusivity;
+  layer?: Astal.Layer;
   keymode?: Astal.Keymode;
   setup?(self: any): void;
 };
