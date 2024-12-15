@@ -1,7 +1,8 @@
+import Window from "@/common/window";
 import Brightness from "@/lib/brightness";
 import icons from "@/utils/icons";
 import { bind, timeout } from "astal";
-import { App, Astal, Gtk } from "astal/gtk3";
+import { Astal, Gtk } from "astal/gtk3";
 import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "osd";
@@ -80,17 +81,17 @@ function VolumeSlider() {
 
 export default function OSD() {
   return (
-    <window
+    <Window
       name={WINDOW_NAME}
-      application={App}
       exclusivity={Astal.Exclusivity.IGNORE}
-      layer={Astal.Layer.OVERLAY}
       anchor={Astal.WindowAnchor.RIGHT}
+      keymode={Astal.Keymode.NONE}
+      visible
     >
       <box>
         <BrightnessSlider />
         <VolumeSlider />
       </box>
-    </window>
+    </Window>
   );
 }

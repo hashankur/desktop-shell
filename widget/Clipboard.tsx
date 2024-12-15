@@ -1,5 +1,6 @@
+import Window from "@/common/window";
 import { bind, Variable } from "astal";
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
+import { App, Gtk, Widget } from "astal/gtk3";
 import { exec, execAsync } from "astal/process";
 
 const WINDOW_NAME = "clipboard";
@@ -27,22 +28,8 @@ export default function Clipboard() {
   });
 
   return (
-    <window
+    <Window
       name={WINDOW_NAME}
-      application={App}
-      visible={false}
-      keymode={Astal.Keymode.EXCLUSIVE}
-      layer={Astal.Layer.OVERLAY}
-      vexpand={true}
-      onKeyPressEvent={(self, event) => {
-        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-          if (self.visible) {
-            query.set("");
-            Entry.grab_focus();
-            self.visible = false;
-          }
-        }
-      }}
       setup={(self) => {
         self.hook(self, "notify::visible", () => {
           if (!self.get_visible()) {
@@ -93,6 +80,6 @@ export default function Clipboard() {
           </box>
         </scrollable>
       </box>
-    </window>
+    </Window>
   );
 }

@@ -73,6 +73,12 @@ window.Bar {
         font-weight: bold;
     }
 }
+.Battery {
+    > label {
+        font-size: 14px;
+        font-weight: bold;
+    }
+}
 .AppLauncher {
     min-width: 450px;
     > scrollable {

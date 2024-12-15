@@ -1,11 +1,12 @@
+import Window from "@/common/window";
 import icons from "@/utils/icons";
-import { bind, exec, Variable } from "astal";
+import { bind, Variable } from "astal";
 import { App, Astal, Gdk, Gtk } from "astal/gtk3";
-import Mpris from "gi://AstalMpris";
 import Battery from "gi://AstalBattery";
-import Wp from "gi://AstalWp";
+import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
 import Tray from "gi://AstalTray";
+import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "bar";
 
@@ -80,7 +81,6 @@ function BatteryLevel() {
     >
       <icon className="IconLabel" icon={bind(bat, "batteryIconName")} />
       <label
-        css="font-size: 13px;"
         label={bind(bat, "percentage").as((p) => {
           let level = Math.floor(p * 100);
           return level === 100 ? "Full" : `${level}%`;
@@ -143,39 +143,36 @@ function Stats() {
     "cat /sys/class/thermal/thermal_zone0/temp",
   );
 
+  const Stats = ({ value, tooltip }) => {
+    return (
+      <circularprogress
+        value={value}
+        startAt={0.75}
+        endAt={0.75}
+        tooltipText={tooltip}
+        className="Stats"
+        rounded
+      />
+    );
+  };
+
   return (
     <box css="padding: 12px 0; margin-right: 20px;" spacing={10}>
-      <circularprogress
+      <Stats
         value={cpu((val) => val / 100)}
-        startAt={0.75}
-        endAt={0.75}
-        tooltipText={cpu((val) => `${val}% used`)}
-        className="Stats"
-        rounded
+        tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
       />
-      <circularprogress
+      <Stats
         value={memory((val) => val / 100)}
-        startAt={0.75}
-        endAt={0.75}
-        tooltipText={memory((val) => `${val}% used`)}
-        className="Stats"
-        rounded
+        tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
       />
-      <circularprogress
+      <Stats
         value={gpu((val) => val / 100)}
-        startAt={0.75}
-        endAt={0.75}
-        tooltipText={gpu((val) => `${val}%`)}
-        className="Stats"
-        rounded
+        tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
       />
-      <circularprogress
+      <Stats
         value={temp((val) => val / 1000 / 100)}
-        startAt={0.75}
-        endAt={0.75}
-        className="Stats"
-        rounded
-        tooltipText={temp((val) => `${val / 1000}°C`)}
+        tooltip={temp((val) => `${val / 1000} °C`)}
       />
     </box>
   );
@@ -183,16 +180,17 @@ function Stats() {
 
 export default function Bar(monitor: number) {
   return (
-    <window
+    <Window
       name={WINDOW_NAME}
       monitor={monitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
+      keymode={Astal.Keymode.NONE}
       anchor={
         Astal.WindowAnchor.TOP |
         Astal.WindowAnchor.LEFT |
         Astal.WindowAnchor.RIGHT
       }
-      application={App}
+      visible
     >
       <box vertical>
         {/* <box className="Workspaces"></box> */}
@@ -206,8 +204,7 @@ export default function Bar(monitor: number) {
           {/* Center */}
           <button
             className="BarBtn"
-            // onClick={() => exec("gnome-calendar")}
-            onClick={() => App.toggle_window("dashboard")}
+            onClick={() => App.toggle_window("calendar")}
             halign={Gtk.Align.END}
           >
             <label label={time()} />
@@ -222,6 +219,6 @@ export default function Bar(monitor: number) {
           </box>
         </centerbox>
       </box>
-    </window>
+    </Window>
   );
 }

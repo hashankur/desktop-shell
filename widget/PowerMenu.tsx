@@ -1,6 +1,7 @@
+import Window from "@/common/window";
 import icons from "@/utils/icons";
 import { exec } from "astal";
-import { App, Astal, Gdk } from "astal/gtk3";
+import { App } from "astal/gtk3";
 
 const WINDOW_NAME = "power-menu";
 
@@ -24,21 +25,7 @@ const options = [
 
 export default function PowerMenu() {
   return (
-    <window
-      name={WINDOW_NAME}
-      application={App}
-      visible={false}
-      keymode={Astal.Keymode.EXCLUSIVE}
-      layer={Astal.Layer.OVERLAY}
-      vexpand={true}
-      onKeyPressEvent={(self, event) => {
-        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-          if (self.visible) {
-            self.visible = false;
-          }
-        }
-      }}
-    >
+    <Window name={WINDOW_NAME}>
       <box className="base" spacing={10}>
         {options.map((option) => (
           <button
@@ -51,6 +38,6 @@ export default function PowerMenu() {
           </button>
         ))}
       </box>
-    </window>
+    </Window>
   );
 }

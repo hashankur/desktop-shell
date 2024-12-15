@@ -1,6 +1,7 @@
+import Window from "@/common/window";
 import icons from "@/utils/icons";
 import { bind } from "astal";
-import { App, Astal, Gdk, Gtk } from "astal/gtk3";
+import { Astal, Gtk } from "astal/gtk3";
 import Mpris from "gi://AstalMpris";
 
 const WINDOW_NAME = "media";
@@ -74,25 +75,10 @@ export default function Media() {
   };
 
   return (
-    <window
-      name={WINDOW_NAME}
-      application={App}
-      visible={false}
-      keymode={Astal.Keymode.EXCLUSIVE}
-      layer={Astal.Layer.OVERLAY}
-      vexpand={true}
-      anchor={Astal.WindowAnchor.BOTTOM}
-      onKeyPressEvent={(self, event) => {
-        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-          if (self.visible) {
-            self.visible = false;
-          }
-        }
-      }}
-    >
+    <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.BOTTOM}>
       <box className="Media base">
         <SpotifyInfo />
       </box>
-    </window>
+    </Window>
   );
 }
