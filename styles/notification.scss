@@ -24,7 +24,7 @@ eventbox.Notification {
 
     // eventboxes can not take margins so we style its inner box instead
     > box {
-        min-width: 400px;
+        min-width: 500px;
         border-radius: 13px;
         background-color: $bg-color;
         margin: 0.5rem 1rem 0.5rem 1rem;
@@ -57,6 +57,7 @@ eventbox.Notification {
         .app-name {
             margin-right: 0.3rem;
             font-weight: bold;
+            /* font-size: 0.8rem; */
 
             &:first-child {
                 margin-left: 0.4rem;
@@ -65,6 +66,7 @@ eventbox.Notification {
 
         .time {
             margin: 0 0.4rem;
+            /* font-size: 0.8rem; */
         }
 
         button {
@@ -86,6 +88,7 @@ eventbox.Notification {
         .summary {
             font-size: 1.2em;
             color: $fg-color;
+            font-weight: bolder;
         }
 
         .body {
@@ -94,10 +97,10 @@ eventbox.Notification {
 
         .image {
             border: 1px solid gtkalpha($fg-color, 0.02);
-            margin-right: 0.5rem;
+            margin-right: 1rem;
             border-radius: 9px;
-            min-width: 100px;
-            min-height: 100px;
+            min-width: 80px;
+            min-height: 80px;
             background-size: cover;
             background-position: center;
         }

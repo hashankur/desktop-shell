@@ -7,7 +7,7 @@ const isIcon = (icon: string) => !!Astal.Icon.lookup_icon(icon);
 
 const fileExists = (path: string) => GLib.file_test(path, GLib.FileTest.EXISTS);
 
-const time = (time: number, format = "%H:%M") =>
+const time = (time: number, format = "%I:%M %p") =>
   GLib.DateTime.new_from_unix_local(time).format(format)!;
 
 const urgency = (n: Notifd.Notification) => {
@@ -60,7 +60,6 @@ export default function Notification(props: Props) {
             <icon icon="window-close-symbolic" />
           </button>
         </box>
-        <Gtk.Separator visible />
         <box className="content">
           {n.image && fileExists(n.image) && (
             <box
@@ -91,7 +90,7 @@ export default function Notification(props: Props) {
                 useMarkup
                 halign={START}
                 xalign={0}
-                justifyFill
+                // justifyFill
                 label={n.body}
               />
             )}

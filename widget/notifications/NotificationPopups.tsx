@@ -32,7 +32,7 @@ class NotifiationMap implements Subscribable {
      * note that if the notification has any actions
      * they might not work, since the sender already treats them as resolved
      */
-    // notifd.ignoreTimeout = true
+    // notifd.ignoreTimeout = true;
 
     notifd.connect("notified", (_, id) => {
       this.set(
@@ -56,7 +56,7 @@ class NotifiationMap implements Subscribable {
                * uncomment this if you want to "hide" the notifications
                * after TIMEOUT_DELAY
                */
-              // this.delete(id)
+              this.delete(id);
             }),
         }),
       );
