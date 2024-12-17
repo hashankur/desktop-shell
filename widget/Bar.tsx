@@ -64,10 +64,9 @@ function AudioLevel() {
   return <icon icon={bind(speaker, "volumeIcon")} />;
 }
 
-function secondsToHoursMinutes(time) {
-  time = time.get(); // TODO: Make reactive
+function secondsToHoursMinutes(time: number, verb: string) {
   time = Math.round(time / 60);
-  return `${Math.floor(time / 60)}h ${Math.floor(time % 60)}m remaining`;
+  return `${Math.floor(time / 60)}h ${Math.floor(time % 60)}m ${verb}`;
 }
 
 function BatteryLevel() {
@@ -77,7 +76,15 @@ function BatteryLevel() {
     <box
       className="Battery"
       visible={bind(bat, "isPresent")}
-      tooltipText={secondsToHoursMinutes(bind(bat, "timeToEmpty"))}
+      tooltipText={
+        bind(bat, "charging")
+          ? bind(bat, "timeToFull").as((val) =>
+              secondsToHoursMinutes(val, "until full"),
+            )
+          : bind(bat, "timeToEmpty").as((val) =>
+              secondsToHoursMinutes(val, "remaining"),
+            )
+      }
     >
       <icon className="IconLabel" icon={bind(bat, "batteryIconName")} />
       <label
