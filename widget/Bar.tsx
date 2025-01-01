@@ -107,24 +107,23 @@ function Media() {
 
   return (
     <>
-      {bind(spotify, "available").as((available) =>
-        available ? (
-          <>
-            <icon
-              className="IconLabel"
-              icon={bind(spotify, "playbackStatus").as((status) =>
-                status === Mpris.PlaybackStatus.PLAYING
-                  ? icons.media.playing
-                  : icons.media.stopped,
-              )}
-            />
+      {bind(spotify, "available").as(
+        (available) =>
+          available && (
             <button className="BarBtn" onClick={() => spotify.play_pause()}>
-              <label label={formattedLabel()} />
+              <box>
+                <icon
+                  className="IconLabel"
+                  icon={bind(spotify, "playbackStatus").as((status) =>
+                    status === Mpris.PlaybackStatus.PLAYING
+                      ? icons.media.playing
+                      : icons.media.stopped,
+                  )}
+                />
+                <label label={formattedLabel()} />
+              </box>
             </button>
-          </>
-        ) : (
-          "Nothing Playing"
-        ),
+          ),
       )}
     </>
   );
