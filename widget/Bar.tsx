@@ -12,35 +12,27 @@ const WINDOW_NAME = "bar";
 
 const time = Variable("").poll(1000, "date '+%a %d %b | %I:%M %p'");
 
+// WIP - Mostly works
 function SysTray() {
   const tray = Tray.get_default();
 
   return (
     <box>
       {bind(tray, "items").as((items) =>
-        items.map((item) => {
-          if (item.iconThemePath) App.add_icons(item.iconThemePath);
-
-          const menu = item.create_menu();
-
-          return (
-            <button
-              className="BarBtn"
-              tooltipMarkup={bind(item, "tooltipMarkup")}
-              onDestroy={() => menu?.destroy()}
-              onClickRelease={(self) => {
-                menu?.popup_at_widget(
-                  self,
-                  Gdk.Gravity.SOUTH,
-                  Gdk.Gravity.NORTH,
-                  null,
-                );
-              }}
-            >
-              <icon gIcon={bind(item, "gicon")} />
-            </button>
-          );
-        }),
+        items.map((item) => (
+          <menubutton
+            className="BarBtn"
+            tooltipMarkup={bind(item, "tooltipMarkup")}
+            usePopover={false}
+            actionGroup={bind(item, "action-group").as((ag) => [
+              "dbusmenu",
+              ag,
+            ])}
+            menuModel={bind(item, "menu-model")}
+          >
+            <icon gicon={bind(item, "gicon")} />
+          </menubutton>
+        )),
       )}
     </box>
   );
