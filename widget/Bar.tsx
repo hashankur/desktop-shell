@@ -1,7 +1,7 @@
 import Window from "@/common/window";
 import icons from "@/utils/icons";
 import { bind, Variable } from "astal";
-import { App, Astal, Gdk, Gtk } from "astal/gtk3";
+import { App, Astal, Gtk } from "astal/gtk4";
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
@@ -17,20 +17,16 @@ function SysTray() {
   const tray = Tray.get_default();
 
   return (
-    <box>
+    <box spacing={10}>
       {bind(tray, "items").as((items) =>
         items.map((item) => (
           <menubutton
-            className="BarBtn"
             tooltipMarkup={bind(item, "tooltipMarkup")}
             usePopover={false}
-            actionGroup={bind(item, "action-group").as((ag) => [
-              "dbusmenu",
-              ag,
-            ])}
-            menuModel={bind(item, "menu-model")}
+            actionGroup={bind(item, "actionGroup").as((ag) => ["dbusmenu", ag])}
+            menuModel={bind(item, "menuModel")}
           >
-            <icon gicon={bind(item, "gicon")} />
+            <image gicon={bind(item, "gicon")} />
           </menubutton>
         )),
       )}
@@ -42,10 +38,9 @@ function Wifi() {
   const { wifi } = Network.get_default();
 
   return (
-    <icon
+    <image
       tooltipText={bind(wifi, "ssid").as(String)}
-      className="Wifi"
-      icon={bind(wifi, "iconName")}
+      iconName={bind(wifi, "iconName")}
     />
   );
 }
@@ -53,7 +48,7 @@ function Wifi() {
 function AudioLevel() {
   const speaker = Wp.get_default()?.audio.defaultSpeaker!;
 
-  return <icon icon={bind(speaker, "volumeIcon")} />;
+  return <image iconName={bind(speaker, "volumeIcon")} />;
 }
 
 function secondsToHoursMinutes(time: number, verb: string) {
@@ -66,19 +61,19 @@ function BatteryLevel() {
 
   return (
     <box
-      className="Battery"
       visible={bind(bat, "isPresent")}
+      spacing={5}
       tooltipText={
         bind(bat, "charging")
           ? bind(bat, "timeToFull").as((val) =>
-              secondsToHoursMinutes(val, "until full"),
-            )
+            secondsToHoursMinutes(val, "until full"),
+          )
           : bind(bat, "timeToEmpty").as((val) =>
-              secondsToHoursMinutes(val, "remaining"),
-            )
+            secondsToHoursMinutes(val, "remaining"),
+          )
       }
     >
-      <icon className="IconLabel" icon={bind(bat, "batteryIconName")} />
+      <image iconName={bind(bat, "batteryIconName")} />
       <label
         label={bind(bat, "percentage").as((p) => {
           let level = Math.floor(p * 100);
@@ -101,11 +96,10 @@ function Media() {
     <>
       {bind(spotify, "available").as((available) =>
         available ? (
-          <button className="BarBtn" onClick={() => spotify.play_pause()}>
-            <box>
-              <icon
-                className="IconLabel"
-                icon={bind(spotify, "playbackStatus").as((status) =>
+          <button onClicked={() => spotify.play_pause()}>
+            <box spacing={5}>
+              <image
+                iconName={bind(spotify, "playbackStatus").as((status) =>
                   status === Mpris.PlaybackStatus.PLAYING
                     ? icons.media.playing
                     : icons.media.stopped,
@@ -149,7 +143,7 @@ function Stats() {
         startAt={0.75}
         endAt={0.75}
         tooltipText={tooltip}
-        className="Stats"
+        cssName="Stats"
         rounded
       />
     );
@@ -194,17 +188,16 @@ export default function Bar(monitor: number) {
     >
       <box vertical>
         {/* <box className="Workspaces"></box> */}
-        <centerbox className="Bar">
+        <centerbox cssClasses={["px-4", "bg-base", "min-h-10"]}>
           {/* Left */}
           <box>
-            <Stats />
+            {/* <Stats /> */}
             <Media />
           </box>
 
           {/* Center */}
           <button
-            className="BarBtn"
-            onClick={() => App.toggle_window("calendar")}
+            onClicked={() => App.toggle_window("calendar")}
             halign={Gtk.Align.END}
           >
             <label label={time()} />
@@ -213,8 +206,15 @@ export default function Bar(monitor: number) {
           {/* Right */}
           <box halign={Gtk.Align.END} spacing={20}>
             <SysTray />
-            <Wifi />
-            <AudioLevel />
+            <button
+            // onClick={() => App.toggle_window("quick-settings")}
+            >
+              <box spacing={20}>
+                <Wifi />
+                <AudioLevel />
+              </box>
+            </button>
+
             <BatteryLevel />
           </box>
         </centerbox>

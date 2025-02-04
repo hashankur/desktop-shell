@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind utilities;
+
+* {
+  all: unset;
+  font-family: "Satoshi Variable", "Iosevka";
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+}
+
+tooltip.background {
+  @apply bg-slate-900 rounded-lg text-white;
+}
+
+tooltip label {
+  @apply px-2;
+}
+
+.progress-bar trough .empty {
+  @apply bg-slate-700;
+}
+
+.progress-bar trough .filled {
+  @apply bg-pink-500;
+}
+
+.text-sm {
+  font-size: 5rem;
+}

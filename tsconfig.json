@@ -1,18 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "baseUrl": ".",
     "experimentalDecorators": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "/home/han/.local/share/ags/gtk3",
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
     "strict": true,
     "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    // "checkJs": true,
+    // "allowJs": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "astal/gtk4",
     "paths": {
-      "astal": ["/home/han/.local/share/ags"],
-      "astal/*": ["/home/han/.local/share/ags/*"],
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   }
 }

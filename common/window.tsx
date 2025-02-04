@@ -1,6 +1,6 @@
-import { App } from "astal/gtk3";
-import Astal from "gi://Astal?version=3.0";
-import Gdk from "gi://Gdk?version=3.0";
+import { App } from "astal/gtk4";
+import Astal from "gi://Astal";
+import Gdk from "gi://Gdk";
 
 type Props = {
   child?: JSX.Element; // when only one child is passed
@@ -28,11 +28,11 @@ export default function Window({
       keymode={keymode}
       layer={Astal.Layer.OVERLAY}
       {...props}
-      onKeyPressEvent={(self, event) => {
-        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-          self.hide();
-        }
-      }}
+    // onKeyPressEvent={(self, event) => {
+    //   if (event.get_keyval()[1] === Gdk.KEY_Escape) {
+    //     self.hide();
+    //   }
+    // }}
     >
       {children}
     </window>

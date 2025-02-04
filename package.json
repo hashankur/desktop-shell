@@ -1,0 +1,9 @@
+{
+  "name": "astal-shell",
+  "dependencies": {
+    "astal": "/home/han/.local/share/ags"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
