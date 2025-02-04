@@ -1,26 +1,13 @@
 import Window from "@/common/window";
-import { GObject } from "astal";
-import { Astal, astalify, ConstructProps, Gtk } from "astal/gtk3";
-
-class Cal extends astalify(Gtk.Calendar) {
-  static {
-    GObject.registerClass(this);
-  }
-
-  constructor(
-    props: ConstructProps<Gtk.Calendar, Gtk.Calendar.ConstructorProps>,
-  ) {
-    super(props as any);
-  }
-}
+import { Astal, Gtk } from "astal/gtk4";
 
 const WINDOW_NAME = "calendar";
 
 export default function Calendar() {
   return (
     <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.TOP}>
-      <box className="base">
-        <box className="Calendar">{new Cal({ vexpand: true })}</box>
+      <box cssClasses={["p-5", "m-5", "bg-base", "min-w-72", "min-h-52", "rounded-xl"]}>
+        <Gtk.Calendar hexpand  />
       </box>
     </Window>
   );

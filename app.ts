@@ -24,11 +24,11 @@ App.start({
     Bar(0);
     // Bar(1) // initialize other monitors
     // Clipboard();
-    // Media();
+    Media();
     // OSD();
     // PowerMenu();
     // App.get_monitors().map(NotificationPopups);
-    // Calendar();
+    Calendar();
     // QuickSettings();
   },
 });
