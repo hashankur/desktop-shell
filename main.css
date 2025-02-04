@@ -28,3 +28,7 @@ tooltip label {
 .text-sm {
   font-size: 5rem;
 }
+
+.icon-xl {
+  -gtk-icon-size: 42px;
+}

@@ -1,7 +1,8 @@
 import Window from "@/common/window";
 import { bind, Variable } from "astal";
-import { App, Astal, Gdk, Gtk, Widget } from "astal/gtk3";
+import { App, Gtk, Widget } from "astal/gtk4";
 import Apps from "gi://AstalApps";
+import Pango from "gi://Pango?version=1.0";
 
 const WINDOW_NAME = "app-launcher";
 
@@ -21,16 +22,16 @@ export default function AppLauncher() {
           app.launch();
         }}
       >
-        <box hexpand={false}>
-          <icon className="AppIcon" icon={app.iconName || ""} />
-          <box className="AppText" vertical valign={Gtk.Align.CENTER}>
-            <label className="AppName" label={app.name} xalign={0} truncate />
+        <box hexpand={false} spacing={20}>
+          <image cssClasses={["my-5", "icon-xl"]} iconName={app.iconName || ""} />
+          <box vertical valign={Gtk.Align.CENTER}>
+            <label cssClasses={["text-xl", "font-bold"]} label={app.name} xalign={0} ellipsize={Pango.EllipsizeMode.END} />
             {app.description && (
               <label
-                className="AppDescription"
+                cssName="AppDescription"
                 label={app.description}
                 xalign={0}
-                truncate
+                ellipsize={Pango.EllipsizeMode.END}
               />
             )}
           </box>
@@ -39,21 +40,21 @@ export default function AppLauncher() {
     ));
   });
 
-  const Entry = new Widget.Entry({
+  const Entry = Widget.Entry({
     text: bind(query),
     hexpand: true,
     canFocus: true,
     placeholderText: "Search",
-    className: "AppLauncher-Input",
+    cssClasses: ["p-5"],
     // primaryIconName: "edit-find",
     onActivate: () => {
       appData[0]?.launch();
       App.toggle_window(WINDOW_NAME);
     },
     setup: (self) => {
-      self.hook(self, "notify::text", () => {
-        query.set(self.get_text());
-      });
+      // self.hook(self, "notify::text", () => {
+      //   query.set(self.get_text());
+      // });
     },
   });
 
@@ -61,23 +62,23 @@ export default function AppLauncher() {
     <Window
       name={WINDOW_NAME}
       setup={(self) => {
-        self.hook(self, "notify::visible", () => {
-          if (!self.get_visible()) {
-            query.set("");
-            // TODO: reset scroll
-          } else {
-            Entry.grab_focus();
-          }
-        });
+        // self.hook(self, "notify::visible", () => {
+        //   if (!self.get_visible()) {
+        //     query.set("");
+        //     // TODO: reset scroll
+        //   } else {
+        //     Entry.grab_focus();
+        //   }
+        // });
       }}
     >
-      <box className="AppLauncher base" vertical>
+      <box cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]} vertical>
         {Entry}
-        <scrollable vexpand>
-          <box className="AppLauncher-ItemName" vertical spacing={5}>
+        <Gtk.ScrolledWindow vexpand cssClasses={["min-h-[510px]"]}>
+          <box cssClasses={["p-5"]} vertical>
             {items}
           </box>
-        </scrollable>
+        </Gtk.ScrolledWindow>
       </box>
     </Window>
   );

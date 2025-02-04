@@ -20,7 +20,7 @@ const style = exec("bunx tailwindcss -i main.css")
 App.start({
   css: style,
   main() {
-    // AppLauncher();
+    AppLauncher();
     Bar(0);
     // Bar(1) // initialize other monitors
     // Clipboard();

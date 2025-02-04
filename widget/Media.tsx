@@ -3,6 +3,7 @@ import icons from "@/utils/icons";
 import { bind } from "astal";
 import { Astal, Gtk } from "astal/gtk4";
 import Mpris from "gi://AstalMpris";
+import Pango from "gi://Pango";
 
 const WINDOW_NAME = "media";
 
@@ -30,13 +31,13 @@ export default function Media() {
                   label={bind(spotify, "artist")}
                   cssClasses={["text-2xl", "mb-2"]}
                   xalign={0}
-                // truncate
+                  ellipsize={Pango.EllipsizeMode.END}
                 />
                 <label
                   label={bind(spotify, "album")}
                   cssClasses={["text-lg", "font-normal"]}
                   xalign={0}
-                // truncate
+                  ellipsize={Pango.EllipsizeMode.END}
                 />
                 <box valign={Gtk.Align.END} halign={Gtk.Align.START} vexpand>
                   {/*
