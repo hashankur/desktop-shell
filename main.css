@@ -6,15 +6,32 @@
   font-family: "Satoshi Variable", "Iosevka";
   font-weight: 600;
   font-size: 14px;
+  -gtk-icon-size: 14px;
   border: none;
 }
 
 tooltip.background {
-  @apply bg-slate-900 rounded-lg text-white;
+  @apply bg-slate-900 rounded-lg text-white m-2 p-2;
 }
 
 tooltip label {
   @apply px-2;
+}
+
+popover.background {
+  @apply mt-2;
+}
+
+popover arrow {
+  @apply bg-gray-900;
+}
+
+popover contents {
+  @apply bg-gray-900 p-2 rounded-lg;
+}
+
+modelbutton {
+  @apply hover:bg-gray-800 rounded-lg p-2;
 }
 
 .progress-bar trough .empty {

@@ -1,7 +1,7 @@
 import Window from "@/common/window";
 import icons from "@/utils/icons";
 import { bind, Variable } from "astal";
-import { App, Astal, Gtk } from "astal/gtk4";
+import { App, Astal, Gtk, hook } from "astal/gtk4";
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
@@ -22,9 +22,8 @@ function SysTray() {
         items.map((item) => (
           <menubutton
             tooltipMarkup={bind(item, "tooltipMarkup")}
-            usePopover={false}
-            actionGroup={bind(item, "actionGroup").as((ag) => ["dbusmenu", ag])}
             menuModel={bind(item, "menuModel")}
+            setup={self => hook(self, item, 'notify::action-group', () => self.insert_action_group('dbusmenu', item.action_group))}
           >
             <image gicon={bind(item, "gicon")} />
           </menubutton>
