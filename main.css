@@ -49,3 +49,7 @@ modelbutton {
 .icon-xl {
   -gtk-icon-size: 42px;
 }
+
+.rounded-left {
+  border-radius: 7px 0 0 7px;
+}

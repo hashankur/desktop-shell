@@ -15,17 +15,19 @@ export default function Media() {
       <>
         {bind(spotify, "available").as((available) =>
           available ? (
-            <box cssClasses={["m-5", "bg-base", "rounded-xl", "min-w-[800px]"]} overflow={Gtk.Overflow.HIDDEN}>
+            <box cssClasses={["min-w-[800px]"]}>
               <image
                 file={bind(spotify, "coverArt")}
-                cssClasses={["min-h-[350px]", "min-w-[350px]"]}
+                cssClasses={["min-h-[350px]", "min-w-[350px]", "rounded-left"]}
+                overflow={Gtk.Overflow.HIDDEN}
               />
               <box vertical hexpand cssClasses={["p-10"]}>
                 <label
                   label={bind(spotify, "title")}
-                  cssClasses={["text-4xl", "font-black", "mb-3"]}
+                  cssClasses={["font-black", "mb-3", "text-4xl"]}
                   xalign={0} // Align label left
                   wrap
+                  maxWidthChars={10} // How work ???
                 />
                 <label
                   label={bind(spotify, "artist")}
@@ -38,6 +40,7 @@ export default function Media() {
                   cssClasses={["text-lg", "font-normal"]}
                   xalign={0}
                   ellipsize={Pango.EllipsizeMode.END}
+                  maxWidthChars={10} // How work ???
                 />
                 <box valign={Gtk.Align.END} halign={Gtk.Align.START} vexpand>
                   {/*
@@ -65,9 +68,9 @@ export default function Media() {
                   */}
                 </box>
               </box>
-            </box >
+            </box>
           ) : (
-            <label label="No media playing" cssName="Title" />
+            <label label="No Media Playing" cssClasses={["text-2xl", "p-5"]} />
           ),
         )
         }
@@ -77,7 +80,9 @@ export default function Media() {
 
   return (
     <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.BOTTOM}>
-      <SpotifyInfo />
+      <box cssClasses={["m-5", "p-1", "bg-base", "rounded-xl"]}>
+        <SpotifyInfo />
+      </box>
     </Window>
   );
 }
