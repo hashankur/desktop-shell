@@ -11,6 +11,7 @@ import NotificationPopups from "@/widget/notifications/NotificationPopups";
 import Calendar from "@/widget/Calendar";
 import QuickSettings from "@/widget/QuickSettings";
 import { exec } from "astal";
+import NotificationWindow from "@/widget/notifications/NotificationWindow";
 
 // https://github.com/Aiz0/dotless
 const style = exec("bunx tailwindcss -i main.css")
@@ -28,6 +29,8 @@ App.start({
     // OSD();
     // PowerMenu();
     // App.get_monitors().map(NotificationPopups);
+    NotificationPopups();
+    NotificationWindow();
     Calendar();
     // QuickSettings();
   },

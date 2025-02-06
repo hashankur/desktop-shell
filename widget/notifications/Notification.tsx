@@ -1,18 +1,21 @@
+import { Gtk } from "astal/gtk4";
 import { GLib } from "astal";
-import { Gtk, Astal } from "astal/gtk3";
-import { type EventBox } from "astal/gtk3/widget";
-import Notifd from "gi://AstalNotifd";
+import Pango from "gi://Pango";
+import AstalNotifd from "gi://AstalNotifd";
 
-const isIcon = (icon: string) => !!Astal.Icon.lookup_icon(icon);
+const time = (time: number, format = "%I:%M %p") =>
+  GLib.DateTime.new_from_unix_local(time).format(format);
+
+const isIcon = (icon: string) => {
+  const iconTheme = new Gtk.IconTheme();
+  return iconTheme.has_icon(icon);
+};
 
 const fileExists = (path: string) => GLib.file_test(path, GLib.FileTest.EXISTS);
 
-const time = (time: number, format = "%I:%M %p") =>
-  GLib.DateTime.new_from_unix_local(time).format(format)!;
+const urgency = (n: AstalNotifd.Notification) => {
+  const { LOW, NORMAL, CRITICAL } = AstalNotifd.Urgency;
 
-const urgency = (n: Notifd.Notification) => {
-  const { LOW, NORMAL, CRITICAL } = Notifd.Urgency;
-  // match operator when?
   switch (n.urgency) {
     case LOW:
       return "low";
@@ -24,88 +27,97 @@ const urgency = (n: Notifd.Notification) => {
   }
 };
 
-type Props = {
-  setup(self: EventBox): void;
-  onHoverLost(self: EventBox): void;
-  notification: Notifd.Notification;
-};
-
-export default function Notification(props: Props) {
-  const { notification: n, onHoverLost, setup } = props;
-  const { START, CENTER, END } = Gtk.Align;
-
+export default function Notification({
+  n,
+  showActions = true,
+}: {
+  n: AstalNotifd.Notification;
+  showActions?: boolean;
+}) {
   return (
-    <eventbox
-      className={`Notification ${urgency(n)}`}
-      setup={setup}
-      onHoverLost={onHoverLost}
+    <box
+      name={n.id.toString()}
+      cssClasses={["bg-[#11151C]", "p-5", "rounded-xl", "min-w-[500px]", urgency(n)]}
+      hexpand={false}
+      vexpand={true}
     >
       <box vertical>
-        <box className="header">
+        <box cssClasses={["mb-2"]} spacing={10}>
           {(n.appIcon || n.desktopEntry) && (
-            <icon
-              className="app-icon"
-              visible={Boolean(n.appIcon || n.desktopEntry)}
-              icon={n.appIcon || n.desktopEntry}
+            <image
+              cssClasses={["app-icon"]}
+              visible={!!(n.appIcon || n.desktopEntry)}
+              iconName={n.appIcon || n.desktopEntry}
             />
           )}
           <label
-            className="app-name"
-            halign={START}
-            truncate
+            cssClasses={["app-name"]}
+            halign={Gtk.Align.START}
             label={n.appName || "Unknown"}
           />
-          <label className="time" hexpand halign={END} label={time(n.time)} />
+          <label
+            cssClasses={["time"]}
+            hexpand
+            halign={Gtk.Align.END}
+            label={time(n.time)!}
+          />
           <button onClicked={() => n.dismiss()}>
-            <icon icon="window-close-symbolic" />
+            <image iconName={"window-close-symbolic"} />
           </button>
         </box>
-        <box className="content">
+        <Gtk.Separator visible orientation={Gtk.Orientation.HORIZONTAL} />
+        <box cssClasses={["content"]} spacing={10}>
           {n.image && fileExists(n.image) && (
-            <box
-              valign={START}
-              className="image"
-              css={`
-                background-image: url("${n.image}");
-              `}
-            />
-          )}
-          {n.image && isIcon(n.image) && (
-            <box expand={false} valign={START} className="icon-image">
-              <icon icon={n.image} expand halign={CENTER} valign={CENTER} />
+            <box valign={Gtk.Align.START} cssClasses={["image"]}>
+              <image file={n.image} overflow={Gtk.Overflow.HIDDEN} cssClasses={["icon-2xl", "rounded-md"]} />
             </box>
           )}
-          <box vertical>
+          {n.image && isIcon(n.image) && (
+            <box cssClasses={["icon-xl"]} valign={Gtk.Align.START}>
+              <image
+                iconName={n.image}
+                // iconSize={Gtk.IconSize.LARGE}
+                halign={Gtk.Align.CENTER}
+                valign={Gtk.Align.CENTER}
+                cssClasses={["icon-2xl"]}
+              />
+            </box>
+          )}
+          <box hexpand vertical>
             <label
-              className="summary"
-              halign={START}
+              ellipsize={Pango.EllipsizeMode.END}
+              maxWidthChars={30}
+              cssClasses={["text-xl", "mb-1", "font-bold"]}
+              halign={Gtk.Align.START}
               xalign={0}
               label={n.summary}
-              truncate
             />
             {n.body && (
               <label
-                className="body"
+                cssClasses={["text-[15px]", "font-medium"]}
+                maxWidthChars={30}
                 wrap
-                useMarkup
-                halign={START}
+                halign={Gtk.Align.START}
                 xalign={0}
-                // justifyFill
                 label={n.body}
               />
             )}
           </box>
         </box>
-        {n.get_actions().length > 0 && (
-          <box className="actions">
+        {showActions && n.get_actions().length > 0 && (
+          <box cssClasses={["actions"]} spacing={6}>
             {n.get_actions().map(({ label, id }) => (
-              <button hexpand onClicked={() => n.invoke(id)}>
-                <label label={label} halign={CENTER} hexpand />
+              <button
+                hexpand
+                onClicked={() => n.invoke(id)}
+                cssClasses={["bg-gray-900", "rounded-lg", "p-2", "m-2"]}
+              >
+                <label label={label} halign={Gtk.Align.CENTER} hexpand />
               </button>
             ))}
           </box>
         )}
       </box>
-    </eventbox>
+    </box>
   );
 }
