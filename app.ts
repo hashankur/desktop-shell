@@ -26,8 +26,8 @@ App.start({
     // Bar(1) // initialize other monitors
     // Clipboard();
     Media();
-    // OSD();
     // PowerMenu();
+    OSD();
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
     NotificationWindow();
