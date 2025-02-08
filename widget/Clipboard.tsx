@@ -1,39 +1,21 @@
 import Window from "@/common/window";
 import { bind, Variable } from "astal";
-import { App, Gtk, Widget } from "astal/gtk3";
+import { App, Gtk, hook } from "astal/gtk4";
 import { exec, execAsync } from "astal/process";
+import Pango from "gi://Pango";
 
 const WINDOW_NAME = "clipboard";
 
 const cliphist = Variable<string>("");
-const query = Variable<string>("");
 
 export default function Clipboard() {
-  const Entry = new Widget.Entry({
-    text: bind(query),
-    hexpand: true,
-    canFocus: true,
-    placeholderText: "Search",
-    className: "AppLauncher-Input",
-    // primaryIconName: "edit-find",
-    onActivate: () => {
-      // items.get()[0]?.app.launch(); // TODO: fix launch first item on press enter
-      App.toggle_window(WINDOW_NAME);
-    },
-    setup: (self) => {
-      self.hook(self, "notify::text", () => {
-        query.set(self.get_text());
-      });
-    },
-  });
-
   return (
     <Window
       name={WINDOW_NAME}
       setup={(self) => {
-        self.hook(self, "notify::visible", () => {
+        hook(self, self, "notify::visible", () => {
           if (!self.get_visible()) {
-            query.set("");
+            // query.set("");
             // TODO: reset scroll
           } else {
             cliphist.set(exec("cliphist list"));
@@ -42,14 +24,13 @@ export default function Clipboard() {
         });
       }}
     >
-      <box className="AppLauncher base" vertical>
-        {/* {Entry} */}
-        <scrollable vexpand>
-          <box vertical spacing={10}>
+      <box cssClasses={["bg-base", "min-h-[500px]", "min-w-[500px]", "p-5", "rounded-2xl"]} vertical>
+        <Gtk.ScrolledWindow vexpand>
+          <box vertical spacing={5}>
             {bind(cliphist).as((str) =>
               str.split("\n").map((item) => (
                 <button
-                  className="Clipboard-Item"
+                  cssClasses={["hover:bg-base1", "rounded-lg", "p-3"]}
                   on_Clicked={() => {
                     execAsync([
                       "sh",
@@ -72,13 +53,13 @@ export default function Clipboard() {
                     `}
                   />
                 ) : ( */}
-                  <label label={item} truncate halign={Gtk.Align.START} />
+                  <label label={item} ellipsize={Pango.EllipsizeMode.END} halign={Gtk.Align.START} />
                   {/* )} */}
                 </button>
               )),
             )}
           </box>
-        </scrollable>
+        </Gtk.ScrolledWindow>
       </box>
     </Window>
   );

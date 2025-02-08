@@ -23,7 +23,7 @@ App.start({
     AppLauncher();
     Bar(0);
     // Bar(1) // initialize other monitors
-    // Clipboard();
+    Clipboard();
     Media();
     // PowerMenu();
     OSD();
