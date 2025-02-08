@@ -1,13 +1,12 @@
 import Window from "@/common/window";
-import { bind, Variable } from "astal";
-import { App, Gtk, Widget } from "astal/gtk4";
+import { Variable } from "astal";
+import { App, Gtk, hook } from "astal/gtk4";
 import Apps from "gi://AstalApps";
-import Pango from "gi://Pango?version=1.0";
+import Pango from "gi://Pango";
 
 const WINDOW_NAME = "app-launcher";
 
 const apps = new Apps.Apps();
-
 const query = Variable<string>("");
 
 export default function AppLauncher() {
@@ -21,6 +20,7 @@ export default function AppLauncher() {
           App.toggle_window(WINDOW_NAME);
           app.launch();
         }}
+        cssClasses={["hover:bg-base1", "px-5", "mb-1", "rounded-xl"]}
       >
         <box hexpand={false} spacing={20}>
           <image cssClasses={["my-5", "icon-xl"]} iconName={app.iconName || ""} />
@@ -40,42 +40,44 @@ export default function AppLauncher() {
     ));
   });
 
-  const Entry = Widget.Entry({
-    text: bind(query),
-    hexpand: true,
-    canFocus: true,
-    placeholderText: "Search",
-    cssClasses: ["p-5"],
-    // primaryIconName: "edit-find",
-    onActivate: () => {
-      appData[0]?.launch();
-      App.toggle_window(WINDOW_NAME);
-    },
-    setup: (self) => {
-      // self.hook(self, "notify::text", () => {
-      //   query.set(self.get_text());
-      // });
-    },
-  });
+  function SearchEntry() {
+    const onEnter = () => {
+      apps.fuzzy_query(query.get())?.[0].launch();
+      App.get_window(WINDOW_NAME)?.set_visible(false);
+    };
+
+    return (
+      <entry
+        cssClasses={["p-5", "bg-base1", "rounded-2xl"]}
+        type="overlay"
+        vexpand
+        primaryIconName={"system-search-symbolic"}
+        placeholderText="Search..."
+        text={query.get()}
+        setup={(self) => {
+          hook(self, App, "window-toggled", (_, win) => {
+            const winName = win.name;
+            const visible = win.visible;
+
+            if (winName == WINDOW_NAME && visible) {
+              query.set("");
+              self.set_text("");
+              self.grab_focus();
+            }
+          });
+        }}
+        onChanged={(self) => query.set(self.text)}
+        onActivate={onEnter}
+      />
+    );
+  }
 
   return (
-    <Window
-      name={WINDOW_NAME}
-      setup={(self) => {
-        // self.hook(self, "notify::visible", () => {
-        //   if (!self.get_visible()) {
-        //     query.set("");
-        //     // TODO: reset scroll
-        //   } else {
-        //     Entry.grab_focus();
-        //   }
-        // });
-      }}
-    >
-      <box cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]} vertical>
-        {Entry}
+    <Window name={WINDOW_NAME}>
+      <box cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]} vertical spacing={10}>
+        <SearchEntry />
         <Gtk.ScrolledWindow vexpand cssClasses={["min-h-[510px]"]}>
-          <box cssClasses={["p-5"]} vertical>
+          <box vertical>
             {items}
           </box>
         </Gtk.ScrolledWindow>
