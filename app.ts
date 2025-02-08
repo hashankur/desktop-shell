@@ -1,4 +1,3 @@
-// import style from "./styles/main.scss";
 import { App } from "astal/gtk4";
 import { monitorFile } from "astal/file";
 import AppLauncher from "@/widget/AppLauncher";
@@ -35,9 +34,3 @@ App.start({
     // QuickSettings();
   },
 });
-
-// const CSS_DIR = `${SRC}/css`;
-
-// monitorFile(CSS_DIR, () => {
-//     App.apply_css(`${CSS_DIR}/main.css`, true);
-// });
