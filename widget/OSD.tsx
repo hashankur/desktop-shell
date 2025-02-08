@@ -8,7 +8,7 @@ import Wp from "gi://AstalWp";
 const WINDOW_NAME = "osd";
 const TIMEOUT = 2000;
 // BUG: artifacts remain on hide https://github.com/wmww/gtk4-layer-shell/issues/60
-const TRANSITION = Gtk.RevealerTransitionType.CROSSFADE;
+const TRANSITION = Gtk.RevealerTransitionType.SLIDE_LEFT;
 
 function BrightnessSlider() {
   const brightness = Brightness.get_default();
@@ -30,7 +30,7 @@ function BrightnessSlider() {
         });
       }}
     >
-      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl", "min-w-[50px]"]} vertical spacing={5}>
+      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]} vertical spacing={5}>
         <slider
           cssClasses={["min-h-[300px]", "min-w-[10px]", "rounded-[7px]"]}
           orientation={Gtk.Orientation.VERTICAL}
@@ -65,7 +65,7 @@ function VolumeSlider() {
         });
       }}
     >
-      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl", "min-w-[50px]"]} vertical spacing={5}>
+      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]} vertical spacing={5}>
         <slider
           cssClasses={["min-h-[300px]", "min-w-[10px]", "rounded-[7px]"]}
           orientation={Gtk.Orientation.VERTICAL}
@@ -88,8 +88,9 @@ export default function OSD() {
       anchor={Astal.WindowAnchor.RIGHT}
       keymode={Astal.Keymode.NONE}
       visible
+      defaultWidth={1}
     >
-      <box>
+      <box cssClasses={["bg-transparent"]}>
         <BrightnessSlider />
         <VolumeSlider />
       </box>

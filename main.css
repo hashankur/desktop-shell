@@ -3,7 +3,7 @@
 
 * {
   all: unset;
-  font-family: "Satoshi Variable", "Iosevka";
+  font-family: "Satoshi Variable", "Satoshi", "Iosevka", sans-serif;
   font-weight: 600;
   font-size: 14px;
   -gtk-icon-size: 14px;
@@ -34,10 +34,16 @@ modelbutton {
   @apply hover:bg-gray-800 rounded-lg p-2;
 }
 
+separator {
+  @apply bg-red-500;
 }
 
 trough>highlight {
   @apply bg-blue-500 min-w-[50px] rounded-lg;
+}
+
+trough {
+  @apply bg-base1;
 }
 
 .text-sm {
