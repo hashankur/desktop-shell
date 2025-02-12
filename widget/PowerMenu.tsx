@@ -1,5 +1,5 @@
 import Window from "@/common/window";
-import icons from "@/utils/icons";
+import icons from "@/util/icons";
 import { exec } from "astal";
 import { App } from "astal/gtk3";
 

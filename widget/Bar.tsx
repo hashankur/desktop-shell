@@ -1,6 +1,6 @@
 import Window from "@/common/window";
-import icons from "@/utils/icons";
 import { bind, Variable } from "astal";
+import icons from "@/util/icons";
 import { App, Astal, Gtk, hook } from "astal/gtk4";
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";

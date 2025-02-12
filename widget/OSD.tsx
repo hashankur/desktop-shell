@@ -1,6 +1,6 @@
 import Window from "@/common/window";
 import Brightness from "@/lib/brightness";
-import icons from "@/utils/icons";
+import icons from "@/util/icons";
 import { bind, timeout } from "astal";
 import { Astal, Gtk, hook } from "astal/gtk4";
 import Wp from "gi://AstalWp";

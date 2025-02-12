@@ -1,5 +1,5 @@
 import Window from "@/common/window";
-import icons from "@/utils/icons";
+import icons from "@/util/icons";
 import { bind } from "astal";
 import { Astal, Gtk } from "astal/gtk4";
 import Mpris from "gi://AstalMpris";
