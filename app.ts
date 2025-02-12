@@ -1,5 +1,4 @@
 import { App } from "astal/gtk4";
-import { monitorFile } from "astal/file";
 import AppLauncher from "@/widget/AppLauncher";
 import Bar from "@/widget/Bar";
 import Clipboard from "@/widget/Clipboard";
@@ -25,8 +24,8 @@ App.start({
     // Bar(1) // initialize other monitors
     Clipboard();
     Media();
-    // PowerMenu();
     OSD();
+    PowerMenu();
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
     NotificationWindow();

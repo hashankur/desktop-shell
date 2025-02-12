@@ -1,6 +1,7 @@
+import Button from "@/common/Button";
 import Window from "@/common/window";
-import { bind, Variable } from "astal";
 import icons from "@/util/icons";
+import { bind, Binding, GLib, Variable } from "astal";
 import { App, Astal, Gtk, hook } from "astal/gtk4";
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
@@ -10,7 +11,7 @@ import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "bar";
 
-const time = Variable("").poll(1000, "date '+%a %d %b | %I:%M %p'");
+const time = Variable("").poll(1000, () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p")!);
 
 // WIP - Mostly works
 function SysTray() {
@@ -24,6 +25,7 @@ function SysTray() {
             tooltipMarkup={bind(item, "tooltipMarkup")}
             menuModel={bind(item, "menuModel")}
             setup={self => hook(self, item, 'notify::action-group', () => self.insert_action_group('dbusmenu', item.action_group))}
+            cssClasses={["px-3", "hover:bg-base1", "rounded-lg"]}
           >
             <image gicon={bind(item, "gicon")} />
           </menubutton>
@@ -95,7 +97,7 @@ function Media() {
     <>
       {bind(spotify, "available").as((available) =>
         available ? (
-          <button onClicked={() => spotify.play_pause()}>
+          <Button onClicked={() => spotify.play_pause()}>
             <box spacing={5}>
               <image
                 iconName={bind(spotify, "playbackStatus").as((status) =>
@@ -106,7 +108,7 @@ function Media() {
               />
               <label label={formattedLabel()} />
             </box>
-          </button>
+          </Button>
         ) : (
           ""
         ),
@@ -170,7 +172,46 @@ function Stats() {
   );
 }
 
+function Left() {
+  return (
+    <box>
+      {/* <Stats /> */}
+      <Media />
+    </box>
+  )
+}
+
+function Center() {
+  return (
+    <Button
+      onClicked={() => App.toggle_window("calendar")}
+      halign={Gtk.Align.END}
+    >
+      <label label={time()} />
+    </Button>
+  )
+}
+
+function Right() {
+  return (
+    <box halign={Gtk.Align.END} spacing={5}>
+      <SysTray />
+      <Button
+        onClicked={() => App.toggle_window("quick-settings")}
+      >
+        <box spacing={20}>
+          <Wifi />
+          <AudioLevel />
+          <BatteryLevel />
+        </box>
+      </Button>
+    </box>
+  )
+}
+
 export default function Bar(monitor: number) {
+  const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
+
   return (
     <Window
       name={WINDOW_NAME}
@@ -178,44 +219,15 @@ export default function Bar(monitor: number) {
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       layer={Astal.Layer.TOP}
       keymode={Astal.Keymode.NONE}
-      anchor={
-        Astal.WindowAnchor.TOP |
-        Astal.WindowAnchor.LEFT |
-        Astal.WindowAnchor.RIGHT
-      }
+      anchor={TOP | LEFT | RIGHT}
       visible
     >
       <box vertical>
         {/* <box className="Workspaces"></box> */}
-        <centerbox cssClasses={["px-4", "bg-base", "min-h-10"]}>
-          {/* Left */}
-          <box>
-            {/* <Stats /> */}
-            <Media />
-          </box>
-
-          {/* Center */}
-          <button
-            onClicked={() => App.toggle_window("calendar")}
-            halign={Gtk.Align.END}
-          >
-            <label label={time()} />
-          </button>
-
-          {/* Right */}
-          <box halign={Gtk.Align.END} spacing={20}>
-            <SysTray />
-            <button
-            // onClick={() => App.toggle_window("quick-settings")}
-            >
-              <box spacing={20}>
-                <Wifi />
-                <AudioLevel />
-              </box>
-            </button>
-
-            <BatteryLevel />
-          </box>
+        <centerbox cssClasses={["px-1", "bg-background", "min-h-10"]}>
+          <Left />
+          <Center />
+          <Right />
         </centerbox>
       </box>
     </Window>

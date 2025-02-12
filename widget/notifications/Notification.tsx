@@ -100,6 +100,7 @@ export default function Notification({
                 halign={Gtk.Align.START}
                 xalign={0}
                 label={n.body}
+                ellipsize={Pango.EllipsizeMode.END}
               />
             )}
           </box>

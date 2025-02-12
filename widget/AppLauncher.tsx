@@ -1,4 +1,5 @@
 import Window from "@/common/window";
+import { hideWindow } from "@/util/util";
 import { Variable } from "astal";
 import { App, Gtk, hook } from "astal/gtk4";
 import Apps from "gi://AstalApps";
@@ -43,7 +44,7 @@ export default function AppLauncher() {
   function SearchEntry() {
     const onEnter = () => {
       apps.fuzzy_query(query.get())?.[0].launch();
-      App.get_window(WINDOW_NAME)?.set_visible(false);
+      hideWindow(WINDOW_NAME)
     };
 
     return (
