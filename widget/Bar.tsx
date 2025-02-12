@@ -50,27 +50,27 @@ function AudioLevel() {
   return <image iconName={bind(speaker, "volumeIcon")} />;
 }
 
-function secondsToHoursMinutes(time: number, verb: string) {
-  time = Math.round(time / 60);
-  return `${Math.floor(time / 60)}h ${Math.floor(time % 60)}m ${verb}`;
+function secondsToHoursMinutes(time: number, verb: string): string {
+  const seconds = Math.round(time / 60); // TODO: needs to be reactive
+  return `${Math.floor(seconds / 60)}h ${Math.floor(seconds % 60)}m ${verb}`;
 }
 
 function BatteryLevel() {
   const bat = Battery.get_default();
 
+  const batteryTooltip = Variable.derive(
+    [bind(bat, "charging"), bind(bat, "timeToEmpty"), bind(bat, "timeToFull")],
+    (charging, empty, full) => {
+      return charging
+        ? secondsToHoursMinutes(full, "to full")
+        : secondsToHoursMinutes(empty, "remaining")
+    })
+
   return (
     <box
       visible={bind(bat, "isPresent")}
       spacing={5}
-      tooltipText={
-        bind(bat, "charging")
-          ? bind(bat, "timeToFull").as((val) =>
-            secondsToHoursMinutes(val, "until full"),
-          )
-          : bind(bat, "timeToEmpty").as((val) =>
-            secondsToHoursMinutes(val, "remaining"),
-          )
-      }
+      tooltipText={batteryTooltip()}
     >
       <image iconName={bind(bat, "batteryIconName")} />
       <label
@@ -79,7 +79,7 @@ function BatteryLevel() {
           return level === 100 ? "Full" : `${level}%`;
         })}
       />
-    </box>
+    </box >
   );
 }
 
