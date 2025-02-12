@@ -16,6 +16,7 @@ const style = exec("bunx tailwindcss -i main.css")
   .replace(/::backdrop.*?}\n{2}/s, "") // remove backdrop pseudoclass
   .replace(", ::before, ::after", ""); // remove before & after psudoclasses
 
+
 App.start({
   css: style,
   main() {
@@ -30,6 +31,6 @@ App.start({
     NotificationPopups();
     NotificationWindow();
     Calendar();
-    // QuickSettings();
+    QuickSettings();
   },
 });
