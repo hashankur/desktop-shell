@@ -64,7 +64,7 @@ function BatteryLevel() {
     [bind(bat, "charging"), bind(bat, "timeToEmpty"), bind(bat, "timeToFull")],
     (charging, empty, full) => {
       return charging
-        ? secondsToHoursMinutes(full, "to full")
+        ? full == 0 ? "Charged" : secondsToHoursMinutes(full, "to full")
         : secondsToHoursMinutes(empty, "remaining")
     })
 
