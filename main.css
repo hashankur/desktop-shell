@@ -7,7 +7,6 @@
   font-weight: 600;
   font-size: 14px;
   -gtk-icon-size: 14px;
-  border: none;
 }
 
 tooltip.background {
@@ -48,6 +47,10 @@ trough {
 
 .text-sm {
   font-size: 5rem;
+}
+
+.icon-lg {
+  -gtk-icon-size: 32px;
 }
 
 .icon-xl {
