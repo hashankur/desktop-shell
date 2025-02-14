@@ -15,7 +15,7 @@ export default function Media() {
       [bind(spotify, "title")],
       (title) => {
         let classes = ["font-black", "mb-3"]
-        classes.push((title.length > 50) ? "text-3xl" : "text-4xl")
+        classes.push((title?.length > 50) ? "text-3xl" : "text-4xl")
         return classes
       }
     )
