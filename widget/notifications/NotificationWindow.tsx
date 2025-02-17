@@ -15,7 +15,9 @@ function NotifsScrolledWindow() {
     <Gtk.ScrolledWindow vexpand>
       <box vertical hexpand={false} spacing={8}>
         {bind(notifd, "notifications").as((notifs) =>
-          notifs.map((e) => <Notification n={e} showActions={false} />),
+          notifs
+            .sort((a, b) => b.time - a.time)
+            .map((e) => <Notification n={e} showActions={false} />),
         )}
         <box
           halign={Gtk.Align.CENTER}
