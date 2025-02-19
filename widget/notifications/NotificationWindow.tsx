@@ -78,7 +78,7 @@ function NotificationWindow(_gdkmonitor: Gdk.Monitor) {
       onDestroy={() => layout.drop()}
     >
       <box
-        cssClasses={["bg-base", "m-2", "p-2", "rounded-xl", "min-w-[550px]", "min-h-[425px]"]}
+        cssClasses={["bg-base", "p-2", "rounded-xl", "min-w-[550px]", "min-h-[425px]"]}
         vertical
         vexpand={false}
       >

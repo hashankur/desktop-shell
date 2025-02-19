@@ -149,7 +149,7 @@ export default function QuickSettings() {
       anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
     >
       <box
-        cssClasses={["bg-base", "min-w-96", "m-5", "p-3", "rounded-xl"]}
+        cssClasses={["bg-base", "min-w-96", "p-3", "rounded-xl"]}
         vertical
         spacing={10}
         valign={Gtk.Align.START}

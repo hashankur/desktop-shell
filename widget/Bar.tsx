@@ -220,6 +220,7 @@ export default function Bar(monitor: number) {
       layer={Astal.Layer.TOP}
       keymode={Astal.Keymode.NONE}
       anchor={TOP | LEFT | RIGHT}
+      margin={0}
       visible
     >
       <box vertical>

@@ -88,7 +88,8 @@ export default function OSD() {
       anchor={Astal.WindowAnchor.RIGHT}
       keymode={Astal.Keymode.NONE}
       visible
-      defaultWidth={1}
+      defaultWidth={-1}
+      margin={0}
     >
       <box cssClasses={["bg-transparent"]}>
         <BrightnessSlider />

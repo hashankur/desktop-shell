@@ -89,7 +89,7 @@ export default function Media() {
 
   return (
     <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.BOTTOM}>
-      <box cssClasses={["m-5", "p-1", "bg-base", "rounded-xl"]}>
+      <box cssClasses={["p-1", "bg-base", "rounded-xl"]}>
         <SpotifyInfo />
       </box>
     </Window>

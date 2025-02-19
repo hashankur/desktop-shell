@@ -23,6 +23,7 @@ export default function Window({
       keymode={keymode}
       name={name}
       layer={Astal.Layer.OVERLAY}
+      margin={10}
       onKeyPressed={(_, keyval) => {
         if (keyval === Gdk.KEY_Escape) {
           App.toggle_window(name);

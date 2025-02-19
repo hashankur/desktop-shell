@@ -146,6 +146,7 @@ export default function PopupWindow({
           App.toggle_window(name);
         }
       }}
+      margin={10} // Temp
       {...props}
     >
       <Layout name={name} position={layout}>
