@@ -1,19 +1,19 @@
-import Button from "@/common/Button";
-import Window from "@/common/window";
-import icons from "@/util/icons";
-import { bind, Binding, GLib, Variable } from "astal";
-import { App, Astal, Gtk, hook } from "astal/gtk4";
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
 import Tray from "gi://AstalTray";
 import Wp from "gi://AstalWp";
+import Button from "@/common/Button";
+import Window from "@/common/window";
+import icons from "@/util/icons";
+import { GLib, Variable, bind } from "astal";
+import { App, Astal, Gtk, hook } from "astal/gtk4";
 
 const WINDOW_NAME = "bar";
 
 const time = Variable("").poll(
   1000,
-  () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p")!,
+  () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p") ?? "",
 );
 
 // WIP - Mostly works
@@ -71,7 +71,7 @@ function BatteryLevel() {
     [bind(bat, "charging"), bind(bat, "timeToEmpty"), bind(bat, "timeToFull")],
     (charging, empty, full) => {
       return charging
-        ? full == 0
+        ? full === 0
           ? "Charged"
           : secondsToHoursMinutes(full, "to full")
         : secondsToHoursMinutes(empty, "remaining");
@@ -87,7 +87,7 @@ function BatteryLevel() {
       <image iconName={bind(bat, "batteryIconName")} />
       <label
         label={bind(bat, "percentage").as((p) => {
-          let level = Math.floor(p * 100);
+          const level = Math.floor(p * 100);
           return level === 100 ? "Full" : `${level}%`;
         })}
       />
@@ -100,7 +100,7 @@ function Media() {
 
   const formattedLabel = Variable.derive(
     [bind(spotify, "artist"), bind(spotify, "title")],
-    (artist: String, title: String) => artist + " - " + title,
+    (artist: string, title: string) => `${artist} - ${title}`,
   );
 
   return (

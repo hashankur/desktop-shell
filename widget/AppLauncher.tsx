@@ -1,9 +1,9 @@
+import Apps from "gi://AstalApps";
+import Pango from "gi://Pango";
 import Window from "@/common/window";
 import { hideWindow } from "@/util/util";
 import { Variable } from "astal";
 import { App, Gtk, hook } from "astal/gtk4";
-import Apps from "gi://AstalApps";
-import Pango from "gi://Pango";
 
 const WINDOW_NAME = "app-launcher";
 
@@ -68,7 +68,7 @@ export default function AppLauncher() {
             const winName = win.name;
             const visible = win.visible;
 
-            if (winName == WINDOW_NAME && visible) {
+            if (winName === WINDOW_NAME && visible) {
               query.set("");
               self.set_text("");
               self.grab_focus();

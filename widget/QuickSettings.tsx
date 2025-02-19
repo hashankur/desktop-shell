@@ -1,11 +1,11 @@
-import Window from "@/common/window";
-import { App, Astal, Gtk } from "astal/gtk4";
-import Network from "gi://AstalNetwork";
-import { bind, execAsync, Variable } from "astal";
-import icons from "@/util/icons";
 import AstalBluetooth from "gi://AstalBluetooth";
+import Network from "gi://AstalNetwork";
 import Button from "@/common/Button";
+import Window from "@/common/window";
+import icons from "@/util/icons";
 import { hideWindow } from "@/util/util";
+import { Variable, bind, execAsync } from "astal";
+import { App, Astal, Gtk } from "astal/gtk4";
 
 const WINDOW_NAME = "quick-settings";
 const currentView = Variable("main");
@@ -41,7 +41,7 @@ function StackPage({ child, name }: StackPageProps) {
   );
 }
 
-function BackButton({ name }) {
+function BackButton({ name }: { name: string }) {
   return (
     <button onClicked={() => currentView.set("main")} cssClasses={["mb-3"]}>
       <box>

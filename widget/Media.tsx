@@ -1,9 +1,9 @@
-import Window from "@/common/window";
-import icons from "@/util/icons";
-import { bind, Variable } from "astal";
-import { Astal, Gtk } from "astal/gtk4";
 import Mpris from "gi://AstalMpris";
 import Pango from "gi://Pango";
+import Window from "@/common/window";
+import icons from "@/util/icons";
+import { Variable, bind } from "astal";
+import { Astal, Gtk } from "astal/gtk4";
 
 const WINDOW_NAME = "media";
 
@@ -12,7 +12,7 @@ export default function Media() {
     const spotify = Mpris.Player.new("spotify");
 
     const titleFontSize = Variable.derive([bind(spotify, "title")], (title) => {
-      let classes = ["font-black", "mb-3"];
+      const classes = ["font-black", "mb-3"];
       classes.push(title?.length > 50 ? "text-3xl" : "text-4xl");
       return classes;
     });

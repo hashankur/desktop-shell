@@ -1,7 +1,7 @@
 import AstalNotifd from "gi://AstalNotifd";
 import PopupWindow from "@/common/PopupWindow";
-import { App, Gtk, Gdk } from "astal/gtk4";
-import { bind, Variable } from "astal";
+import { Variable, bind } from "astal";
+import { App, type Gdk, Gtk } from "astal/gtk4";
 import Notification from "./Notification";
 
 export const WINDOW_NAME = "notifications";

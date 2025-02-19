@@ -1,6 +1,6 @@
-import { timeout } from "astal";
-import { App, Astal, hook, Gdk } from "astal/gtk4";
 import AstalNotifd from "gi://AstalNotifd";
+import { timeout } from "astal";
+import { App, Astal, type Gdk, hook } from "astal/gtk4";
 import Notification from "./Notification";
 
 export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
@@ -17,7 +17,7 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
         hook(self, notifd, "notified", (_, id: number) => {
           if (
             notifd.dont_disturb &&
-            notifd.get_notification(id).urgency != AstalNotifd.Urgency.CRITICAL
+            notifd.get_notification(id).urgency !== AstalNotifd.Urgency.CRITICAL
           ) {
             return;
           }
@@ -59,6 +59,6 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
       gdkmonitor={gdkmonitor}
       application={App}
       anchor={TOP | RIGHT}
-    ></window>
+    />
   );
 }
