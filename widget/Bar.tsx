@@ -11,7 +11,10 @@ import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "bar";
 
-const time = Variable("").poll(1000, () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p")!);
+const time = Variable("").poll(
+  1000,
+  () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p")!,
+);
 
 // WIP - Mostly works
 function SysTray() {
@@ -24,7 +27,11 @@ function SysTray() {
           <menubutton
             tooltipMarkup={bind(item, "tooltipMarkup")}
             menuModel={bind(item, "menuModel")}
-            setup={self => hook(self, item, 'notify::action-group', () => self.insert_action_group('dbusmenu', item.action_group))}
+            setup={(self) =>
+              hook(self, item, "notify::action-group", () =>
+                self.insert_action_group("dbusmenu", item.action_group),
+              )
+            }
             cssClasses={["px-3", "hover:bg-base1", "rounded-lg"]}
           >
             <image gicon={bind(item, "gicon")} />
@@ -64,9 +71,12 @@ function BatteryLevel() {
     [bind(bat, "charging"), bind(bat, "timeToEmpty"), bind(bat, "timeToFull")],
     (charging, empty, full) => {
       return charging
-        ? full == 0 ? "Charged" : secondsToHoursMinutes(full, "to full")
-        : secondsToHoursMinutes(empty, "remaining")
-    })
+        ? full == 0
+          ? "Charged"
+          : secondsToHoursMinutes(full, "to full")
+        : secondsToHoursMinutes(empty, "remaining");
+    },
+  );
 
   return (
     <box
@@ -81,7 +91,7 @@ function BatteryLevel() {
           return level === 100 ? "Full" : `${level}%`;
         })}
       />
-    </box >
+    </box>
   );
 }
 
@@ -178,7 +188,7 @@ function Left() {
       {/* <Stats /> */}
       <Media />
     </box>
-  )
+  );
 }
 
 function Center() {
@@ -189,16 +199,14 @@ function Center() {
     >
       <label label={time()} />
     </Button>
-  )
+  );
 }
 
 function Right() {
   return (
     <box halign={Gtk.Align.END} spacing={5}>
       <SysTray />
-      <Button
-        onClicked={() => App.toggle_window("quick-settings")}
-      >
+      <Button onClicked={() => App.toggle_window("quick-settings")}>
         <box spacing={20}>
           <Wifi />
           <AudioLevel />
@@ -206,7 +214,7 @@ function Right() {
         </box>
       </Button>
     </box>
-  )
+  );
 }
 
 export default function Bar(monitor: number) {

@@ -4,6 +4,10 @@
     "astal": "/home/han/.local/share/ags"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "tailwindcss": "^3.4.17"
-  }
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
 }

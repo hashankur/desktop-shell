@@ -30,7 +30,11 @@ function BrightnessSlider() {
         });
       }}
     >
-      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]} vertical spacing={5}>
+      <box
+        cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]}
+        vertical
+        spacing={5}
+      >
         <slider
           cssClasses={["min-h-[300px]", "min-w-[10px]", "rounded-[7px]"]}
           orientation={Gtk.Orientation.VERTICAL}
@@ -65,7 +69,11 @@ function VolumeSlider() {
         });
       }}
     >
-      <box cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]} vertical spacing={5}>
+      <box
+        cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]}
+        vertical
+        spacing={5}
+      >
         <slider
           cssClasses={["min-h-[300px]", "min-w-[10px]", "rounded-[7px]"]}
           orientation={Gtk.Orientation.VERTICAL}

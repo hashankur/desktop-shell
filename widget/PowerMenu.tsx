@@ -33,7 +33,12 @@ export default function PowerMenu() {
               App.toggle_window(WINDOW_NAME);
               exec(option.command);
             }}
-            cssClasses={["rounded-lg", "bg-base1", "hover:bg-base", "transition"]}
+            cssClasses={[
+              "rounded-lg",
+              "bg-base1",
+              "hover:bg-base",
+              "transition",
+            ]}
           >
             <image cssClasses={["p-10", "icon-xl"]} iconName={option.icon} />
           </button>

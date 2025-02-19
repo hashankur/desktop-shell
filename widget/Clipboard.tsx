@@ -24,7 +24,16 @@ export default function Clipboard() {
         });
       }}
     >
-      <box cssClasses={["bg-base", "min-h-[500px]", "min-w-[500px]", "p-5", "rounded-2xl"]} vertical>
+      <box
+        cssClasses={[
+          "bg-base",
+          "min-h-[500px]",
+          "min-w-[500px]",
+          "p-5",
+          "rounded-2xl",
+        ]}
+        vertical
+      >
         <Gtk.ScrolledWindow vexpand>
           <box vertical spacing={5}>
             {bind(cliphist).as((str) =>
@@ -53,7 +62,11 @@ export default function Clipboard() {
                     `}
                   />
                 ) : ( */}
-                  <label label={item} ellipsize={Pango.EllipsizeMode.END} halign={Gtk.Align.START} />
+                  <label
+                    label={item}
+                    ellipsize={Pango.EllipsizeMode.END}
+                    halign={Gtk.Align.START}
+                  />
                   {/* )} */}
                 </button>
               )),

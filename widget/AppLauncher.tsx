@@ -24,9 +24,17 @@ export default function AppLauncher() {
         cssClasses={["hover:bg-base1", "px-5", "mb-1", "rounded-xl"]}
       >
         <box hexpand={false} spacing={20}>
-          <image cssClasses={["my-5", "icon-xl"]} iconName={app.iconName || ""} />
+          <image
+            cssClasses={["my-5", "icon-xl"]}
+            iconName={app.iconName || ""}
+          />
           <box vertical valign={Gtk.Align.CENTER}>
-            <label cssClasses={["text-xl", "font-bold"]} label={app.name} xalign={0} ellipsize={Pango.EllipsizeMode.END} />
+            <label
+              cssClasses={["text-xl", "font-bold"]}
+              label={app.name}
+              xalign={0}
+              ellipsize={Pango.EllipsizeMode.END}
+            />
             {app.description && (
               <label
                 cssName="AppDescription"
@@ -44,7 +52,7 @@ export default function AppLauncher() {
   function SearchEntry() {
     const onEnter = () => {
       apps.fuzzy_query(query.get())?.[0].launch();
-      hideWindow(WINDOW_NAME)
+      hideWindow(WINDOW_NAME);
     };
 
     return (
@@ -75,12 +83,14 @@ export default function AppLauncher() {
 
   return (
     <Window name={WINDOW_NAME}>
-      <box cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]} vertical spacing={10}>
+      <box
+        cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]}
+        vertical
+        spacing={10}
+      >
         <SearchEntry />
         <Gtk.ScrolledWindow vexpand cssClasses={["min-h-[510px]"]}>
-          <box vertical>
-            {items}
-          </box>
+          <box vertical>{items}</box>
         </Gtk.ScrolledWindow>
       </box>
     </Window>

@@ -10,7 +10,7 @@ import { hideWindow } from "@/util/util";
 const WINDOW_NAME = "quick-settings";
 const currentView = Variable("main");
 
-function QSButton({ name, icon }: { name: string, icon: string }) {
+function QSButton({ name, icon }: { name: string; icon: string }) {
   return (
     <button
       onClicked={() => currentView.set(name)}
@@ -23,55 +23,57 @@ function QSButton({ name, icon }: { name: string, icon: string }) {
         </box>
         <image iconName={icons.ui.arrow.right} />
       </box>
-    </button >
-  )
+    </button>
+  );
 }
 
 type StackPageProps = {
   child?: JSX.Element;
   name: string;
-}
+};
 
 function StackPage({ child, name }: StackPageProps) {
   return (
     <box name={name} vertical>
       <BackButton name={name} />
-      <Gtk.ScrolledWindow cssClasses={["min-h-40"]}>
-        {child}
-      </Gtk.ScrolledWindow>
+      <Gtk.ScrolledWindow cssClasses={["min-h-40"]}>{child}</Gtk.ScrolledWindow>
     </box>
-  )
+  );
 }
 
 function BackButton({ name }) {
   return (
-    <button
-      onClicked={() => currentView.set("main")}
-      cssClasses={["mb-3"]}
-    >
+    <button onClicked={() => currentView.set("main")} cssClasses={["mb-3"]}>
       <box>
         <image cssClasses={["p-3"]} iconName={icons.ui.arrow.left} />
         <label cssClasses={["text-2xl"]} label={name} />
       </box>
     </button>
-  )
+  );
 }
 
 function Main() {
   return (
     <box name="main" spacing={10} vertical>
       <box halign={Gtk.Align.END}>
-        <Button onClicked={() => {
-          App.toggle_window("power-menu")
-          hideWindow(WINDOW_NAME)
-        }}>
+        <Button
+          onClicked={() => {
+            App.toggle_window("power-menu");
+            hideWindow(WINDOW_NAME);
+          }}
+        >
           <image cssClasses={["p-3"]} iconName={icons.powermenu.shutdown} />
         </Button>
         <Button
           onClicked={() => {
-            execAsync(["sh", "-c", "XDG_CURRENT_DESKTOP=gnome gnome-control-center"])
-            hideWindow(WINDOW_NAME)
-          }}>
+            execAsync([
+              "sh",
+              "-c",
+              "XDG_CURRENT_DESKTOP=gnome gnome-control-center",
+            ]);
+            hideWindow(WINDOW_NAME);
+          }}
+        >
           <image cssClasses={["p-3"]} iconName={icons.ui.settings} />
         </Button>
       </box>
@@ -83,8 +85,8 @@ function Main() {
         <QSButton name="Audio" icon={icons.audio.type.speaker} />
         <QSButton name="Display" icon={icons.brightness.indicator} />
       </box>
-    </box >
-  )
+    </box>
+  );
 }
 
 function Wifi() {
@@ -100,21 +102,30 @@ function Wifi() {
             .map((ap) => (
               <button
                 cssClasses={["px-5", "py-2", "rounded-lg", "hover:bg-base1"]}
-                onClicked={() => execAsync(`nmcli device wifi connect ${ap.bssid}`)}
+                onClicked={() =>
+                  execAsync(`nmcli device wifi connect ${ap.bssid}`)
+                }
               >
                 <box spacing={15} valign={Gtk.Align.CENTER}>
-                  <image cssClasses={["icon-lg"]} iconName={ap.iconName || ""} />
-                  <label cssClasses={["text-lg", "text-semibold"]} label={ap.ssid} />
+                  <image
+                    cssClasses={["icon-lg"]}
+                    iconName={ap.iconName || ""}
+                  />
+                  <label
+                    cssClasses={["text-lg", "text-semibold"]}
+                    label={ap.ssid}
+                  />
                 </box>
               </button>
-            )))}
+            )),
+        )}
       </box>
     </StackPage>
   );
 }
 
 function Bluetooth() {
-  const bluetooth = AstalBluetooth.get_default()
+  const bluetooth = AstalBluetooth.get_default();
 
   return (
     <StackPage name="Bluetooth">
@@ -128,18 +139,29 @@ function Bluetooth() {
               <box spacing={15} valign={Gtk.Align.CENTER}>
                 <image cssClasses={["icon-lg"]} iconName={device.icon || ""} />
                 <box vertical>
-                  <label cssClasses={["text-lg", "text-semibold"]} label={device.name} />
-                  {bind(device, "connected").as(v => v ?
-                    <label cssClasses={["text-semibold"]} label="Connected" xalign={0} />
-                    : ""
+                  <label
+                    cssClasses={["text-lg", "text-semibold"]}
+                    label={device.name}
+                  />
+                  {bind(device, "connected").as((v) =>
+                    v ? (
+                      <label
+                        cssClasses={["text-semibold"]}
+                        label="Connected"
+                        xalign={0}
+                      />
+                    ) : (
+                      ""
+                    ),
                   )}
                 </box>
               </box>
             </button>
-          )))}
+          )),
+        )}
       </box>
     </StackPage>
-  )
+  );
 }
 
 export default function QuickSettings() {
@@ -154,19 +176,16 @@ export default function QuickSettings() {
         spacing={10}
         valign={Gtk.Align.START}
       >
-        <box
-          cssClasses={[]}
-          valign={Gtk.Align.START}
-        >
+        <box cssClasses={[]} valign={Gtk.Align.START}>
           <stack
             visibleChildName={bind(currentView)}
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
             cssClasses={["min-w-96"]}
-          // setup={(self) => {
-          // const NetworkWdgt = Network();
-          // if (NetworkWdgt) self.add(NetworkWdgt);
-          // }}
+            // setup={(self) => {
+            // const NetworkWdgt = Network();
+            // if (NetworkWdgt) self.add(NetworkWdgt);
+            // }}
           >
             <Main />
             <Wifi />

@@ -7,7 +7,7 @@ import Notification from "./Notification";
 export const WINDOW_NAME = "notifications";
 const notifd = AstalNotifd.get_default();
 
-const layout = Variable("top_center")
+const layout = Variable("top_center");
 
 function NotifsScrolledWindow() {
   const notifd = AstalNotifd.get_default();
@@ -78,7 +78,13 @@ function NotificationWindow(_gdkmonitor: Gdk.Monitor) {
       onDestroy={() => layout.drop()}
     >
       <box
-        cssClasses={["bg-base", "p-2", "rounded-xl", "min-w-[550px]", "min-h-[425px]"]}
+        cssClasses={[
+          "bg-base",
+          "p-2",
+          "rounded-xl",
+          "min-w-[550px]",
+          "min-h-[425px]",
+        ]}
         vertical
         vexpand={false}
       >
@@ -94,7 +100,7 @@ function NotificationWindow(_gdkmonitor: Gdk.Monitor) {
   );
 }
 
-export default function(_gdkmonitor: Gdk.Monitor) {
+export default function (_gdkmonitor: Gdk.Monitor) {
   NotificationWindow(_gdkmonitor);
 
   layout.subscribe(() => {

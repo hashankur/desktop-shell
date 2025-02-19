@@ -11,14 +11,11 @@ export default function Media() {
   const SpotifyInfo = () => {
     const spotify = Mpris.Player.new("spotify");
 
-    const titleFontSize = Variable.derive(
-      [bind(spotify, "title")],
-      (title) => {
-        let classes = ["font-black", "mb-3"]
-        classes.push((title?.length > 50) ? "text-3xl" : "text-4xl")
-        return classes
-      }
-    )
+    const titleFontSize = Variable.derive([bind(spotify, "title")], (title) => {
+      let classes = ["font-black", "mb-3"];
+      classes.push(title?.length > 50 ? "text-3xl" : "text-4xl");
+      return classes;
+    });
 
     return (
       <>
@@ -81,8 +78,7 @@ export default function Media() {
           ) : (
             <label label="No Media Playing" cssClasses={["text-2xl", "p-5"]} />
           ),
-        )
-        }
+        )}
       </>
     );
   };

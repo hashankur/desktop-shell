@@ -37,7 +37,13 @@ export default function Notification({
   return (
     <box
       name={n.id.toString()}
-      cssClasses={["bg-[#11151C]", "p-5", "rounded-xl", "min-w-[500px]", urgency(n)]}
+      cssClasses={[
+        "bg-[#11151C]",
+        "p-5",
+        "rounded-xl",
+        "min-w-[500px]",
+        urgency(n),
+      ]}
       hexpand={false}
       vexpand={true}
     >
@@ -69,7 +75,11 @@ export default function Notification({
         <box cssClasses={["content"]} spacing={10}>
           {n.image && fileExists(n.image) && (
             <box valign={Gtk.Align.START} cssClasses={["image"]}>
-              <image file={n.image} overflow={Gtk.Overflow.HIDDEN} cssClasses={["icon-2xl", "rounded-md"]} />
+              <image
+                file={n.image}
+                overflow={Gtk.Overflow.HIDDEN}
+                cssClasses={["icon-2xl", "rounded-md"]}
+              />
             </box>
           )}
           {n.image && isIcon(n.image) && (
