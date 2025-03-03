@@ -7,7 +7,7 @@ import OSD from "@/widget/OSD";
 import PowerMenu from "@/widget/PowerMenu";
 import QuickSettings from "@/widget/QuickSettings";
 import NotificationPopups from "@/widget/notifications/NotificationPopups";
-import NotificationWindow from "@/widget/notifications/NotificationWindow";
+// import NotificationWindow from "@/widget/notifications/NotificationWindow";
 import { exec } from "astal";
 import { App } from "astal/gtk4";
 
@@ -28,7 +28,7 @@ App.start({
     PowerMenu();
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
-    NotificationWindow();
+    // NotificationWindow();
     Calendar();
     QuickSettings();
   },

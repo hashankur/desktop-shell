@@ -41,11 +41,12 @@ export default function Notification({
         "bg-[#11151C]",
         "p-5",
         "rounded-xl",
-        "min-w-[500px]",
+        "min-w-[435px]",
+        "min-h-[10px]",
         urgency(n),
       ]}
       hexpand={false}
-      vexpand={true}
+      vexpand={false}
     >
       <box vertical>
         <box cssClasses={["mb-2"]} spacing={10}>
@@ -54,6 +55,7 @@ export default function Notification({
               cssClasses={["app-icon"]}
               visible={!!(n.appIcon || n.desktopEntry)}
               iconName={n.appIcon || n.desktopEntry}
+              type="symbolic" // TODO
             />
           )}
           <label

@@ -6,6 +6,7 @@ import icons from "@/util/icons";
 import { hideWindow } from "@/util/util";
 import { Variable, bind, execAsync } from "astal";
 import { App, Astal, Gtk } from "astal/gtk4";
+import { NotificationWindow } from "./notifications/NotificationWindow";
 
 const WINDOW_NAME = "quick-settings";
 const currentView = Variable("main");
@@ -36,7 +37,7 @@ function StackPage({ child, name }: StackPageProps) {
   return (
     <box name={name} vertical>
       <BackButton name={name} />
-      <Gtk.ScrolledWindow cssClasses={["min-h-40"]}>{child}</Gtk.ScrolledWindow>
+      <Gtk.ScrolledWindow vexpand>{child}</Gtk.ScrolledWindow>
     </box>
   );
 }
@@ -54,7 +55,7 @@ function BackButton({ name }: { name: string }) {
 
 function Main() {
   return (
-    <box name="main" spacing={10} vertical>
+    <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
       <box halign={Gtk.Align.END}>
         <Button
           onClicked={() => {
@@ -84,6 +85,14 @@ function Main() {
       <box spacing={10}>
         <QSButton name="Audio" icon={icons.audio.type.speaker} />
         <QSButton name="Display" icon={icons.brightness.indicator} />
+      </box>
+      <box spacing={10}>
+        <slider
+          widthRequest={100}
+          onNotifyValue={(self) => print("new value", self.value)}
+          cssClasses={["min-h-5"]}
+          hexpand
+        />
       </box>
     </box>
   );
@@ -165,23 +174,21 @@ function Bluetooth() {
 }
 
 export default function QuickSettings() {
+  const { TOP, RIGHT, BOTTOM } = Astal.WindowAnchor;
+
   return (
-    <Window
-      name={WINDOW_NAME}
-      anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
-    >
+    <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM}>
       <box
         cssClasses={["bg-base", "min-w-96", "p-3", "rounded-xl"]}
         vertical
         spacing={10}
-        valign={Gtk.Align.START}
       >
-        <box cssClasses={[]} valign={Gtk.Align.START}>
+        <box valign={Gtk.Align.START}>
           <stack
             visibleChildName={bind(currentView)}
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
-            cssClasses={["min-w-96"]}
+            cssClasses={["min-w-96", "min-h-52"]}
             // setup={(self) => {
             // const NetworkWdgt = Network();
             // if (NetworkWdgt) self.add(NetworkWdgt);
@@ -192,6 +199,7 @@ export default function QuickSettings() {
             <Bluetooth />
           </stack>
         </box>
+        <NotificationWindow />
       </box>
     </Window>
   );

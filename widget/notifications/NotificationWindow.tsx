@@ -69,42 +69,42 @@ function ClearButton() {
   );
 }
 
-function NotificationWindow(_gdkmonitor: Gdk.Monitor) {
+export function NotificationWindow() {
   return (
-    <PopupWindow
-      name={WINDOW_NAME}
-      animation="slide top"
-      layout={layout.get()}
-      onDestroy={() => layout.drop()}
+    // <PopupWindow
+    //   name={WINDOW_NAME}
+    //   animation="slide top"
+    //   layout={layout.get()}
+    //   onDestroy={() => layout.drop()}
+    // >
+    <box
+      cssClasses={[
+        "bg-base",
+        "p-2",
+        "rounded-xl",
+        "min-w-[475px]",
+        "min-h-[425px]",
+      ]}
+      vertical
+      vexpand
     >
-      <box
-        cssClasses={[
-          "bg-base",
-          "p-2",
-          "rounded-xl",
-          "min-w-[550px]",
-          "min-h-[425px]",
-        ]}
-        vertical
-        vexpand={false}
-      >
-        <box cssClasses={["p-2"]} spacing={10}>
-          <label label={"Notifications"} hexpand xalign={0} />
-          <DNDButton />
-          <ClearButton />
-        </box>
-        <Gtk.Separator />
-        <NotifsScrolledWindow />
+      <box cssClasses={["p-2"]} spacing={10}>
+        <label label={"Notifications"} hexpand xalign={0} />
+        <DNDButton />
+        <ClearButton />
       </box>
-    </PopupWindow>
+      <Gtk.Separator />
+      <NotifsScrolledWindow />
+    </box>
+    // </PopupWindow>
   );
 }
 
-export default function (_gdkmonitor: Gdk.Monitor) {
-  NotificationWindow(_gdkmonitor);
+// export default function (_gdkmonitor: Gdk.Monitor) {
+//   NotificationWindow();
 
-  layout.subscribe(() => {
-    App.remove_window(App.get_window(WINDOW_NAME)!);
-    NotificationWindow(_gdkmonitor);
-  });
-}
+//   layout.subscribe(() => {
+//     App.remove_window(App.get_window(WINDOW_NAME)!);
+//     NotificationWindow();
+//   });
+// }

@@ -1,5 +1,5 @@
 import { App } from "astal/gtk4";
-import { WindowProps } from "astal/gtk4/widget";
+import type { WindowProps } from "astal/gtk4/widget";
 import Astal from "gi://Astal";
 import Gdk from "gi://Gdk";
 
