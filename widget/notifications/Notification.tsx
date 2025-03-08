@@ -38,7 +38,7 @@ export default function Notification({
     <box
       name={n.id.toString()}
       cssClasses={[
-        "bg-[#11151C]",
+        "bg-surface_container_high",
         "p-5",
         "rounded-xl",
         "min-w-[435px]",
@@ -106,12 +106,17 @@ export default function Notification({
             />
             {n.body && (
               <label
-                cssClasses={["text-[15px]", "font-medium"]}
+                cssClasses={[
+                  "text-[15px]",
+                  "font-medium",
+                  "text-on_surface_variant",
+                ]}
                 maxWidthChars={30}
                 wrap
                 halign={Gtk.Align.START}
                 xalign={0}
                 label={n.body}
+                tooltipMarkup={n.body}
                 ellipsize={Pango.EllipsizeMode.END}
               />
             )}

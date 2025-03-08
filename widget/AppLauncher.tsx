@@ -21,7 +21,12 @@ export default function AppLauncher() {
           App.toggle_window(WINDOW_NAME);
           app.launch();
         }}
-        cssClasses={["hover:bg-base1", "px-5", "mb-1", "rounded-xl"]}
+        cssClasses={[
+          "hover:bg-surface_container",
+          "px-5",
+          "mb-1",
+          "rounded-xl",
+        ]}
       >
         <box hexpand={false} spacing={20}>
           <image
@@ -30,14 +35,14 @@ export default function AppLauncher() {
           />
           <box vertical valign={Gtk.Align.CENTER}>
             <label
-              cssClasses={["text-xl", "font-bold"]}
+              cssClasses={["text-xl", "font-bold", "text-on_surface"]}
               label={app.name}
               xalign={0}
               ellipsize={Pango.EllipsizeMode.END}
             />
             {app.description && (
               <label
-                cssName="AppDescription"
+                cssClasses={["font-medium", "text-on_surface_variant"]}
                 label={app.description}
                 xalign={0}
                 ellipsize={Pango.EllipsizeMode.END}
@@ -57,7 +62,7 @@ export default function AppLauncher() {
 
     return (
       <entry
-        cssClasses={["p-5", "bg-base1", "rounded-2xl"]}
+        cssClasses={["p-5", "bg-surface_container_low", "rounded-2xl"]}
         type="overlay"
         vexpand
         primaryIconName={"system-search-symbolic"}
@@ -84,7 +89,7 @@ export default function AppLauncher() {
   return (
     <Window name={WINDOW_NAME}>
       <box
-        cssClasses={["min-w-[450px]", "bg-base", "rounded-xl", "p-5"]}
+        cssClasses={["min-w-[450px]", "bg-surface", "rounded-xl", "p-5"]}
         vertical
         spacing={10}
       >

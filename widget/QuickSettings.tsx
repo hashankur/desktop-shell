@@ -15,14 +15,23 @@ function QSButton({ name, icon }: { name: string; icon: string }) {
   return (
     <button
       onClicked={() => currentView.set(name)}
-      cssClasses={["px-5", "py-3", "bg-cyan-800", "rounded-lg", "min-w-28"]}
+      cssClasses={[
+        "px-5",
+        "py-3",
+        "bg-primary_container",
+        "rounded-lg",
+        "min-w-28",
+      ]}
     >
       <box>
         <box hexpand spacing={10}>
-          <image iconName={icon} />
-          {name}
+          <image cssClasses={["text-on_primary_container"]} iconName={icon} />
+          <label label={name} cssClasses={["text-on_primary_container"]} />
         </box>
-        <image iconName={icons.ui.arrow.right} />
+        <image
+          cssClasses={["text-on_primary_container"]}
+          iconName={icons.ui.arrow.right}
+        />
       </box>
     </button>
   );
@@ -110,7 +119,12 @@ function Wifi() {
             .sort((a, b) => b.strength - a.strength)
             .map((ap) => (
               <button
-                cssClasses={["px-5", "py-2", "rounded-lg", "hover:bg-base1"]}
+                cssClasses={[
+                  "px-5",
+                  "py-2",
+                  "rounded-lg",
+                  "hover:bg-surface_container_low",
+                ]}
                 onClicked={() =>
                   execAsync(`nmcli device wifi connect ${ap.bssid}`)
                 }
@@ -142,7 +156,12 @@ function Bluetooth() {
         {bind(bluetooth, "devices").as((device) =>
           device.map((device) => (
             <button
-              cssClasses={["px-5", "py-2", "rounded-lg", "hover:bg-base1"]}
+              cssClasses={[
+                "px-5",
+                "py-2",
+                "rounded-lg",
+                "hover:bg-surface_container_low",
+              ]}
               onClicked={() => print(device.connect_device())}
             >
               <box spacing={15} valign={Gtk.Align.CENTER}>
@@ -179,7 +198,7 @@ export default function QuickSettings() {
   return (
     <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM}>
       <box
-        cssClasses={["bg-base", "min-w-96", "p-3", "rounded-xl"]}
+        cssClasses={["bg-surface", "min-w-96", "p-3", "rounded-xl"]}
         vertical
         spacing={10}
       >

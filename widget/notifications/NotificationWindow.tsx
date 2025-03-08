@@ -46,8 +46,13 @@ function DNDButton() {
         notifd.set_dont_disturb(!notifd.get_dont_disturb());
       }}
       cssClasses={bind(notifd, "dont_disturb").as((dnd) => {
-        const classes = ["hover:bg-[#11151C]", "px-2", "py-1", "rounded-lg"];
-        dnd && classes.push("bg-[#11151C]");
+        const classes = [
+          "hover:bg-surface_container_high",
+          "px-2",
+          "py-1",
+          "rounded-lg",
+        ];
+        dnd && classes.push("bg-secondary_container");
         return classes;
       })}
       label={"DND"}
@@ -58,7 +63,7 @@ function DNDButton() {
 function ClearButton() {
   return (
     <button
-      cssClasses={["hover:bg-red-600", "p-2", "rounded-lg"]}
+      cssClasses={["hover:bg-error_container", "p-2", "rounded-lg"]}
       onClicked={() => {
         notifd.notifications.forEach((n) => n.dismiss());
       }}
@@ -79,7 +84,7 @@ export function NotificationWindow() {
     // >
     <box
       cssClasses={[
-        "bg-base",
+        "bg-surface_container_low",
         "p-2",
         "rounded-xl",
         "min-w-[475px]",

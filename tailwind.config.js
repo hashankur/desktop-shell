@@ -2,6 +2,8 @@
 import resolveConfig from "tailwindcss/resolveConfig";
 import defaultConfig from "tailwindcss/defaultConfig";
 
+import generatedColors from "./util/colors.json";
+
 const config = resolveConfig(defaultConfig);
 module.exports = {
   content: ["./widget/**/*.tsx", "./common/**/*.tsx"],
@@ -18,6 +20,7 @@ module.exports = {
       colors: {
         base: "#0b0e14",
         base1: "#11151C",
+        ...generatedColors.colors.dark,
       },
     },
   },

@@ -9,8 +9,12 @@
   -gtk-icon-size: 14px;
 }
 
+label {
+  @apply text-on_surface
+}
+
 tooltip.background {
-  @apply bg-slate-900 rounded-lg text-white m-2 p-2;
+  @apply bg-surface_container rounded-lg text-on_surface m-2 p-2;
 }
 
 tooltip label {
@@ -33,16 +37,16 @@ modelbutton {
   @apply hover:bg-gray-800 rounded-lg p-2;
 }
 
-separator {
-  @apply bg-red-500;
-}
+/* separator { */
+/* @apply bg-red-500; */
+/* } */
 
 trough>highlight {
-  @apply bg-blue-500 min-w-[50px] rounded-lg;
+  @apply bg-primary_fixed min-w-[50px] rounded-lg;
 }
 
 trough {
-  @apply bg-base1;
+  @apply bg-surface_container;
 }
 
 .text-sm {

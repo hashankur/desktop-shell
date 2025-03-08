@@ -26,7 +26,7 @@ const options = [
 export default function PowerMenu() {
   return (
     <Window name={WINDOW_NAME}>
-      <box cssClasses={["bg-base", "rounded-xl", "p-3"]} spacing={10}>
+      <box cssClasses={["bg-surface", "rounded-xl", "p-3"]} spacing={10}>
         {options.map((option) => (
           <button
             on_Clicked={() => {
@@ -35,12 +35,20 @@ export default function PowerMenu() {
             }}
             cssClasses={[
               "rounded-lg",
-              "bg-base1",
-              "hover:bg-base",
+              "bg-primary_container",
+              "hover:bg-on_primary",
               "transition",
             ]}
           >
-            <image cssClasses={["p-10", "icon-xl"]} iconName={option.icon} />
+            <image
+              cssClasses={[
+                "min-w-32",
+                "min-h-32",
+                "icon-xl",
+                "text-on_primary_container",
+              ]}
+              iconName={option.icon}
+            />
           </button>
         ))}
       </box>

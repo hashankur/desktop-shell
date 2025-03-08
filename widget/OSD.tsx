@@ -31,7 +31,7 @@ function BrightnessSlider() {
       }}
     >
       <box
-        cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]}
+        cssClasses={["bg-surface", "m-3", "p-2", "rounded-xl"]}
         vertical
         spacing={5}
       >
@@ -70,7 +70,7 @@ function VolumeSlider() {
       }}
     >
       <box
-        cssClasses={["bg-base", "m-3", "p-2", "rounded-xl"]}
+        cssClasses={["bg-surface", "m-3", "p-2", "rounded-xl"]}
         vertical
         spacing={5}
       >
