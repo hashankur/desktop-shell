@@ -12,7 +12,7 @@ export default function Media() {
     const spotify = Mpris.Player.new("spotify");
 
     const titleFontSize = Variable.derive([bind(spotify, "title")], (title) => {
-      const classes = ["font-black", "mb-3"];
+      const classes = ["font-black", "mb-3", "text-on_surface"];
       classes.push(title?.length > 50 ? "text-3xl" : "text-4xl");
       return classes;
     });
@@ -37,13 +37,17 @@ export default function Media() {
                 />
                 <label
                   label={bind(spotify, "artist")}
-                  cssClasses={["text-2xl", "mb-2"]}
+                  cssClasses={["text-2xl", "mb-2", "text-on_surface_variant"]}
                   xalign={0}
                   ellipsize={Pango.EllipsizeMode.END}
                 />
                 <label
                   label={bind(spotify, "album")}
-                  cssClasses={["text-lg", "font-normal"]}
+                  cssClasses={[
+                    "text-lg",
+                    "font-medium",
+                    "text-on_surface_variant",
+                  ]}
                   xalign={0}
                   ellipsize={Pango.EllipsizeMode.END}
                   maxWidthChars={10} // How work ???
@@ -85,7 +89,7 @@ export default function Media() {
 
   return (
     <Window name={WINDOW_NAME} anchor={Astal.WindowAnchor.BOTTOM}>
-      <box cssClasses={["p-1", "bg-base", "rounded-xl"]}>
+      <box cssClasses={["p-1", "bg-surface_container_lowest", "rounded-xl"]}>
         <SpotifyInfo />
       </box>
     </Window>

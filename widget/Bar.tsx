@@ -230,6 +230,7 @@ export default function Bar(monitor: number) {
       anchor={TOP | LEFT | RIGHT}
       margin={0}
       visible
+      namespace={"astal-bar"}
     >
       <box vertical>
         {/* <box className="Workspaces"></box> */}

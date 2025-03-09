@@ -39,7 +39,7 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
           const id = notificationQueue.shift();
 
           self.set_child(
-            <box vertical cssClasses={["m-5"]}>
+            <box vertical>
               {Notification({ n: notifd.get_notification(id!) })}
               <box vexpand />
             </box>,
@@ -59,6 +59,7 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
       gdkmonitor={gdkmonitor}
       application={App}
       anchor={TOP | RIGHT}
+      margin={10}
     />
   );
 }
