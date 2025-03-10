@@ -38,7 +38,7 @@ export default function Notification({
     <box
       name={n.id.toString()}
       cssClasses={[
-        "bg-surface_container_high",
+        "bg-surface_container",
         "p-5",
         "rounded-xl",
         "min-w-[435px]",
@@ -52,10 +52,8 @@ export default function Notification({
         <box cssClasses={["mb-2"]} spacing={10}>
           {(n.appIcon || n.desktopEntry) && (
             <image
-              cssClasses={["app-icon"]}
               visible={!!(n.appIcon || n.desktopEntry)}
               iconName={n.appIcon || n.desktopEntry}
-              type="symbolic" // TODO
             />
           )}
           <label
@@ -69,11 +67,13 @@ export default function Notification({
             halign={Gtk.Align.END}
             label={time(n.time)!}
           />
-          <button onClicked={() => n.dismiss()}>
+          <button
+            onClicked={() => n.dismiss()}
+            cssClasses={["rounded-full", "min-w-2", "min-h-2", "p-2"]}
+          >
             <image iconName={"window-close-symbolic"} />
           </button>
         </box>
-        <Gtk.Separator visible orientation={Gtk.Orientation.HORIZONTAL} />
         <box cssClasses={["content"]} spacing={10}>
           {n.image && fileExists(n.image) && (
             <box valign={Gtk.Align.START} cssClasses={["image"]}>

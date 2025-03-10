@@ -29,6 +29,7 @@ export default function Window({
           App.toggle_window(name);
         }
       }}
+      cssClasses={["bg-transparent"]}
       {...props}
     >
       {children}

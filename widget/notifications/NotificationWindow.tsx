@@ -83,13 +83,7 @@ export function NotificationWindow() {
     //   onDestroy={() => layout.drop()}
     // >
     <box
-      cssClasses={[
-        "bg-surface_container_low",
-        "p-2",
-        "rounded-xl",
-        "min-w-[475px]",
-        "min-h-[425px]",
-      ]}
+      cssClasses={["bg-surface", "p-5", "rounded-3xl", "min-w-[475px]"]}
       vertical
       vexpand
     >
@@ -98,7 +92,6 @@ export function NotificationWindow() {
         <DNDButton />
         <ClearButton />
       </box>
-      <Gtk.Separator />
       <NotifsScrolledWindow />
     </box>
     // </PopupWindow>

@@ -19,7 +19,7 @@ function QSButton({ name, icon }: { name: string; icon: string }) {
         "px-5",
         "py-3",
         "bg-primary_container",
-        "rounded-lg",
+        "rounded-3xl",
         "min-w-28",
       ]}
     >
@@ -197,17 +197,13 @@ export default function QuickSettings() {
 
   return (
     <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM}>
-      <box
-        cssClasses={["bg-surface", "min-w-96", "p-3", "rounded-xl"]}
-        vertical
-        spacing={10}
-      >
-        <box valign={Gtk.Align.START}>
+      <box cssClasses={["bg-surface", "min-w-96", "rounded-xl"]} vertical>
+        <box vexpandSet={true}>
           <stack
             visibleChildName={bind(currentView)}
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
-            cssClasses={["min-w-96", "min-h-52"]}
+            cssClasses={["min-w-96", "p-5"]}
             // setup={(self) => {
             // const NetworkWdgt = Network();
             // if (NetworkWdgt) self.add(NetworkWdgt);

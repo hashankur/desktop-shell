@@ -62,7 +62,12 @@ export default function AppLauncher() {
 
     return (
       <entry
-        cssClasses={["p-5", "bg-surface_container_low", "rounded-2xl"]}
+        cssClasses={[
+          "px-5",
+          "py-3",
+          "bg-surface_container_low",
+          "rounded-full",
+        ]}
         type="overlay"
         vexpand
         primaryIconName={"system-search-symbolic"}

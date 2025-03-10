@@ -2,11 +2,14 @@
 @tailwind utilities;
 
 * {
-  all: unset;
   font-family: "Satoshi Variable", "Satoshi", "Iosevka", sans-serif;
   font-weight: 600;
   font-size: 14px;
   -gtk-icon-size: 14px;
+}
+
+button {
+  @apply bg-transparent;
 }
 
 label {
@@ -14,7 +17,7 @@ label {
 }
 
 tooltip.background {
-  @apply bg-surface_container rounded-lg text-on_surface m-2 p-2;
+  @apply bg-surface_container_lowest rounded-lg text-on_surface m-2 p-2;
 }
 
 tooltip label {
@@ -25,28 +28,8 @@ popover.background {
   @apply mt-2;
 }
 
-popover arrow {
-  @apply bg-gray-900;
-}
-
-popover contents {
-  @apply bg-gray-900 p-2 rounded-lg;
-}
-
-modelbutton {
-  @apply hover:bg-gray-800 rounded-lg p-2;
-}
-
-/* separator { */
-/* @apply bg-red-500; */
-/* } */
-
-trough>highlight {
-  @apply bg-primary_fixed min-w-[50px] rounded-lg;
-}
-
-trough {
-  @apply bg-surface_container;
+.unset slider {
+  all: unset;
 }
 
 .text-sm {
