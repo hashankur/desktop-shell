@@ -1,7 +1,9 @@
 import AstalBluetooth from "gi://AstalBluetooth";
 import Network from "gi://AstalNetwork";
+import Wp from "gi://AstalWp";
 import Button from "@/common/Button";
 import Window from "@/common/window";
+import Brightness from "@/lib/brightness";
 import icons from "@/util/icons";
 import { hideWindow } from "@/util/util";
 import { Variable, bind, execAsync } from "astal";
@@ -63,6 +65,9 @@ function BackButton({ name }: { name: string }) {
 }
 
 function Main() {
+  const audio = Wp.get_default()?.audio.defaultSpeaker!;
+  const brightness = Brightness.get_default();
+
   return (
     <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
       <box halign={Gtk.Align.END}>
@@ -95,13 +100,23 @@ function Main() {
         <QSButton name="Audio" icon={icons.audio.type.speaker} />
         <QSButton name="Display" icon={icons.brightness.indicator} />
       </box>
-      <box spacing={10}>
-        <slider
-          widthRequest={100}
-          onNotifyValue={(self) => print("new value", self.value)}
-          cssClasses={["min-h-5"]}
-          hexpand
-        />
+      <box spacing={10} vertical cssClasses={["pt-8"]}>
+        <box>
+          <image iconName={bind(audio, "volumeIcon")} />
+          <slider
+            value={bind(audio, "volume")}
+            onChangeValue={(self) => audio.set_volume(self.value)}
+            hexpand
+          />
+        </box>
+        <box>
+          <image iconName={icons.brightness.screen} />
+          <slider
+            value={bind(brightness, "screen")}
+            // onChangeValue={(self) => (brightness.screen = self.value)}
+            hexpand
+          />
+        </box>
       </box>
     </box>
   );
