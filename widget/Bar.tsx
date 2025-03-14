@@ -16,7 +16,6 @@ const time = Variable("").poll(
   () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p") ?? "",
 );
 
-// WIP - Mostly works
 function SysTray() {
   const tray = Tray.get_default();
 
@@ -32,7 +31,11 @@ function SysTray() {
                 self.insert_action_group("dbusmenu", item.action_group),
               )
             }
-            cssClasses={["px-3", "hover:bg-base1", "rounded-lg"]}
+            cssClasses={[
+              "px-3",
+              "hover:bg-surface_container_low",
+              "rounded-lg",
+            ]}
           >
             <image gicon={bind(item, "gicon")} />
           </menubutton>
@@ -60,7 +63,7 @@ function AudioLevel() {
 }
 
 function secondsToHoursMinutes(time: number, verb: string): string {
-  const seconds = Math.round(time / 60); // TODO: needs to be reactive
+  const seconds = Math.round(time / 60);
   return `${Math.floor(seconds / 60)}h ${Math.floor(seconds % 60)}m ${verb}`;
 }
 
