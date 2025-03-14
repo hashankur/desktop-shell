@@ -32,10 +32,6 @@ popover.background {
   all: unset;
 }
 
-.text-sm {
-  font-size: 5rem;
-}
-
 .icon-lg {
   -gtk-icon-size: 32px;
 }
@@ -45,7 +41,7 @@ popover.background {
 }
 
 .icon-2xl {
-  -gtk-icon-size: 64px;
+  -gtk-icon-size: 75px;
 }
 
 .rounded-left {

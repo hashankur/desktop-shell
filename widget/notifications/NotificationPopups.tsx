@@ -1,4 +1,5 @@
 import AstalNotifd from "gi://AstalNotifd";
+import Window from "@/common/window";
 import { timeout } from "astal";
 import { App, Astal, type Gdk, hook } from "astal/gtk4";
 import Notification from "./Notification";
@@ -8,8 +9,7 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
   const notifd = AstalNotifd.get_default();
 
   return (
-    <window
-      namespace={"astal-notifications"}
+    <Window
       setup={(self) => {
         const notificationQueue: number[] = [];
         let isProcessing = false;
@@ -41,7 +41,6 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
           self.set_child(
             <box vertical>
               {Notification({ n: notifd.get_notification(id!) })}
-              <box vexpand />
             </box>,
           );
           self.visible = true;
@@ -56,10 +55,11 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
           });
         }
       }}
+      namespace={"astal-notifications"}
       gdkmonitor={gdkmonitor}
-      application={App}
       anchor={TOP | RIGHT}
       margin={10}
+      keymode={Astal.Keymode.NONE}
     />
   );
 }

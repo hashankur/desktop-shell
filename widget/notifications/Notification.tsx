@@ -39,14 +39,14 @@ export default function Notification({
       name={n.id.toString()}
       cssClasses={[
         "bg-surface_container",
-        "p-5",
+        "p-3",
         "rounded-xl",
         "min-w-[435px]",
         "min-h-[10px]",
         urgency(n),
       ]}
       hexpand={false}
-      vexpand={false}
+      vexpandSet
     >
       <box vertical>
         <box cssClasses={["mb-2"]} spacing={10}>
@@ -57,41 +57,48 @@ export default function Notification({
             />
           )}
           <label
-            cssClasses={["app-name"]}
+            cssClasses={["text-on_surface_variant", "font-bold", "text-[15px]"]}
             halign={Gtk.Align.START}
             label={n.appName || "Unknown"}
           />
           <label
-            cssClasses={["time"]}
+            cssClasses={["text-on_surface_variant"]}
             hexpand
             halign={Gtk.Align.END}
-            label={time(n.time)!}
+            label={time(n.time) ?? ""}
           />
           <button
             onClicked={() => n.dismiss()}
-            cssClasses={["rounded-full", "min-w-2", "min-h-2", "p-2"]}
+            cssClasses={[
+              "rounded-full",
+              "min-w-2",
+              "min-h-2",
+              "p-2",
+              "bg-surface_container_highest",
+              "hover:bg-on_error",
+              "hover:text-error",
+            ]}
           >
             <image iconName={"window-close-symbolic"} />
           </button>
         </box>
-        <box cssClasses={["content"]} spacing={10}>
+        <box cssClasses={["content"]} spacing={15}>
           {n.image && fileExists(n.image) && (
-            <box valign={Gtk.Align.START} cssClasses={["image"]}>
+            <box valign={Gtk.Align.START}>
               <image
                 file={n.image}
                 overflow={Gtk.Overflow.HIDDEN}
-                cssClasses={["icon-2xl", "rounded-md"]}
+                cssClasses={["icon-2xl", "rounded-full"]}
               />
             </box>
           )}
           {n.image && isIcon(n.image) && (
-            <box cssClasses={["icon-xl"]} valign={Gtk.Align.START}>
+            <box valign={Gtk.Align.START}>
               <image
                 iconName={n.image}
-                // iconSize={Gtk.IconSize.LARGE}
                 halign={Gtk.Align.CENTER}
                 valign={Gtk.Align.CENTER}
-                cssClasses={["icon-2xl"]}
+                cssClasses={["icon-2xl", "rounded-full"]}
               />
             </box>
           )}
@@ -106,11 +113,7 @@ export default function Notification({
             />
             {n.body && (
               <label
-                cssClasses={[
-                  "text-[15px]",
-                  "font-medium",
-                  "text-on_surface_variant",
-                ]}
+                cssClasses={["text-[15px]"]}
                 maxWidthChars={30}
                 wrap
                 halign={Gtk.Align.START}
@@ -123,12 +126,17 @@ export default function Notification({
           </box>
         </box>
         {showActions && n.get_actions().length > 0 && (
-          <box cssClasses={["actions"]} spacing={6}>
+          <box spacing={6}>
             {n.get_actions().map(({ label, id }) => (
               <button
                 hexpand
                 onClicked={() => n.invoke(id)}
-                cssClasses={["bg-gray-900", "rounded-lg", "p-2", "m-2"]}
+                cssClasses={[
+                  "bg-surface_container_high",
+                  "rounded-lg",
+                  "p-2",
+                  "m-2",
+                ]}
               >
                 <label label={label} halign={Gtk.Align.CENTER} hexpand />
               </button>
