@@ -13,7 +13,7 @@ const WINDOW_NAME = "bar";
 
 const time = Variable("").poll(
   1000,
-  () => GLib.DateTime.new_now_local().format("%a %d %b | %I:%M %p") ?? "",
+  () => GLib.DateTime.new_now_local().format("%a %d %b  •  %I:%M %p") ?? "",
 );
 
 function SysTray() {

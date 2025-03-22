@@ -82,7 +82,7 @@ export default function Notification({
             <image iconName={"window-close-symbolic"} />
           </button>
         </box>
-        <box cssClasses={["content"]} spacing={15}>
+        <box cssClasses={["pb-1"]} spacing={15}>
           {n.image && fileExists(n.image) && (
             <box valign={Gtk.Align.START}>
               <image
@@ -102,7 +102,7 @@ export default function Notification({
               />
             </box>
           )}
-          <box hexpand vertical>
+          <box hexpand vertical valign={Gtk.Align.CENTER}>
             <label
               ellipsize={Pango.EllipsizeMode.END}
               maxWidthChars={30}

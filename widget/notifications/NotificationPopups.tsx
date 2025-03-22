@@ -60,6 +60,7 @@ export default function NotificationPopup(gdkmonitor: Gdk.Monitor) {
       anchor={TOP | RIGHT}
       margin={10}
       keymode={Astal.Keymode.NONE}
+      defaultHeight={-1}
     />
   );
 }

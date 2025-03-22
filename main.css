@@ -13,7 +13,7 @@ button {
 }
 
 label {
-  @apply text-on_surface
+  @apply text-on_surface;
 }
 
 tooltip.background {
@@ -41,6 +41,10 @@ popover.background {
 }
 
 .icon-2xl {
+  -gtk-icon-size: 64px;
+}
+
+.icon-3xl {
   -gtk-icon-size: 75px;
 }
 

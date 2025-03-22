@@ -13,7 +13,7 @@ function NotifsScrolledWindow() {
   const notifd = AstalNotifd.get_default();
   return (
     <Gtk.ScrolledWindow vexpand>
-      <box vertical hexpand={false} spacing={8}>
+      <box vertical hexpand={false} spacing={8} cssClasses={["px-2"]}>
         {bind(notifd, "notifications").as((notifs) =>
           notifs
             .sort((a, b) => b.time - a.time)
@@ -83,7 +83,7 @@ export function NotificationWindow() {
     //   onDestroy={() => layout.drop()}
     // >
     <box
-      cssClasses={["bg-surface", "p-5", "rounded-3xl", "min-w-[475px]"]}
+      cssClasses={["bg-surface", "p-3", "rounded-3xl", "min-w-[475px]"]}
       vertical
       vexpand
     >

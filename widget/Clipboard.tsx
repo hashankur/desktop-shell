@@ -26,7 +26,7 @@ export default function Clipboard() {
     >
       <box
         cssClasses={[
-          "bg-base",
+          "bg-surface",
           "min-h-[500px]",
           "min-w-[500px]",
           "p-5",
@@ -39,8 +39,12 @@ export default function Clipboard() {
             {bind(cliphist).as((str) =>
               str.split("\n").map((item) => (
                 <button
-                  cssClasses={["hover:bg-base1", "rounded-lg", "p-3"]}
-                  on_Clicked={() => {
+                  cssClasses={[
+                    "hover:bg-surface_container",
+                    "rounded-lg",
+                    "p-3",
+                  ]}
+                  onClicked={() => {
                     execAsync([
                       "sh",
                       "-c",
