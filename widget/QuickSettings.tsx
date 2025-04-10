@@ -100,13 +100,14 @@ function Main() {
         <QSButton name="Audio" icon={icons.audio.type.speaker} />
         <QSButton name="Display" icon={icons.brightness.indicator} />
       </box>
-      <box spacing={10} vertical cssClasses={["pt-8"]}>
+      <box spacing={10} vertical cssClasses={["pt-5"]}>
         <box>
           <image iconName={bind(audio, "volumeIcon")} />
           <slider
             value={bind(audio, "volume")}
             onChangeValue={(self) => audio.set_volume(self.value)}
             hexpand
+            css_classes={["*:min-h-[10px]", "unset"]}
           />
         </box>
         <box>
@@ -115,6 +116,7 @@ function Main() {
             value={bind(brightness, "screen")}
             // onChangeValue={(self) => (brightness.screen = self.value)}
             hexpand
+            css_classes={["*:min-h-[10px]", "unset"]}
           />
         </box>
       </box>
@@ -218,7 +220,7 @@ export default function QuickSettings() {
             visibleChildName={bind(currentView)}
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
-            cssClasses={["min-w-96", "p-5"]}
+            cssClasses={["min-w-96", "p-5", "pb-0"]}
             // setup={(self) => {
             // const NetworkWdgt = Network();
             // if (NetworkWdgt) self.add(NetworkWdgt);

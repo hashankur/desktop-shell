@@ -45,7 +45,7 @@ function createSlider(
         <slider
           cssClasses={[
             "min-h-[300px]",
-            "*:min-w-[50px]",
+            "*:min-w-[25px]",
             "rounded-[7px]",
             "unset",
           ]}

@@ -32,6 +32,10 @@ popover.background {
   all: unset;
 }
 
+highlight {
+  @apply bg-primary;
+}
+
 .icon-lg {
   -gtk-icon-size: 32px;
 }
