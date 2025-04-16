@@ -2,6 +2,7 @@ import AppLauncher from "@/widget/AppLauncher";
 import Bar from "@/widget/Bar";
 import Calendar from "@/widget/Calendar";
 import Clipboard from "@/widget/Clipboard";
+import Desktop from "@/widget/Desktop";
 import Media from "@/widget/Media";
 import OSD from "@/widget/OSD";
 import PowerMenu from "@/widget/PowerMenu";
@@ -31,5 +32,6 @@ App.start({
     // NotificationWindow();
     Calendar();
     QuickSettings();
+    Desktop();
   },
 });

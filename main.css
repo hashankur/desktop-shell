@@ -55,3 +55,8 @@ highlight {
 .rounded-left {
   border-radius: 7px 0 0 7px;
 }
+
+.text-shadow {
+  text-shadow: rgba(0, 0, 0, 0.8) 5px 5px;
+  @apply text-white/60;
+}
