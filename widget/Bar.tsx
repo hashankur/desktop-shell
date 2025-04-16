@@ -2,11 +2,12 @@ import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
 import Tray from "gi://AstalTray";
+import Niri from "gi://AstalNiri";
 import Wp from "gi://AstalWp";
 import Button from "@/common/Button";
 import Window from "@/common/window";
 import icons from "@/util/icons";
-import { GLib, Variable, bind } from "astal";
+import { GLib, Variable, bind, execAsync } from "astal";
 import { App, Astal, Gtk, hook } from "astal/gtk4";
 
 const WINDOW_NAME = "bar";
@@ -16,11 +17,50 @@ const time = Variable("").poll(
   () => GLib.DateTime.new_now_local().format("%a %d %b  •  %I:%M %p") ?? "",
 );
 
+function Workspaces() {
+  const niri = Niri.get_default();
+  const workspaces = Variable.derive(
+    [bind(niri, "workspaces"), bind(niri, "focused_workspace")],
+    (ws, fws) =>
+      ws.map((w) => (
+        <button
+          onClicked={() =>
+            execAsync(`niri msg action focus-workspace ${w.id}`).catch(printerr)
+          }
+          hexpand
+          cssClasses={[
+            "min-h-1",
+            "p-0",
+            ...(fws.id === w.id
+              ? ["text-on_primary", "bg-primary"]
+              : w.activeWindowId !== -1
+                ? ["bg-primary_container"]
+                : ["bg-surface_container_low"]),
+          ]}
+        />
+      )),
+  );
+
+  return <box spacing={3}>{workspaces()}</box>;
+}
+
+function Active() {
+  const niri = Niri.get_default();
+
+  return (
+    <label
+      label={bind(niri, "focused_window").as(
+        (v) => v?.title.slice(0, 150) ?? "Desktop",
+      )}
+    />
+  );
+}
+
 function SysTray() {
   const tray = Tray.get_default();
 
   return (
-    <box spacing={10}>
+    <box spacing={5}>
       {bind(tray, "items").as((items) =>
         items.map((item) => (
           <menubutton
@@ -31,11 +71,7 @@ function SysTray() {
                 self.insert_action_group("dbusmenu", item.action_group),
               )
             }
-            cssClasses={[
-              "px-3",
-              "hover:bg-surface_container_low",
-              "rounded-lg",
-            ]}
+            cssClasses={["hover:bg-surface_container_low", "rounded-lg"]}
           >
             <image gicon={bind(item, "gicon")} />
           </menubutton>
@@ -150,37 +186,44 @@ function Stats() {
     "cat /sys/class/thermal/thermal_zone0/temp",
   );
 
-  const Stats = ({ value, tooltip }) => {
+  const Stat = ({ value, tooltip }) => {
     return (
-      <circularprogress
-        value={value}
-        startAt={0.75}
-        endAt={0.75}
-        tooltipText={tooltip}
-        cssName="Stats"
-        rounded
-      />
+      // <circularprogress
+      //   value={value}
+      //   startAt={0.75}
+      //   endAt={0.75}
+      //   tooltipText={tooltip}
+      //   cssName="Stats"
+      //   rounded
+      // />
+
+      // Until circular progress gets merged
+      <levelbar value={value} widthRequest={50} tooltipText={tooltip} />
     );
   };
 
   return (
-    <box css="padding: 12px 0; margin-right: 20px;" spacing={10}>
-      <Stats
-        value={cpu((val) => val / 100)}
-        tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
-      />
-      <Stats
-        value={memory((val) => val / 100)}
-        tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
-      />
-      <Stats
-        value={gpu((val) => val / 100)}
-        tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
-      />
-      <Stats
-        value={temp((val) => val / 1000 / 100)}
-        tooltip={temp((val) => `${val / 1000} °C`)}
-      />
+    <box spacing={5} cssClasses={["p-1"]} valign={Gtk.Align.CENTER}>
+      <box spacing={5} vertical>
+        <Stat
+          value={cpu((val) => val / 100)}
+          tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
+        />
+        <Stat
+          value={memory((val) => val / 100)}
+          tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
+        />
+      </box>
+      <box spacing={5} vertical>
+        <Stat
+          value={gpu((val) => val / 100)}
+          tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
+        />
+        <Stat
+          value={temp((val) => val / 1000 / 100)}
+          tooltip={temp((val) => `${val / 1000} °C`)}
+        />
+      </box>
     </box>
   );
 }
@@ -188,7 +231,8 @@ function Stats() {
 function Left() {
   return (
     <box>
-      {/* <Stats /> */}
+      {/* <Active /> */}
+      <Stats />
       <Media />
     </box>
   );
@@ -235,9 +279,9 @@ export default function Bar(monitor: number) {
       visible
       namespace={"astal-bar"}
     >
-      <box vertical>
-        {/* <box className="Workspaces"></box> */}
-        <centerbox cssClasses={["px-1", "bg-background", "min-h-10"]}>
+      <box vertical cssClasses={["bg-surface_container_lowest"]}>
+        <Workspaces />
+        <centerbox cssClasses={["px-1", "min-h-10"]}>
           <Left />
           <Center />
           <Right />

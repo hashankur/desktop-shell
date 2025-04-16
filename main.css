@@ -36,6 +36,14 @@ highlight {
   @apply bg-primary;
 }
 
+levelbar>trough>block {
+  @apply bg-on_secondary rounded-none;
+}
+
+levelbar>trough>block.filled {
+  @apply bg-secondary;
+}
+
 .icon-lg {
   -gtk-icon-size: 32px;
 }
