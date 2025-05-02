@@ -5,7 +5,7 @@ export default function Button({ child, ...props }: ButtonProps) {
     <button
       cssClasses={[
         "rounded-lg",
-        "bg-surface",
+        "bg-surface_container_lowest",
         "hover:bg-surface_container_low",
         "px-3",
       ]}

@@ -38,7 +38,7 @@ export default function Notification({
     <box
       name={n.id.toString()}
       cssClasses={[
-        "bg-surface_container",
+        "bg-surface_container_low",
         "p-3",
         "rounded-xl",
         "min-w-[435px]",
@@ -49,60 +49,63 @@ export default function Notification({
       vexpandSet
     >
       <box vertical>
-        <box cssClasses={["mb-2"]} spacing={10}>
-          {(n.appIcon || n.desktopEntry) && (
-            <image
-              visible={!!(n.appIcon || n.desktopEntry)}
-              iconName={n.appIcon || n.desktopEntry}
-            />
-          )}
-          <label
-            cssClasses={["text-on_surface_variant", "font-bold", "text-[15px]"]}
-            halign={Gtk.Align.START}
-            label={n.appName || "Unknown"}
-          />
-          <label
-            cssClasses={["text-on_surface_variant"]}
-            hexpand
-            halign={Gtk.Align.END}
-            label={time(n.time) ?? ""}
-          />
-          <button
-            onClicked={() => n.dismiss()}
-            cssClasses={[
-              "rounded-full",
-              "min-w-2",
-              "min-h-2",
-              "p-2",
-              "bg-surface_container_highest",
-              "hover:bg-on_error",
-              "hover:text-error",
-            ]}
-          >
-            <image iconName={"window-close-symbolic"} />
-          </button>
-        </box>
         <box cssClasses={["pb-1"]} spacing={15}>
-          {n.image && fileExists(n.image) && (
-            <box valign={Gtk.Align.START}>
-              <image
-                file={n.image}
-                overflow={Gtk.Overflow.HIDDEN}
-                cssClasses={["icon-2xl", "rounded-full"]}
-              />
-            </box>
-          )}
-          {n.image && isIcon(n.image) && (
-            <box valign={Gtk.Align.START}>
-              <image
-                iconName={n.image}
-                halign={Gtk.Align.CENTER}
-                valign={Gtk.Align.CENTER}
-                cssClasses={["icon-2xl", "rounded-full"]}
-              />
-            </box>
-          )}
+          <box halign={Gtk.Align.CENTER} valign={Gtk.Align.CENTER}>
+            {n.image && fileExists(n.image) ? (
+              <box valign={Gtk.Align.START}>
+                <image
+                  file={n.image}
+                  overflow={Gtk.Overflow.HIDDEN}
+                  cssClasses={["icon-2xl", "rounded-full"]}
+                />
+              </box>
+            ) : (
+              (n.appIcon || n.desktopEntry) && (
+                <box valign={Gtk.Align.START}>
+                  <image
+                    iconName={n.appIcon || n.desktopEntry}
+                    cssClasses={["icon-2xl", "rounded-full"]}
+                  />
+                </box>
+              )
+            )}
+          </box>
           <box hexpand vertical valign={Gtk.Align.CENTER}>
+            <box spacing={10}>
+              <label
+                cssClasses={[
+                  "text-on_surface_variant",
+                  "font-medium",
+                  "text-[14px]",
+                ]}
+                halign={Gtk.Align.START}
+                label={n.appName || "Unknown"}
+              />
+              <label
+                cssClasses={[
+                  "text-on_surface_variant",
+                  "font-medium",
+                  "text-[14px]",
+                ]}
+                hexpand
+                halign={Gtk.Align.END}
+                label={time(n.time) ?? ""}
+              />
+              <button
+                onClicked={() => n.dismiss()}
+                cssClasses={[
+                  "rounded-full",
+                  "min-w-2",
+                  "min-h-2",
+                  "p-2",
+                  "bg-surface_container_highest",
+                  "hover:bg-on_error",
+                  "hover:text-error",
+                ]}
+              >
+                <image iconName={"window-close-symbolic"} />
+              </button>
+            </box>
             <label
               ellipsize={Pango.EllipsizeMode.END}
               maxWidthChars={30}
@@ -125,7 +128,7 @@ export default function Notification({
             )}
           </box>
         </box>
-        {showActions && n.get_actions().length > 0 && (
+        {/* showActions && n.get_actions().length > 0 && (
           <box spacing={6}>
             {n.get_actions().map(({ label, id }) => (
               <button
@@ -142,7 +145,7 @@ export default function Notification({
               </button>
             ))}
           </box>
-        )}
+        ) */}
       </box>
     </box>
   );

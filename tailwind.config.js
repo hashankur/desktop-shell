@@ -20,8 +20,6 @@ module.exports = {
     },
     extend: {
       colors: {
-        base: "#0b0e14",
-        base1: "#11151C",
         ...generatedColors.colors.dark,
       },
     },

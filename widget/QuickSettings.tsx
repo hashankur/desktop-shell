@@ -72,6 +72,7 @@ function Main() {
     <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
       <box halign={Gtk.Align.END}>
         <Button
+          cssClasses={["bg-transparent"]}
           onClicked={() => {
             App.toggle_window("power-menu");
             hideWindow(WINDOW_NAME);
@@ -80,6 +81,7 @@ function Main() {
           <image cssClasses={["p-3"]} iconName={icons.powermenu.shutdown} />
         </Button>
         <Button
+          cssClasses={["bg-transparent"]}
           onClicked={() => {
             execAsync([
               "sh",
@@ -213,8 +215,8 @@ export default function QuickSettings() {
   const { TOP, RIGHT, BOTTOM } = Astal.WindowAnchor;
 
   return (
-    <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM}>
-      <box cssClasses={["bg-surface", "min-w-96", "rounded-xl"]} vertical>
+    <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM} margin={0}>
+      <box cssClasses={["bg-surface_container_lowest", "min-w-96"]} vertical>
         <box vexpandSet={true}>
           <stack
             visibleChildName={bind(currentView)}

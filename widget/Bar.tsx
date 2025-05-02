@@ -31,11 +31,12 @@ function Workspaces() {
           cssClasses={[
             "min-h-1",
             "p-0",
+            "rounded-none",
             ...(fws.id === w.id
               ? ["text-on_primary", "bg-primary"]
-              : w.activeWindowId !== -1
+              : w.activeWindowId < 1_000 // Num overflow?
                 ? ["bg-primary_container"]
-                : ["bg-surface_container_low"]),
+                : ["bg-surface_container"]),
           ]}
         />
       )),
@@ -49,9 +50,8 @@ function Active() {
 
   return (
     <label
-      label={bind(niri, "focused_window").as(
-        (v) => v?.title.slice(0, 150) ?? "Desktop",
-      )}
+      label={bind(niri, "focused_window").as((v) => v?.title ?? "Desktop")}
+      maxWidthChars={150}
     />
   );
 }
@@ -198,7 +198,7 @@ function Stats() {
       // />
 
       // Until circular progress gets merged
-      <levelbar value={value} widthRequest={50} tooltipText={tooltip} />
+      <levelbar value={value} widthRequest={40} tooltipText={tooltip} />
     );
   };
 
@@ -221,7 +221,7 @@ function Stats() {
         />
         <Stat
           value={temp((val) => val / 1000 / 100)}
-          tooltip={temp((val) => `${val / 1000} °C`)}
+          tooltip={temp((val) => `Temp: ${val / 1000} °C`)}
         />
       </box>
     </box>
@@ -240,12 +240,12 @@ function Left() {
 
 function Center() {
   return (
-    <Button
-      onClicked={() => App.toggle_window("calendar")}
-      halign={Gtk.Align.END}
-    >
+    <menubutton hexpand halign={Gtk.Align.CENTER}>
       <label label={time()} />
-    </Button>
+      <popover>
+        <Gtk.Calendar />
+      </popover>
+    </menubutton>
   );
 }
 

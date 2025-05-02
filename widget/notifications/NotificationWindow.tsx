@@ -82,11 +82,7 @@ export function NotificationWindow() {
     //   layout={layout.get()}
     //   onDestroy={() => layout.drop()}
     // >
-    <box
-      cssClasses={["bg-surface", "p-3", "rounded-3xl", "min-w-[475px]"]}
-      vertical
-      vexpand
-    >
+    <box cssClasses={["p-3", "rounded-3xl", "min-w-[475px]"]} vertical vexpand>
       <box cssClasses={["p-2"]} spacing={10}>
         <label label={"Notifications"} hexpand xalign={0} />
         <DNDButton />
