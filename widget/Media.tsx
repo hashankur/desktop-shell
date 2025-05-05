@@ -13,7 +13,7 @@ export default function Media() {
 
     const titleFontSize = Variable.derive([bind(spotify, "title")], (title) => {
       const classes = ["font-black", "mb-3", "text-on_surface"];
-      classes.push(title?.length > 50 ? "text-3xl" : "text-4xl");
+      classes.push(title?.length > 20 ? "text-3xl" : "text-4xl");
       return classes;
     });
 
@@ -37,7 +37,12 @@ export default function Media() {
                 />
                 <label
                   label={bind(spotify, "artist")}
-                  cssClasses={["text-2xl", "mb-2", "text-on_surface_variant"]}
+                  cssClasses={[
+                    "text-xl",
+                    "mb-2",
+                    "font-medium",
+                    "text-on_surface_variant",
+                  ]}
                   xalign={0}
                   ellipsize={Pango.EllipsizeMode.END}
                 />
