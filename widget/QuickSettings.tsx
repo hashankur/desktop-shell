@@ -215,8 +215,20 @@ export default function QuickSettings() {
   const { TOP, RIGHT, BOTTOM } = Astal.WindowAnchor;
 
   return (
-    <Window name={WINDOW_NAME} anchor={TOP | RIGHT | BOTTOM} margin={0}>
-      <box cssClasses={["bg-surface_container_lowest", "min-w-96"]} vertical>
+    <Window
+      name={WINDOW_NAME}
+      anchor={TOP | RIGHT | BOTTOM}
+      marginRight={0}
+      marginLeft={0}
+    >
+      <box
+        cssClasses={[
+          "bg-surface_container_lowest",
+          "min-w-96",
+          "rounded-l-2xl",
+        ]}
+        vertical
+      >
         <box vexpandSet={true}>
           <stack
             visibleChildName={bind(currentView)}

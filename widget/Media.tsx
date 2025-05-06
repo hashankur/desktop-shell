@@ -24,7 +24,7 @@ export default function Media() {
             <box cssClasses={["min-w-[800px]"]}>
               <image
                 file={bind(spotify, "coverArt")}
-                cssClasses={["min-h-[350px]", "min-w-[350px]", "rounded-left"]}
+                cssClasses={["min-h-[350px]", "min-w-[350px]", "rounded-lg"]}
                 overflow={Gtk.Overflow.HIDDEN}
               />
               <box vertical hexpand cssClasses={["p-10"]}>
