@@ -9,8 +9,10 @@ import Window from "@/common/window";
 import icons from "@/util/icons";
 import { GLib, Variable, bind, execAsync } from "astal";
 import { App, Astal, Gtk, hook } from "astal/gtk4";
+import Pango from "gi://Pango";
 
 const WINDOW_NAME = "bar";
+const MAX_WIDTH_CHARS = 50;
 
 const time = Variable("").poll(
   1000,
@@ -51,7 +53,9 @@ function Active() {
   return (
     <label
       label={bind(niri, "focused_window").as((v) => v?.title ?? "Desktop")}
-      maxWidthChars={150}
+      cssClasses={["px-2"]}
+      maxWidthChars={MAX_WIDTH_CHARS}
+      ellipsize={Pango.EllipsizeMode.END}
     />
   );
 }
@@ -231,9 +235,8 @@ function Stats() {
 function Left() {
   return (
     <box>
-      {/* <Active /> */}
       <Stats />
-      <Media />
+      <Active />
     </box>
   );
 }
@@ -252,6 +255,7 @@ function Center() {
 function Right() {
   return (
     <box halign={Gtk.Align.END} spacing={5}>
+      <Media />
       <SysTray />
       <Button onClicked={() => App.toggle_window("quick-settings")}>
         <box spacing={20}>

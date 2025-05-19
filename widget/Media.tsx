@@ -2,7 +2,7 @@ import Mpris from "gi://AstalMpris";
 import Pango from "gi://Pango";
 import Window from "@/common/window";
 import icons from "@/util/icons";
-import { Variable, bind } from "astal";
+import { bind } from "astal";
 import { Astal, Gtk } from "astal/gtk4";
 
 const WINDOW_NAME = "media";
@@ -10,12 +10,6 @@ const WINDOW_NAME = "media";
 export default function Media() {
   const SpotifyInfo = () => {
     const spotify = Mpris.Player.new("spotify");
-
-    const titleFontSize = Variable.derive([bind(spotify, "title")], (title) => {
-      const classes = ["font-black", "mb-3", "text-on_surface"];
-      classes.push(title?.length > 20 ? "text-3xl" : "text-4xl");
-      return classes;
-    });
 
     return (
       <>
@@ -30,7 +24,12 @@ export default function Media() {
               <box vertical hexpand cssClasses={["p-10"]}>
                 <label
                   label={bind(spotify, "title")}
-                  cssClasses={titleFontSize()}
+                  cssClasses={[
+                    "font-black",
+                    "mb-3",
+                    "text-on_surface",
+                    "text-3xl",
+                  ]}
                   xalign={0} // Align label left
                   wrap
                   maxWidthChars={10} // How work ???
