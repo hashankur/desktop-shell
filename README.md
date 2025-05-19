@@ -1,5 +1,8 @@
 # Desktop Shell
 
+![screenshot](./assets/screen_1.png)
+![screenshot](./assets/screen_2.png)
+
 ## Dependencies
 
 ```sh
