@@ -14,6 +14,9 @@ wl-clipboard
 cliphist
 imagemagick
 
+# OSD
+brightnessctl
+
 # Color generation (optional)
 matugen
 ```
@@ -30,4 +33,10 @@ Generate types:
 
 ```sh
 ags types
+```
+
+## Start Desktop Shell
+
+```sh
+ags run --gtk4
 ```
