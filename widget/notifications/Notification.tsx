@@ -17,13 +17,13 @@ const urgency = (n: AstalNotifd.Notification) => {
   const { LOW, NORMAL, CRITICAL } = AstalNotifd.Urgency;
 
   switch (n.urgency) {
-    case LOW:
-      return "low";
+    // case LOW:
+    //   return "bg-surface_container_low";
     case CRITICAL:
-      return "critical";
-    case NORMAL:
+      return "bg-on_error";
+    // case NORMAL:
     default:
-      return "normal";
+      return "bg-surface_container_low";
   }
 };
 
@@ -38,7 +38,6 @@ export default function Notification({
     <box
       name={n.id.toString()}
       cssClasses={[
-        "bg-surface_container_low",
         "p-3",
         "rounded-xl",
         "min-w-[435px]",
