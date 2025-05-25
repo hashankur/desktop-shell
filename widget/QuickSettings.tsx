@@ -7,7 +7,7 @@ import Brightness from "@/lib/brightness";
 import icons from "@/util/icons";
 import { hideWindow } from "@/util/util";
 import { Variable, bind, execAsync } from "astal";
-import { App, Astal, Gtk } from "astal/gtk4";
+import { App, Astal, Gtk, hook } from "astal/gtk4";
 import { NotificationWindow } from "./notifications/NotificationWindow";
 
 const WINDOW_NAME = "quick-settings";
@@ -128,6 +128,7 @@ function Main() {
 
 function Wifi() {
   const network = Network.get_default().wifi;
+  const connected = network.activeAccessPoint;
 
   return (
     <StackPage name="Wifi">
@@ -153,10 +154,19 @@ function Wifi() {
                     cssClasses={["icon-lg"]}
                     iconName={ap.iconName || ""}
                   />
-                  <label
-                    cssClasses={["text-lg", "text-semibold"]}
-                    label={ap.ssid}
-                  />
+                  <box vertical valign={Gtk.Align.CENTER}>
+                    <label
+                      cssClasses={["text-lg", "text-semibold"]}
+                      label={ap.ssid}
+                      xalign={0}
+                    />
+                    {connected.ssid == ap.ssid && (
+                      <label
+                        cssClasses={["text-sm", "text-semibold"]}
+                        label="Connected"
+                      />
+                    )}
+                  </box>
                 </box>
               </button>
             )),
@@ -185,21 +195,17 @@ function Bluetooth() {
             >
               <box spacing={15} valign={Gtk.Align.CENTER}>
                 <image cssClasses={["icon-lg"]} iconName={device.icon || ""} />
-                <box vertical>
+                <box vertical valign={Gtk.Align.CENTER}>
                   <label
                     cssClasses={["text-lg", "text-semibold"]}
                     label={device.name}
+                    xalign={0}
                   />
-                  {bind(device, "connected").as((v) =>
-                    v ? (
-                      <label
-                        cssClasses={["text-semibold"]}
-                        label="Connected"
-                        xalign={0}
-                      />
-                    ) : (
-                      ""
-                    ),
+                  {device.connected && (
+                    <label
+                      cssClasses={["text-sm", "text-semibold"]}
+                      label="Connected"
+                    />
                   )}
                 </box>
               </box>
@@ -235,10 +241,11 @@ export default function QuickSettings() {
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
             cssClasses={["min-w-96", "p-5", "pb-0"]}
-            // setup={(self) => {
-            // const NetworkWdgt = Network();
-            // if (NetworkWdgt) self.add(NetworkWdgt);
-            // }}
+            setup={(self) => {
+              hook(self, App, "window-toggled", (_) => {
+                currentView.set("main");
+              });
+            }}
           >
             <Main />
             <Wifi />
