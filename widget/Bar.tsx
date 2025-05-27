@@ -1,6 +1,7 @@
 import Battery from "gi://AstalBattery";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
+import Bluetooth from "gi://AstalBluetooth";
 import Tray from "gi://AstalTray";
 import Niri from "gi://AstalNiri";
 import Wp from "gi://AstalWp";
@@ -92,6 +93,18 @@ function Wifi() {
     <image
       tooltipText={bind(wifi, "ssid").as(String)}
       iconName={bind(wifi, "iconName")}
+    />
+  );
+}
+
+function BluetoothStatus() {
+  const { devices } = Bluetooth.get_default();
+  const device = devices[0];
+
+  return (
+    <image
+      tooltipText={bind(device, "name").as(String)}
+      iconName={bind(device, "icon")}
     />
   );
 }
@@ -259,6 +272,7 @@ function Right() {
       <SysTray />
       <Button onClicked={() => App.toggle_window("quick-settings")}>
         <box spacing={20}>
+          <BluetoothStatus />
           <Wifi />
           <AudioLevel />
           <BatteryLevel />

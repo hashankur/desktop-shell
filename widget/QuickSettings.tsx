@@ -13,7 +13,15 @@ import { NotificationWindow } from "./notifications/NotificationWindow";
 const WINDOW_NAME = "quick-settings";
 const currentView = Variable("main");
 
-function QSButton({ name, icon }: { name: string; icon: string }) {
+function QSButton({
+  name,
+  icon,
+  item,
+}: {
+  name: string;
+  icon: string;
+  item?: string;
+}) {
   return (
     <button
       onClicked={() => currentView.set(name)}
@@ -23,12 +31,26 @@ function QSButton({ name, icon }: { name: string; icon: string }) {
         "bg-primary_container",
         "rounded-3xl",
         "min-w-28",
+        "min-h-10",
       ]}
     >
       <box>
         <box hexpand spacing={10}>
           <image cssClasses={["text-on_primary_container"]} iconName={icon} />
-          <label label={name} cssClasses={["text-on_primary_container"]} />
+          <box vertical valign={Gtk.Align.CENTER}>
+            <label
+              label={name}
+              cssClasses={["text-on_primary_container"]}
+              xalign={0}
+            />
+            {item && (
+              <label
+                label={item}
+                cssClasses={["text-on_primary_container", "text-xs"]}
+                xalign={0}
+              />
+            )}
+          </box>
         </box>
         <image
           cssClasses={["text-on_primary_container"]}
@@ -67,6 +89,8 @@ function BackButton({ name }: { name: string }) {
 function Main() {
   const audio = Wp.get_default()?.audio.defaultSpeaker!;
   const brightness = Brightness.get_default();
+  const network = Network.get_default().wifi;
+  const connected = network.activeAccessPoint?.ssid;
 
   return (
     <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
@@ -95,7 +119,11 @@ function Main() {
         </Button>
       </box>
       <box spacing={10}>
-        <QSButton name="Wifi" icon={icons.network.wireless} />
+        <QSButton
+          name="Network"
+          item={connected}
+          icon={icons.network.wireless}
+        />
         <QSButton name="Bluetooth" icon={icons.bluetooth.enabled} />
       </box>
       <box spacing={10}>
@@ -131,7 +159,7 @@ function Wifi() {
   const connected = network.activeAccessPoint;
 
   return (
-    <StackPage name="Wifi">
+    <StackPage name="Network">
       <box vertical spacing={5}>
         {bind(network, "accessPoints").as((ap) =>
           ap

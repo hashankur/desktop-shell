@@ -97,7 +97,7 @@ export default function Notification({
                   "min-w-2",
                   "min-h-2",
                   "p-2",
-                  "bg-surface_container_highest",
+                  "bg-surface_container_highest/50",
                   "hover:bg-on_error",
                   "hover:text-error",
                 ]}
