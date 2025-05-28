@@ -1,0 +1,84 @@
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+@import "./colors.css";
+
+@source not inline("visible");
+@source not inline("static");
+@source not inline("flex");
+@source not inline("truncate");
+
+@theme {
+  /* Remove line height */
+  --text-*: initial;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  --icon-size-lg: 32px;
+  --icon-size-xl: 42px;
+  --icon-size-2xl: 64px;
+  --icon-size-3xl: 75px;
+}
+
+@utility icon-* {
+  -gtk-icon-size: --value(--icon-size-*);
+}
+
+* {
+  font-family: "Satoshi Variable", "Satoshi", "Iosevka", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  -gtk-icon-size: 14px;
+}
+
+button {
+  @apply bg-transparent;
+}
+
+label {
+  @apply text-on_surface;
+}
+
+tooltip.background {
+  @apply bg-surface_container_lowest rounded-lg text-on_surface m-2 p-2;
+}
+
+tooltip label {
+  @apply pl-2 pr-2;
+}
+
+popover.background {
+  @apply mt-2;
+}
+
+.unset slider {
+  all: unset;
+}
+
+.slider-w trough {
+  @apply min-w-[25px];
+}
+
+.slider-h trough {
+  @apply min-h-[10px];
+}
+
+highlight {
+  @apply bg-primary;
+}
+
+levelbar>trough>block {
+  @apply bg-on_secondary rounded-none;
+}
+
+levelbar>trough>block.filled {
+  @apply bg-secondary;
+}
+
+.text-shadow {
+  text-shadow: rgba(0, 0, 0, 0.8) 5px 5px;
+  @apply text-white/80;
+}

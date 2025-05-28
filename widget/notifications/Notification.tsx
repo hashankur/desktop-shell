@@ -55,7 +55,7 @@ export default function Notification({
                 <image
                   file={n.image}
                   overflow={Gtk.Overflow.HIDDEN}
-                  cssClasses={["icon-2xl", "rounded-full"]}
+                  cssClasses={["icon-2xl", "rounded-4xl"]}
                 />
               </box>
             ) : (
@@ -63,7 +63,7 @@ export default function Notification({
                 <box valign={Gtk.Align.START}>
                   <image
                     iconName={n.appIcon || n.desktopEntry}
-                    cssClasses={["icon-2xl", "rounded-full"]}
+                    cssClasses={["icon-2xl", "rounded-4xl"]}
                   />
                 </box>
               )
@@ -93,7 +93,7 @@ export default function Notification({
               <button
                 onClicked={() => n.dismiss()}
                 cssClasses={[
-                  "rounded-full",
+                  "rounded-4xl",
                   "min-w-2",
                   "min-h-2",
                   "p-2",

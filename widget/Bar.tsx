@@ -54,7 +54,7 @@ function Active() {
   return (
     <label
       label={bind(niri, "focused_window").as((v) => v?.title ?? "Desktop")}
-      cssClasses={["px-2"]}
+      cssClasses={["pl-2 pr-2"]}
       maxWidthChars={MAX_WIDTH_CHARS}
       ellipsize={Pango.EllipsizeMode.END}
     />
@@ -299,7 +299,7 @@ export default function Bar(monitor: number) {
     >
       <box vertical cssClasses={["bg-surface_container_lowest"]}>
         <Workspaces />
-        <centerbox cssClasses={["px-1", "min-h-10"]}>
+        <centerbox cssClasses={["pr-1", "pl-1", "min-h-10"]}>
           <Left />
           <Center />
           <Right />

@@ -43,12 +43,7 @@ function createSlider(
         spacing={5}
       >
         <slider
-          cssClasses={[
-            "min-h-[300px]",
-            "*:min-w-[25px]",
-            "rounded-[7px]",
-            "unset",
-          ]}
+          cssClasses={["min-h-[300px]", "rounded-[7px]", "unset", "slider-w"]}
           orientation={Gtk.Orientation.VERTICAL}
           value={bind(bindable, hookProperty)}
           drawValue={false}

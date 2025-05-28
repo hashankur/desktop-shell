@@ -23,14 +23,15 @@ export default function AppLauncher() {
         }}
         cssClasses={[
           "hover:bg-surface_container",
-          "px-5",
+          "pr-5",
+          "pl-5",
           "mb-1",
           "rounded-xl",
         ]}
       >
         <box hexpand={false} spacing={20}>
           <image
-            cssClasses={["my-5", "icon-xl"]}
+            cssClasses={["mt-5", "mb-5", "icon-xl"]}
             iconName={app.iconName || ""}
           />
           <box vertical valign={Gtk.Align.CENTER}>
@@ -63,10 +64,12 @@ export default function AppLauncher() {
     return (
       <entry
         cssClasses={[
-          "px-5",
-          "py-3",
+          "pr-5",
+          "pl-5",
+          "pt-3",
+          "pb-3",
           "bg-surface_container_low",
-          "rounded-full",
+          "rounded-4xl",
         ]}
         type="overlay"
         vexpand

@@ -13,12 +13,14 @@ import { App } from "astal/gtk4";
 import { notifyLowBattery } from "@/util/util";
 
 // https://github.com/Aiz0/dotless
-const style = exec("bunx tailwindcss -i main.css")
+const style = exec("tailwindcss -i styles/main.css")
   .replace(/::backdrop.*?}\n{2}/s, "") // remove backdrop pseudoclass
-  .replace(", ::before, ::after", ""); // remove before & after psudoclasses
+  .replace(", ::before, ::after", "") // remove before & after psudoclasses
+  .replace(", :host", "");
 
 App.start({
   css: style,
+  // css: "./output.css",
   main() {
     AppLauncher();
     Bar(0);
