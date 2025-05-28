@@ -26,10 +26,12 @@ function QSButton({
     <button
       onClicked={() => currentView.set(name)}
       cssClasses={[
-        "px-5",
-        "py-3",
+        "pr-5",
+        "pl-5",
+        "pt-3",
+        "pb-3",
         "bg-primary_container",
-        "rounded-3xl",
+        "rounded-4xl",
         "min-w-28",
         "min-h-10",
       ]}
@@ -93,7 +95,7 @@ function Main() {
   const connected = network.activeAccessPoint?.ssid;
 
   return (
-    <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
+    <box name="main" spacing={10} vertical cssClasses={["pr-5", "pl-5"]}>
       <box halign={Gtk.Align.END}>
         <Button
           cssClasses={["bg-transparent"]}
@@ -137,7 +139,7 @@ function Main() {
             value={bind(audio, "volume")}
             onChangeValue={(self) => audio.set_volume(self.value)}
             hexpand
-            css_classes={["*:min-h-[10px]", "unset"]}
+            css_classes={["slider-h", "unset"]}
           />
         </box>
         <box>
@@ -146,7 +148,7 @@ function Main() {
             value={bind(brightness, "screen")}
             // onChangeValue={(self) => (brightness.screen = self.value)}
             hexpand
-            css_classes={["*:min-h-[10px]", "unset"]}
+            css_classes={["slider-h", "unset"]}
           />
         </box>
       </box>
@@ -168,8 +170,10 @@ function Wifi() {
             .map((ap) => (
               <button
                 cssClasses={[
-                  "px-5",
-                  "py-2",
+                  "pr-5",
+                  "pl-5",
+                  "pt-2",
+                  "pb-2",
                   "rounded-lg",
                   "hover:bg-surface_container_low",
                 ]}
@@ -214,8 +218,10 @@ function Bluetooth() {
           device.map((device) => (
             <button
               cssClasses={[
-                "px-5",
-                "py-2",
+                "pr-5",
+                "pl-5",
+                "pt-2",
+                "pb-2",
                 "rounded-lg",
                 "hover:bg-surface_container_low",
               ]}

@@ -7,7 +7,8 @@ export default function Button({ child, ...props }: ButtonProps) {
         "rounded-lg",
         "bg-surface_container_lowest",
         "hover:bg-surface_container_low",
-        "px-3",
+        "pr-3",
+        "pl-3",
       ]}
       {...props}
     >

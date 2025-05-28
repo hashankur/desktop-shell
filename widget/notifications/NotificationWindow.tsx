@@ -13,7 +13,7 @@ function NotifsScrolledWindow() {
   const notifd = AstalNotifd.get_default();
   return (
     <Gtk.ScrolledWindow vexpand>
-      <box vertical hexpand={false} spacing={8} cssClasses={["px-2"]}>
+      <box vertical hexpand={false} spacing={8} cssClasses={["pr-2", "pl-2"]}>
         {bind(notifd, "notifications").as((notifs) =>
           notifs
             .sort((a, b) => b.time - a.time)
@@ -48,8 +48,10 @@ function DNDButton() {
       cssClasses={bind(notifd, "dont_disturb").as((dnd) => {
         const classes = [
           "hover:bg-surface_container_high",
-          "px-2",
-          "py-1",
+          "pr-2",
+          "pl-2",
+          "pr-1",
+          "pl-1",
           "rounded-lg",
         ];
         dnd && classes.push("bg-secondary_container");
