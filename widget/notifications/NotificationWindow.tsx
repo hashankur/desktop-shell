@@ -1,13 +1,10 @@
 import AstalNotifd from "gi://AstalNotifd";
-import PopupWindow from "@/common/PopupWindow";
-import { Variable, bind } from "astal";
-import { App, type Gdk, Gtk } from "astal/gtk4";
+import { bind } from "astal";
+import { Gtk } from "astal/gtk4";
 import Notification from "./Notification";
 
 export const WINDOW_NAME = "notifications";
 const notifd = AstalNotifd.get_default();
-
-const layout = Variable("top_center");
 
 function NotifsScrolledWindow() {
   const notifd = AstalNotifd.get_default();
@@ -76,12 +73,6 @@ function ClearButton() {
 
 export function NotificationWindow() {
   return (
-    // <PopupWindow
-    //   name={WINDOW_NAME}
-    //   animation="slide top"
-    //   layout={layout.get()}
-    //   onDestroy={() => layout.drop()}
-    // >
     <box cssClasses={["p-3", "rounded-3xl", "min-w-[475px]"]} vertical vexpand>
       <box cssClasses={["p-2"]} spacing={10}>
         <label label={"Notifications"} hexpand xalign={0} />
@@ -90,15 +81,5 @@ export function NotificationWindow() {
       </box>
       <NotifsScrolledWindow />
     </box>
-    // </PopupWindow>
   );
 }
-
-// export default function (_gdkmonitor: Gdk.Monitor) {
-//   NotificationWindow();
-
-//   layout.subscribe(() => {
-//     App.remove_window(App.get_window(WINDOW_NAME)!);
-//     NotificationWindow();
-//   });
-// }

@@ -32,6 +32,7 @@ App.start({
     Calendar();
     QuickSettings();
     Desktop();
+
+    notifyLowBattery();
   },
 });
-notifyLowBattery();
