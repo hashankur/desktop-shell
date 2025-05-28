@@ -6,7 +6,7 @@
 ## Dependencies
 
 ```sh
-# Bundler
+# CLI for astal
 ags
 
 # Clipboard
@@ -16,6 +16,9 @@ imagemagick
 
 # OSD
 brightnessctl
+
+# Styles
+@tailwindcss/cli
 
 # Color generation (optional)
 matugen
@@ -40,3 +43,6 @@ ags types
 ```sh
 ags run --gtk4
 ```
+
+> [!NOTE]
+> Contains code specific to niri (workspaces, window title)
