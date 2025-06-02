@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind utilities;
+
+* {
+  font-family: "Satoshi Variable", "Satoshi", "Iosevka", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  -gtk-icon-size: 14px;
+}
+
+button {
+  @apply bg-transparent;
+}
+
+label {
+  @apply text-on_surface;
+}
+
+tooltip.background {
+  @apply bg-surface_container_lowest rounded-lg text-on_surface m-2 p-2;
+}
+
+tooltip label {
+  @apply px-2;
+}
+
+popover.background {
+  @apply mt-2;
+}
+
+.unset slider {
+  all: unset;
+}
+
+highlight {
+  @apply bg-primary;
+}
+
+levelbar>trough>block {
+  @apply bg-on_secondary rounded-none;
+}
+
+levelbar>trough>block.filled {
+  @apply bg-secondary;
+}
+
+.icon-lg {
+  -gtk-icon-size: 32px;
+}
+
+.icon-xl {
+  -gtk-icon-size: 42px;
+}
+
+.icon-2xl {
+  -gtk-icon-size: 64px;
+}
+
+.icon-3xl {
+  -gtk-icon-size: 75px;
+}
+
+.text-shadow {
+  text-shadow: rgba(0, 0, 0, 0.8) 5px 5px;
+  @apply text-white/80;
+}
