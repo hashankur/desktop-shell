@@ -17,9 +17,6 @@ imagemagick
 # OSD
 brightnessctl
 
-# Styles
-@tailwindcss/cli
-
 # Color generation (optional)
 matugen
 ```
@@ -46,3 +43,5 @@ ags run --gtk4
 
 > [!NOTE]
 > Contains code specific to niri (workspaces, window title)
+>
+> Experimental config for Tailwind CSS v4 in `tw4` branch
