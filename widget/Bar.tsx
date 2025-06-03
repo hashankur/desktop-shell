@@ -52,12 +52,18 @@ function Active() {
   const niri = Niri.get_default();
 
   return (
-    <label
-      label={bind(niri, "focused_window").as((v) => v?.title ?? "Desktop")}
-      cssClasses={["px-2"]}
-      maxWidthChars={MAX_WIDTH_CHARS}
-      ellipsize={Pango.EllipsizeMode.END}
-    />
+    <>
+      {bind(niri, "focusedWindow").as((v) => (
+        <box spacing={5}>
+          <image iconName={`${v?.appId ?? "user-desktop"}-symbolic`} />
+          <label
+            label={v?.title ?? "Desktop"}
+            maxWidthChars={MAX_WIDTH_CHARS}
+            ellipsize={Pango.EllipsizeMode.END}
+          />
+        </box>
+      ))}
+    </>
   );
 }
 
@@ -102,10 +108,14 @@ function BluetoothStatus() {
   const device = devices[0];
 
   return (
-    <image
-      tooltipText={bind(device, "name").as(String)}
-      iconName={bind(device, "icon")}
-    />
+    <>
+      {bind(device, "connected").as((v) => (
+        <image
+          tooltipText={v ? bind(device, "name").as(String) : "Not Connected"}
+          iconName={v ? icons.bluetooth.enabled : icons.bluetooth.disabled}
+        />
+      ))}
+    </>
   );
 }
 
@@ -247,7 +257,7 @@ function Stats() {
 
 function Left() {
   return (
-    <box>
+    <box spacing={20}>
       <Stats />
       <Active />
     </box>
