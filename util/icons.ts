@@ -77,6 +77,7 @@ export default {
   notifications: {
     noisy: "preferences-system-notifications-symbolic",
     silent: "notifications-disabled-symbolic",
+    empty: "user-idle-symbolic",
   },
   media: {
     fallback: "audio-x-generic-symbolic",

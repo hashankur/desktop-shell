@@ -2,6 +2,7 @@ import AstalNotifd from "gi://AstalNotifd";
 import { bind } from "astal";
 import { Gtk } from "astal/gtk4";
 import Notification from "./Notification";
+import icons from "@/util/icons";
 
 export const WINDOW_NAME = "notifications";
 const notifd = AstalNotifd.get_default();
@@ -19,16 +20,16 @@ function NotifsScrolledWindow() {
         <box
           halign={Gtk.Align.CENTER}
           valign={Gtk.Align.CENTER}
-          cssClasses={["not-found"]}
           vertical
           vexpand
           visible={bind(notifd, "notifications").as((n) => n.length === 0)}
+          spacing={10}
         >
           <image
-            iconName="notification-disabled-symbolic"
-            iconSize={Gtk.IconSize.LARGE}
+            iconName={icons.notifications.empty}
+            cssClasses={["icon-3xl"]}
           />
-          <label label="Your inbox is empty" />
+          <label label="Your inbox is empty" cssClasses={["text-xl"]} />
         </box>
       </box>
     </Gtk.ScrolledWindow>
