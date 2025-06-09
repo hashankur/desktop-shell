@@ -170,26 +170,25 @@ function Media() {
   );
 
   return (
-    <>
-      {bind(spotify, "available").as((available) =>
-        available ? (
-          <Button onClicked={() => spotify.play_pause()}>
-            <box spacing={5}>
-              <image
-                iconName={bind(spotify, "playbackStatus").as((status) =>
-                  status === Mpris.PlaybackStatus.PLAYING
-                    ? icons.media.playing
-                    : icons.media.stopped,
-                )}
-              />
-              <label label={formattedLabel()} />
-            </box>
-          </Button>
-        ) : (
-          ""
-        ),
-      )}
-    </>
+    <Button
+      visible={bind(spotify, "available")}
+      onClicked={() => spotify.play_pause()}
+    >
+      <box spacing={5}>
+        <image
+          iconName={bind(spotify, "playbackStatus").as((status) =>
+            status === Mpris.PlaybackStatus.PLAYING
+              ? icons.media.playing
+              : icons.media.stopped,
+          )}
+        />
+        <label
+          label={formattedLabel()}
+          maxWidthChars={MAX_WIDTH_CHARS}
+          ellipsize={Pango.EllipsizeMode.END}
+        />
+      </box>
+    </Button>
   );
 }
 
