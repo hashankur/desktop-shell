@@ -1,7 +1,7 @@
 import Apps from "gi://AstalApps";
 import Pango from "gi://Pango";
 import Window from "@/common/window";
-import { hideWindow } from "@/util/util";
+import Util from "@/util/util";
 import { Variable } from "astal";
 import { App, Gtk, hook } from "astal/gtk4";
 
@@ -57,7 +57,7 @@ export default function AppLauncher() {
   function SearchEntry() {
     const onEnter = () => {
       apps.fuzzy_query(query.get())?.[0].launch();
-      hideWindow(WINDOW_NAME);
+      Util.hideWindow(WINDOW_NAME);
     };
 
     return (

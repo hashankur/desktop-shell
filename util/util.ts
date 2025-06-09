@@ -2,11 +2,11 @@ import Battery from "gi://AstalBattery";
 import { Variable, bind, execAsync } from "astal";
 import { App } from "astal/gtk4";
 
-export function hideWindow(name: string) {
+function hideWindow(name: string) {
   App.get_window(name)?.set_visible(false);
 }
 
-export function notifyLowBattery() {
+function notifyLowBattery() {
   const bat = Battery.get_default();
   const low = 30;
   const critical = low / 2;
@@ -30,3 +30,5 @@ export function notifyLowBattery() {
     },
   );
 }
+
+export default { hideWindow, notifyLowBattery };

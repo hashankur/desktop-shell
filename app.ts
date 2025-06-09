@@ -10,7 +10,7 @@ import QuickSettings from "@/widget/QuickSettings";
 import NotificationPopups from "@/widget/notifications/NotificationPopups";
 import { exec } from "astal";
 import { App } from "astal/gtk4";
-import { notifyLowBattery } from "@/util/util";
+import Util from "@/util/util";
 
 // https://github.com/Aiz0/dotless
 const style = exec("bunx tailwindcss -i styles/main.css")
@@ -33,6 +33,6 @@ App.start({
     QuickSettings();
     Desktop();
 
-    notifyLowBattery();
+    Util.notifyLowBattery();
   },
 });
