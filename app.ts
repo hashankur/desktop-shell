@@ -6,7 +6,7 @@ import Desktop from "@/widget/Desktop";
 import Media from "@/widget/Media";
 import OSD from "@/widget/OSD";
 import PowerMenu from "@/widget/PowerMenu";
-import QuickSettings from "@/widget/QuickSettings";
+import SideBar from "@/widget/sidebar";
 import NotificationPopups from "@/widget/notifications/NotificationPopups";
 import { exec } from "astal";
 import { App } from "astal/gtk4";
@@ -30,8 +30,8 @@ App.start({
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
     Calendar();
-    QuickSettings();
     Desktop();
+    SideBar();
 
     Util.notifyLowBattery();
   },
