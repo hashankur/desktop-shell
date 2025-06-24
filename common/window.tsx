@@ -1,34 +1,33 @@
-import { App } from "astal/gtk4";
-import type { WindowProps } from "astal/gtk4/widget";
+import type { Gtk } from "ags/gtk4";
+import app from "ags/gtk4/app";
 import Astal from "gi://Astal";
 import Gdk from "gi://Gdk";
 
-type Props = WindowProps & {
-  child?: JSX.Element; // when only one child is passed
-  children?: Array<JSX.Element>; // when multiple children are passed
+type Props = Gtk.Window & {
+  children: JSX.Element | Array<JSX.Element>;
   name?: string;
 };
 
 export default function Window({
   children,
   visible = false,
-  keymode = Astal.Keymode.EXCLUSIVE,
+  // keymode = Astal.Keymode.EXCLUSIVE,
   name,
   ...props
 }: Props) {
   return (
     <window
-      application={App}
+      application={app}
       visible={visible}
-      keymode={keymode}
+      // keymode={keymode}
       name={name}
       layer={Astal.Layer.OVERLAY}
       margin={10}
-      onKeyPressed={(_, keyval) => {
-        if (keyval === Gdk.KEY_Escape) {
-          name && App.toggle_window(name);
-        }
-      }}
+      // onKeyPressed={(_, keyval) => {
+      //   if (keyval === Gdk.KEY_Escape) {
+      //     name && App.toggle_window(name);
+      //   }
+      // }}
       cssClasses={["bg-transparent"]}
       {...props}
     >

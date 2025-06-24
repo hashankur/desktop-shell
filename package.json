@@ -1,12 +1,14 @@
 {
   "name": "astal-shell",
   "dependencies": {
-    "astal": "../../.local/share/ags"
+    "ags": "../../.local/share/ags/js"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "tailwindcss": "^3.4.17",
     "typescript": "5.7"
   },
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
 }

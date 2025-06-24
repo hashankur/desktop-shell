@@ -9,11 +9,9 @@
     // "checkJs": true,
     // "allowJs": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "astal/gtk4",
+    "jsxImportSource": "ags/gtk4",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   }
 }
