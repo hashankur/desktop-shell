@@ -1,107 +1,141 @@
-import Apps from "gi://AstalApps";
-import Pango from "gi://Pango";
 import Window from "@/common/window";
-import Util from "@/util/util";
-import { Variable } from "astal";
-import { App, Gtk, hook } from "astal/gtk4";
+import icons from "@/util/icons";
+import { createComputed } from "ags";
+import { createState, For } from "ags";
+import { Astal, Gdk, Gtk } from "ags/gtk4";
+import AstalApps from "gi://AstalApps";
+import Graphene from "gi://Graphene";
+import Pango from "gi://Pango";
 
 const WINDOW_NAME = "app-launcher";
 
-const apps = new Apps.Apps();
-const query = Variable<string>("");
-
 export default function AppLauncher() {
-  let appData: Apps.Application[] = [];
+  let contentbox: Gtk.Box;
+  let searchentry: Gtk.Entry;
+  let win: Astal.Window;
 
-  const items = query((query) => {
-    appData = apps.fuzzy_query(query);
-    return appData.map((app: Apps.Application) => (
-      <button
-        on_Clicked={() => {
-          App.toggle_window(WINDOW_NAME);
-          app.launch();
-        }}
-        cssClasses={[
-          "hover:bg-surface_container",
-          "px-5",
-          "mb-1",
-          "rounded-xl",
-        ]}
-      >
-        <box hexpand={false} spacing={20}>
-          <image
-            cssClasses={["my-5", "icon-xl"]}
-            iconName={app.iconName || ""}
-          />
-          <box vertical valign={Gtk.Align.CENTER}>
-            <label
-              cssClasses={["text-xl", "font-bold", "text-on_surface"]}
-              label={app.name}
-              xalign={0}
-              ellipsize={Pango.EllipsizeMode.END}
-            />
-            {app.description && (
-              <label
-                cssClasses={["font-medium", "text-on_surface_variant"]}
-                label={app.description}
-                xalign={0}
-                ellipsize={Pango.EllipsizeMode.END}
-              />
-            )}
-          </box>
-        </box>
-      </button>
-    ));
-  });
+  const apps = new AstalApps.Apps();
+  const [list, setList] = createState(new Array<AstalApps.Application>());
+
+  function search(text: string) {
+    if (text === "") setList([]);
+    else setList(apps.fuzzy_query(text).slice(0, 5));
+  }
+
+  function launch(app?: AstalApps.Application) {
+    if (app) {
+      win.hide();
+      app.launch();
+    }
+  }
+
+  // close on ESC
+  // handle alt + number key
+  function onKey(
+    _e: Gtk.EventControllerKey,
+    keyval: number,
+    _: number,
+    mod: number,
+  ) {
+    if (keyval === Gdk.KEY_Escape) {
+      win.visible = false;
+      return;
+    }
+
+    if (mod === Gdk.ModifierType.ALT_MASK) {
+      for (const i of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {
+        if (keyval === Gdk[`KEY_${i}`]) {
+          return launch(list.get()[i - 1]);
+        }
+      }
+    }
+  }
+
+  // close on clickaway
+  function onClick(_e: Gtk.GestureClick, _: number, x: number, y: number) {
+    const [, rect] = contentbox.compute_bounds(win);
+    const position = new Graphene.Point({ x, y });
+
+    if (!rect.contains_point(position)) {
+      win.visible = false;
+      return true;
+    }
+  }
 
   function SearchEntry() {
-    const onEnter = () => {
-      apps.fuzzy_query(query.get())?.[0].launch();
-      Util.hideWindow(WINDOW_NAME);
-    };
-
     return (
       <entry
-        cssClasses={[
-          "px-5",
-          "py-3",
-          "bg-surface_container_low",
-          "rounded-full",
-        ]}
-        type="overlay"
-        vexpand
-        primaryIconName={"system-search-symbolic"}
-        placeholderText="Search..."
-        text={query.get()}
-        setup={(self) => {
-          hook(self, App, "window-toggled", (_, win) => {
-            const winName = win.name;
-            const visible = win.visible;
-
-            if (winName === WINDOW_NAME && visible) {
-              query.set("");
-              self.set_text("");
-              self.grab_focus();
-            }
-          });
-        }}
-        onChanged={(self) => query.set(self.text)}
-        onActivate={onEnter}
+        $={(ref) => (searchentry = ref)}
+        onNotifyText={({ text }) => search(text)}
+        class="px-5 py-2 bg-surface_container_low rounded-3xl my-1"
+        primaryIconName={icons.ui.search}
+        placeholderText="Start typing to search"
       />
     );
   }
 
+  const { BOTTOM } = Astal.WindowAnchor;
+
   return (
-    <Window name={WINDOW_NAME}>
+    <Window
+      name={WINDOW_NAME}
+      $={(ref) => (win = ref)}
+      anchor={BOTTOM}
+      onNotifyVisible={({ visible }) => {
+        if (visible) searchentry.grab_focus();
+        else searchentry.set_text("");
+      }}
+    >
+      <Gtk.EventControllerKey onKeyPressed={onKey} />
+      <Gtk.GestureClick onPressed={onClick} />
       <box
-        cssClasses={["min-w-[450px]", "bg-surface", "rounded-xl", "p-5"]}
-        vertical
-        spacing={10}
+        $={(ref) => (contentbox = ref)}
+        name="launcher-content"
+        class="min-w-[500px] bg-surface rounded-2xl p-4"
+        orientation={Gtk.Orientation.VERTICAL}
+        valign={Gtk.Align.CENTER}
       >
         <SearchEntry />
-        <Gtk.ScrolledWindow vexpand cssClasses={["min-h-[510px]"]}>
-          <box vertical>{items}</box>
-        </Gtk.ScrolledWindow>
+        <box orientation={Gtk.Orientation.VERTICAL}>
+          <For each={list}>
+            {(app, index) => (
+              <button
+                onClicked={() => launch(app)}
+                class="hover:bg-surface_container px-4 mt-1 rounded-xl"
+              >
+                <box spacing={20}>
+                  <image class="my-2 icon-xl" iconName={app.iconName} />
+                  <box>
+                    <box
+                      orientation={Gtk.Orientation.VERTICAL}
+                      valign={Gtk.Align.CENTER}
+                    >
+                      <label
+                        class="text-xl font-bold text-on_surface"
+                        label={app.name}
+                        xalign={0}
+                        ellipsize={Pango.EllipsizeMode.END}
+                      />
+                      {app.description && (
+                        <label
+                          class="font-medium text-on_surface_variant"
+                          label={app.description}
+                          xalign={0}
+                          ellipsize={Pango.EllipsizeMode.END}
+                        />
+                      )}
+                    </box>
+                    <label
+                      hexpand
+                      halign={Gtk.Align.END}
+                      label={index((i) => `Alt ${i + 1}`)}
+                    />
+                  </box>
+                </box>
+              </button>
+            )}
+          </For>
+        </box>
       </box>
     </Window>
   );

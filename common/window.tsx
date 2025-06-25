@@ -1,9 +1,10 @@
+import type { CCProps } from "ags";
 import type { Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal";
 import Gdk from "gi://Gdk";
 
-type Props = Gtk.Window & {
+type Props = CCProps<Gtk.Window, Gtk.Window.ConstructorProps> & {
   children: JSX.Element | Array<JSX.Element>;
   name?: string;
 };
@@ -11,7 +12,7 @@ type Props = Gtk.Window & {
 export default function Window({
   children,
   visible = false,
-  // keymode = Astal.Keymode.EXCLUSIVE,
+  keymode = Astal.Keymode.EXCLUSIVE,
   name,
   ...props
 }: Props) {
@@ -19,7 +20,7 @@ export default function Window({
     <window
       application={app}
       visible={visible}
-      // keymode={keymode}
+      keymode={keymode}
       name={name}
       layer={Astal.Layer.OVERLAY}
       margin={10}
@@ -28,7 +29,8 @@ export default function Window({
       //     name && App.toggle_window(name);
       //   }
       // }}
-      cssClasses={["bg-transparent"]}
+      class="bg-transparent"
+      defaultHeight={-1}
       {...props}
     >
       {children}
