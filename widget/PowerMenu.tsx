@@ -1,7 +1,7 @@
 import Window from "@/common/window";
 import icons from "@/util/icons";
-import { exec } from "astal";
-import { App } from "astal/gtk4";
+import app from "ags/gtk4/app";
+import { exec } from "ags/process";
 
 const WINDOW_NAME = "power-menu";
 
@@ -26,27 +26,17 @@ const options = [
 export default function PowerMenu() {
   return (
     <Window name={WINDOW_NAME}>
-      <box cssClasses={["bg-surface", "rounded-xl", "p-3"]} spacing={10}>
+      <box class="bg-surface rounded-xl p-3" spacing={10}>
         {options.map((option) => (
           <button
-            on_Clicked={() => {
-              App.toggle_window(WINDOW_NAME);
+            onClicked={() => {
+              app.toggle_window(WINDOW_NAME);
               exec(option.command);
             }}
-            cssClasses={[
-              "rounded-lg",
-              "bg-primary_container",
-              "hover:bg-on_primary",
-              "transition",
-            ]}
+            class="rounded-lg bg-primary_container hover:bg-on_primary transition"
           >
             <image
-              cssClasses={[
-                "min-w-32",
-                "min-h-32",
-                "icon-xl",
-                "text-on_primary_container",
-              ]}
+              class="min-w-32 min-h-32 icon-xl text-on_primary_container"
               iconName={option.icon}
             />
           </button>
