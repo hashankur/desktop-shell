@@ -2,6 +2,7 @@ import Button from "@/common/Button";
 import icons from "@/util/icons";
 import { createBinding, createComputed, For, With } from "ags";
 import { Astal, Gtk } from "ags/gtk4";
+import app from "ags/gtk4/app";
 import { execAsync } from "ags/process";
 import { createPoll } from "ags/time";
 import Battery from "gi://AstalBattery";
@@ -304,7 +305,7 @@ function Right() {
     <box $type="end" halign={Gtk.Align.END} spacing={5}>
       <Media />
       <SysTray />
-      <Button onClicked={() => App.toggle_window("quick-settings")}>
+      <Button onClicked={() => app.toggle_window("quick-settings")}>
         <box spacing={20}>
           <BluetoothStatus />
           <Wifi />
