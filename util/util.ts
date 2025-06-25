@@ -1,9 +1,10 @@
+import { createBinding, createComputed } from "ags";
+import app from "ags/gtk4/app";
+import { execAsync } from "ags/process";
 import Battery from "gi://AstalBattery";
-import { Variable, bind, execAsync } from "astal";
-import { App } from "astal/gtk4";
 
 function hideWindow(name: string) {
-  App.get_window(name)?.set_visible(false);
+  app.get_window(name)?.set_visible(false);
 }
 
 function notifyLowBattery() {
@@ -11,8 +12,8 @@ function notifyLowBattery() {
   const low = 30;
   const critical = low / 2;
 
-  Variable.derive(
-    [bind(bat, "charging"), bind(bat, "percentage")],
+  createComputed(
+    [createBinding(bat, "charging"), createBinding(bat, "percentage")],
     (charging, percent) => {
       percent = percent * 100;
 
