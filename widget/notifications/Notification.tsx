@@ -26,7 +26,7 @@ export default function Notification({
   onHoverLost,
 }: {
   notification: AstalNotifd.Notification;
-  onHoverLost: () => void;
+  onHoverLost?: () => void;
 }) {
   return (
     <Adw.Clamp maximumSize={450}>

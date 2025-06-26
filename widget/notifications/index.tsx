@@ -1,28 +1,40 @@
-import AstalNotifd from "gi://AstalNotifd";
-import { bind } from "astal";
-import { Gtk } from "astal/gtk4";
-import Notification from "./Notification";
 import icons from "@/util/icons";
+import { createBinding, createState, For, onCleanup } from "ags";
+import { Gtk } from "ags/gtk4";
+import AstalNotifd from "gi://AstalNotifd";
+import Notification from "./Notification";
+import { useNotificationHandler } from "@/util/notification";
+import { With } from "ags";
 
 export const WINDOW_NAME = "notifications";
+
 const notifd = AstalNotifd.get_default();
+const [notifications, setNotifications] = createState(
+  new Array<AstalNotifd.Notification>(),
+);
+
+setNotifications(notifd.notifications);
+
+onCleanup(useNotificationHandler(notifd, notifications, setNotifications));
 
 function NotifsScrolledWindow() {
-  const notifd = AstalNotifd.get_default();
   return (
     <Gtk.ScrolledWindow vexpand>
-      <box vertical hexpand={false} spacing={8} cssClasses={["px-2"]}>
-        {bind(notifd, "notifications").as((notifs) =>
-          notifs
-            .sort((a, b) => b.time - a.time)
-            .map((e) => <Notification n={e} showActions={false} />),
-        )}
+      <box
+        orientation={Gtk.Orientation.VERTICAL}
+        hexpand={false}
+        spacing={8}
+        cssClasses={["px-2"]}
+      >
+        <For each={notifications}>
+          {(notification) => <Notification notification={notification} />}
+        </For>
         <box
           halign={Gtk.Align.CENTER}
           valign={Gtk.Align.CENTER}
-          vertical
+          orientation={Gtk.Orientation.VERTICAL}
           vexpand
-          visible={bind(notifd, "notifications").as((n) => n.length === 0)}
+          visible={notifications((ns) => ns.length === 0)}
           spacing={10}
         >
           <image
@@ -43,7 +55,7 @@ function DNDButton() {
       onClicked={() => {
         notifd.set_dont_disturb(!notifd.get_dont_disturb());
       }}
-      cssClasses={bind(notifd, "dont_disturb").as((dnd) => {
+      cssClasses={createBinding(notifd, "dont_disturb").as((dnd) => {
         const classes = [
           "hover:bg-surface_container_high",
           "px-2",
@@ -65,16 +77,20 @@ function ClearButton() {
       onClicked={() => {
         notifd.notifications.forEach((n) => n.dismiss());
       }}
-      sensitive={bind(notifd, "notifications").as((n) => n.length > 0)}
+      sensitive={createBinding(notifd, "notifications").as((n) => n.length > 0)}
     >
       <image iconName={"user-trash-full-symbolic"} />
     </button>
   );
 }
 
-export function NotificationWindow() {
+export default function Notifications() {
   return (
-    <box cssClasses={["p-3", "rounded-3xl", "min-w-[475px]"]} vertical vexpand>
+    <box
+      cssClasses={["p-3", "rounded-3xl", "min-w-[475px]"]}
+      orientation={Gtk.Orientation.VERTICAL}
+      vexpand
+    >
       <box cssClasses={["p-2"]} spacing={10}>
         <label label={"Notifications"} hexpand xalign={0} />
         <DNDButton />
