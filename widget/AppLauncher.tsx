@@ -3,6 +3,7 @@ import icons from "@/util/icons";
 import { createComputed } from "ags";
 import { createState, For } from "ags";
 import { Astal, Gdk, Gtk } from "ags/gtk4";
+import Adw from "gi://Adw";
 import AstalApps from "gi://AstalApps";
 import Graphene from "gi://Graphene";
 import Pango from "gi://Pango";
@@ -88,42 +89,45 @@ export default function AppLauncher() {
     >
       <Gtk.EventControllerKey onKeyPressed={onKey} />
       <Gtk.GestureClick onPressed={onClick} />
-      <box
-        $={(ref) => (contentbox = ref)}
-        name="launcher-content"
-        class="min-w-[500px] bg-surface rounded-2xl p-4"
-        orientation={Gtk.Orientation.VERTICAL}
-        valign={Gtk.Align.CENTER}
-      >
-        <SearchEntry />
-        <box orientation={Gtk.Orientation.VERTICAL}>
-          <For each={list}>
-            {(app, index) => (
-              <button
-                onClicked={() => launch(app)}
-                class="hover:bg-surface_container px-4 mt-1 rounded-xl"
-              >
-                <box spacing={20}>
-                  <image class="my-2 icon-xl" iconName={app.iconName} />
-                  <box>
-                    <box
-                      orientation={Gtk.Orientation.VERTICAL}
-                      valign={Gtk.Align.CENTER}
-                    >
-                      <label
-                        class="text-xl font-bold text-on_surface"
-                        label={app.name}
-                        xalign={0}
-                        ellipsize={Pango.EllipsizeMode.END}
-                      />
-                      {app.description && (
+      <Adw.Clamp maximumSize={600}>
+        <box
+          $={(ref) => (contentbox = ref)}
+          widthRequest={600}
+          name="launcher-content"
+          class="bg-surface rounded-2xl p-4"
+          orientation={Gtk.Orientation.VERTICAL}
+          valign={Gtk.Align.CENTER}
+        >
+          <SearchEntry />
+          <box orientation={Gtk.Orientation.VERTICAL}>
+            <For each={list}>
+              {(app, index) => (
+                <button
+                  onClicked={() => launch(app)}
+                  class="hover:bg-surface_container px-4 mt-1 rounded-xl"
+                >
+                  <box spacing={20}>
+                    <image class="my-2 icon-xl" iconName={app.iconName} />
+                    <box>
+                      <box
+                        orientation={Gtk.Orientation.VERTICAL}
+                        valign={Gtk.Align.CENTER}
+                      >
                         <label
-                          class="font-medium text-on_surface_variant"
-                          label={app.description}
+                          class="text-xl font-bold text-on_surface"
+                          label={app.name}
                           xalign={0}
                           ellipsize={Pango.EllipsizeMode.END}
                         />
-                      )}
+                        {app.description && (
+                          <label
+                            class="font-medium text-on_surface_variant"
+                            label={app.description}
+                            xalign={0}
+                            ellipsize={Pango.EllipsizeMode.END}
+                          />
+                        )}
+                      </box>
                     </box>
                     <label
                       hexpand
@@ -131,12 +135,12 @@ export default function AppLauncher() {
                       label={index((i) => `Alt ${i + 1}`)}
                     />
                   </box>
-                </box>
-              </button>
-            )}
-          </For>
+                </button>
+              )}
+            </For>
+          </box>
         </box>
-      </box>
+      </Adw.Clamp>
     </Window>
   );
 }
