@@ -11,7 +11,7 @@ type StackPageProps = {
 
 function StackPage({ child, name, toggle, currentView }: StackPageProps) {
   return (
-    <box name={name} vertical>
+    <box name={name} orientation={Gtk.Orientation.VERTICAL}>
       <box spacing={10} cssClasses={["mb-3"]}>
         <BackButton name={name} currentView={currentView} />
         <switch

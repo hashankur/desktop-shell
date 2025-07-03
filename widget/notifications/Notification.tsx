@@ -24,6 +24,7 @@ const urgency = (n: AstalNotifd.Notification) => {
 export default function Notification({
   notification: n,
   onHoverLost,
+  ...props
 }: {
   notification: AstalNotifd.Notification;
   onHoverLost?: () => void;
@@ -35,72 +36,59 @@ export default function Notification({
         name={n.id.toString()}
         cssClasses={["p-3", "rounded-xl", "min-h-[10px]", urgency(n)]}
         orientation={Gtk.Orientation.VERTICAL}
+        {...props}
       >
         <Gtk.EventControllerMotion onLeave={onHoverLost} />
-        <box cssClasses={["pb-1"]} spacing={15}>
+        <box spacing={15}>
           {n.image && fileExists(n.image) ? (
             <image
               file={n.image}
               overflow={Gtk.Overflow.HIDDEN}
               valign={Gtk.Align.CENTER}
-              cssClasses={["icon-2xl", "rounded-full"]}
+              class="icon-2xl rounded-full"
             />
           ) : (
             (n.appIcon || n.desktopEntry) && (
               <image
                 iconName={n.appIcon || n.desktopEntry}
                 valign={Gtk.Align.CENTER}
-                cssClasses={["icon-2xl", "rounded-full"]}
+                class="icon-2xl rounded-full"
               />
             )
           )}
           <box orientation={Gtk.Orientation.VERTICAL}>
             <box spacing={10}>
               <label
-                cssClasses={[
-                  "text-on_surface_variant",
-                  "font-medium",
-                  "text-[14px]",
-                ]}
+                class="text-on_surface_variant font-medium text-sm"
                 halign={Gtk.Align.START}
                 label={n.appName || "Unknown"}
               />
               <label
-                cssClasses={[
-                  "text-on_surface_variant",
-                  "font-medium",
-                  "text-[14px]",
-                ]}
+                class="text-on_surface_variant font-medium text-sm"
                 hexpand
                 halign={Gtk.Align.END}
                 label={time(n.time) ?? ""}
               />
               <button
                 onClicked={() => n.dismiss()}
-                cssClasses={[
-                  "rounded-full",
-                  "min-w-2",
-                  "min-h-2",
-                  "p-2",
-                  "bg-surface_container_highest/50",
-                  "hover:bg-on_error",
-                  "hover:text-error",
-                ]}
+                class="rounded-full min-w-1.5 min-h-1.5 p-1.5 bg-surface_container_highest/50 hover:bg-on_error hover:text-error"
               >
                 <image iconName={icons.ui.close} />
               </button>
             </box>
             <label
-              ellipsize={Pango.EllipsizeMode.END}
+              class="text-lg font-extrabold"
               maxWidthChars={30}
-              cssClasses={["text-xl", "mb-1", "font-bold"]}
+              wrap
               halign={Gtk.Align.START}
               xalign={0}
               label={n.summary}
+              tooltipMarkup={n.summary}
+              ellipsize={Pango.EllipsizeMode.END}
             />
             {n.body && (
               <label
-                cssClasses={["text-[15px]"]}
+                class="text-sm"
                 maxWidthChars={30}
                 wrap
                 halign={Gtk.Align.START}

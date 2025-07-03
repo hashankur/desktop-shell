@@ -1,6 +1,8 @@
 import icons from "@/util/icons";
-import { type Variable } from "astal";
-import { Gtk } from "astal/gtk4";
+import type { Accessor } from "ags";
+import type { Setter } from "ags";
+import { Gtk } from "ags/gtk4";
+import Pango from "gi://Pango";
 
 type StackBtnProps = {
   name: string;
@@ -12,35 +14,35 @@ type StackBtnProps = {
 function StackBtn({ name, icon, item, setCurrentView }: StackBtnProps) {
   return (
     <button
-      onClicked={() => currentView.set(name)}
-      cssClasses={[
-        "px-5",
-        "py-3",
-        "bg-primary_container",
-        "rounded-3xl",
-        "min-h-10",
-      ]}
+      onClicked={() => setCurrentView(name)}
+      class="px-5 py-3 bg-primary_container rounded-3xl min-h-10"
       widthRequest={200}
     >
       <box>
         <box hexpand spacing={15}>
-          <image cssClasses={["text-on_primary_container"]} iconName={icon} />
-          <box vertical valign={Gtk.Align.CENTER} hexpand>
+          <image class="text-on_primary_container" iconName={icon} />
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            valign={Gtk.Align.CENTER}
+            hexpand
+          >
             <label
               label={name}
-              cssClasses={["text-on_primary_container", "text-lg"]}
+              class="text-on_primary_container text-lg/none"
               xalign={0}
             />
             {item && (
               <label
                 label={item}
-                cssClasses={["text-on_primary_container/75", "text-sm"]}
+                class="text-on_primary_container/75 text-sm/none"
                 xalign={0}
+                maxWidthChars={10}
+                ellipsize={Pango.EllipsizeMode.END}
               />
             )}
           </box>
           <image
-            cssClasses={["text-on_primary_container"]}
+            class="text-on_primary_container"
             iconName={icons.ui.arrow.right}
           />
         </box>
@@ -58,29 +60,27 @@ type ToggleBtnProps = {
 function ToggleBtn({ name, icon, item, ...props }: ToggleBtnProps) {
   return (
     <button
-      cssClasses={[
-        "px-5",
-        "py-3",
-        "bg-primary_container",
-        "rounded-3xl",
-        "min-h-10",
-      ]}
+      class="px-5 py-3 bg-primary_container rounded-3xl min-h-10"
       widthRequest={200}
       {...props}
     >
       <box>
         <box hexpand spacing={15}>
-          <image cssClasses={["text-on_primary_container"]} iconName={icon} />
-          <box vertical valign={Gtk.Align.CENTER} hexpand>
+          <image class="text-on_primary_container" iconName={icon} />
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            valign={Gtk.Align.CENTER}
+            hexpand
+          >
             <label
               label={name}
-              cssClasses={["text-on_primary_container", "text-lg"]}
+              class="text-on_primary_container text-lg/none"
               xalign={0}
             />
             {item && (
               <label
                 label={item}
-                cssClasses={["text-on_primary_container/75", "text-sm"]}
+                class="text-on_primary_container/75 text-sm/none"
                 xalign={0}
               />
             )}
@@ -98,10 +98,10 @@ type BackButtonProps = {
 
 function BackButton({ name, setCurrentView }: BackButtonProps) {
   return (
-    <button hexpand onClicked={() => currentView.set("main")}>
+    <button hexpand onClicked={() => setCurrentView("main")}>
       <box>
-        <image cssClasses={["p-3"]} iconName={icons.ui.arrow.left} />
-        <label cssClasses={["text-2xl"]} label={name} />
+        <image class="p-3" iconName={icons.ui.arrow.left} />
+        <label class="text-2xl" label={name} />
       </box>
     </button>
   );

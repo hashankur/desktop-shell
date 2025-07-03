@@ -1,13 +1,14 @@
 import Window from "@/common/window";
-import { Variable, bind } from "astal";
-import { App, Astal, Gtk, hook } from "astal/gtk4";
 import NotificationWindow from "@/widget/notifications";
 import NetworkPage from "./views/Network";
 import MainPage from "./views/Main";
 import BluetoothPage from "./views/Bluetooth";
+import { createBinding } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import { createState } from "ags";
 
-const WINDOW_NAME = "quick-settings";
-const currentView = Variable("main");
+const WINDOW_NAME = "sidebar";
+const [currentView, setCurrentView] = createState("main");
 
 export default function SideBar() {
   const { TOP, RIGHT, BOTTOM } = Astal.WindowAnchor;
@@ -25,23 +26,23 @@ export default function SideBar() {
           "min-w-96",
           "rounded-l-2xl",
         ]}
-        vertical
+        orientation={Gtk.Orientation.VERTICAL}
       >
         <box vexpandSet={true}>
           <stack
-            visibleChildName={bind(currentView)}
+            visibleChildName={currentView}
             transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
             transitionDuration={200}
             cssClasses={["min-w-96", "p-5", "pb-0"]}
-            setup={(self) => {
-              hook(self, App, "window-toggled", (_) => {
-                currentView.set("main");
-              });
-            }}
+            // setup={(self) => {
+            //   hook(self, App, "window-toggled", (_) => {
+            //     currentView.set("main");
+            //   });
+            // }}
           >
-            <MainPage currentView={currentView} windowName={WINDOW_NAME} />
-            <NetworkPage currentView={currentView} />
-            <BluetoothPage currentView={currentView} />
+            <MainPage currentView={setCurrentView} windowName={WINDOW_NAME} />
+            {/* <NetworkPage currentView={currentView} />
+            <BluetoothPage currentView={currentView} /> */}
           </stack>
         </box>
         <NotificationWindow />
