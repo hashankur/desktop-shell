@@ -3,11 +3,11 @@ import Network from "gi://AstalNetwork";
 import { StackPage } from "@/widget/sidebar/stack";
 import { Gtk } from "astal/gtk4";
 
-type NetworkPage = {
+type NetworkPageProps = {
   currentView: Variable<string>;
 };
 
-function NetworkPage({ currentView }: NetworkPage) {
+function NetworkPage({ currentView }: NetworkPageProps) {
   const network = Network.get_default().wifi;
   const connected = bind(network, "activeAccessPoint");
 

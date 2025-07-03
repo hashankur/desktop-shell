@@ -1,10 +1,7 @@
-import type { CCProps } from "ags";
-import type { Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal";
-import Gdk from "gi://Gdk";
 
-type Props = CCProps<Gtk.Window, Gtk.Window.ConstructorProps> & {
+type ButtonProps = JSX.IntrinsicElements["window"] & {
   children: JSX.Element | Array<JSX.Element>;
   name?: string;
 };
@@ -15,7 +12,7 @@ export default function Window({
   keymode = Astal.Keymode.EXCLUSIVE,
   name,
   ...props
-}: Props) {
+}: ButtonProps) {
   return (
     <window
       application={app}

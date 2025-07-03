@@ -2,14 +2,14 @@ import icons from "@/util/icons";
 import { type Variable } from "astal";
 import { Gtk } from "astal/gtk4";
 
-type StackBtn = {
+type StackBtnProps = {
   name: string;
   icon: string;
-  item?: any;
-  currentView: Variable<string>;
+  item?: string;
+  setCurrentView: Setter<string>;
 };
 
-function StackBtn({ name, icon, item, currentView }: StackBtn) {
+function StackBtn({ name, icon, item, setCurrentView }: StackBtnProps) {
   return (
     <button
       onClicked={() => currentView.set(name)}
@@ -49,13 +49,13 @@ function StackBtn({ name, icon, item, currentView }: StackBtn) {
   );
 }
 
-type ToggleBtn = {
+type ToggleBtnProps = {
   name: string;
   icon: string;
-  item?: any;
+  item?: string;
 };
 
-function ToggleBtn({ name, icon, item, ...props }: ToggleBtn) {
+function ToggleBtn({ name, icon, item, ...props }: ToggleBtnProps) {
   return (
     <button
       cssClasses={[
@@ -91,12 +91,12 @@ function ToggleBtn({ name, icon, item, ...props }: ToggleBtn) {
   );
 }
 
-type BackButton = {
+type BackButtonProps = {
   name: string;
-  currentView: Variable<string>;
+  setCurrentView: Setter<string>;
 };
 
-function BackButton({ name, currentView }: BackButton) {
+function BackButton({ name, setCurrentView }: BackButtonProps) {
   return (
     <button hexpand onClicked={() => currentView.set("main")}>
       <box>

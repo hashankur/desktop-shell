@@ -1,15 +1,15 @@
-import { Gtk } from "astal/gtk4";
+import { Gtk } from "ags/gtk4";
 import { BackButton } from "./buttons";
-import { type Variable } from "astal";
+import type { Accessor } from "ags";
 
-type StackPage = {
+type StackPageProps = {
   child?: JSX.Element;
   name: string;
   toggle?: any;
-  currentView: Variable<string>;
+  currentView: Accessor<string>;
 };
 
-function StackPage({ child, name, toggle, currentView }: StackPage) {
+function StackPage({ child, name, toggle, currentView }: StackPageProps) {
   return (
     <box name={name} vertical>
       <box spacing={10} cssClasses={["mb-3"]}>

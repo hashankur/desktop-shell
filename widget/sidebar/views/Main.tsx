@@ -14,12 +14,12 @@ const brightness = Brightness.get_default();
 const network = Network.get_default().wifi;
 const connected = network.activeAccessPoint?.ssid ?? "Disabled";
 
-type MainPage = {
-  currentView: Variable<string>;
+type MainPageProps = {
+  currentView: Setter<string>;
   windowName: string;
 };
 
-function MainPage({ currentView, windowName }: MainPage) {
+function MainPage({ currentView, windowName }: MainPageProps) {
   return (
     <box name="main" spacing={10} vertical cssClasses={["px-5"]}>
       <box halign={Gtk.Align.END}>

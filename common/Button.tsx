@@ -1,11 +1,8 @@
-import type { CCProps } from "ags";
-import type { Gtk } from "ags/gtk4";
-
-type Props = CCProps<Gtk.Button, Gtk.Button.ConstructorProps> & {
+type ButtonProps = JSX.IntrinsicElements["button"] & {
   child?: JSX.Element | Array<JSX.Element>;
 };
 
-export default function Button({ children, ...props }: Props) {
+export default function Button({ children, ...props }: ButtonProps) {
   return (
     <button
       class="rounded-lg bg-surface_container_lowest hover:bg-surface_container_low px-3"
