@@ -20,35 +20,41 @@ const MAX_WIDTH_CHARS = 50;
 
 function Workspaces() {
   const niri = Niri.get_default();
-  const workspaces = createComputed(
-    [
-      createBinding(niri, "workspaces"),
-      createBinding(niri, "focused_workspace"),
-    ],
-    (ws, fws) =>
-      ws.map((w) => (
-        <button
-          onClicked={() =>
-            execAsync(`niri msg action focus-workspace ${w.id}`).catch(printerr)
-          }
-          hexpand
-          cssClasses={[
-            "min-h-1",
-            "p-0",
-            "rounded-none",
-            ...(fws.id === w.id
-              ? ["text-on_primary", "bg-primary"]
-              : w.activeWindowId < 1_000 // Num overflow?
-                ? ["bg-primary_container"]
-                : ["bg-surface_container"]),
-          ]}
-        />
-      )),
-  );
+  const workspaces = createBinding(niri, "workspaces");
+  const focusedWorkspace = createBinding(niri, "focusedWorkspace");
 
   return (
-    <box spacing={3}>
-      <For each={workspaces}>{(workspace) => workspace}</For>
+    <box>
+      <With value={focusedWorkspace}>
+        {(fws) => (
+          <box spacing={3}>
+            <For each={workspaces}>
+              {(w) => {
+                return (
+                  <button
+                    onClicked={() =>
+                      execAsync(
+                        `niri msg action focus-workspace ${w.id}`,
+                      ).catch(printerr)
+                    }
+                    hexpand
+                    cssClasses={[
+                      "min-h-1",
+                      "p-0",
+                      "rounded-none",
+                      ...(fws.id === w.id
+                        ? ["text-on_primary", "bg-primary"]
+                        : w.activeWindowId !== 0
+                          ? ["bg-primary_container"]
+                          : ["bg-surface_container"]),
+                    ]}
+                  />
+                );
+              }}
+            </For>
+          </box>
+        )}
+      </With>
     </box>
   );
 }
