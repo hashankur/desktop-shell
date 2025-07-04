@@ -5,6 +5,7 @@ import app from "ags/gtk4/app";
 import AstalNotifd from "gi://AstalNotifd";
 import Notification from "./Notification";
 import { useNotificationHandler } from "@/util/notification";
+import { timeout } from "ags/time";
 
 export default function NotificationPopups() {
   const monitors = createBinding(app, "monitors");
@@ -16,6 +17,10 @@ export default function NotificationPopups() {
   );
 
   onCleanup(useNotificationHandler(notifd, notifications, setNotifications));
+
+  const dismiss = (notification: AstalNotifd.Notification) => {
+    setNotifications((ns) => ns.filter((n) => n.id !== notification.id));
+  };
 
   return (
     <For each={monitors} cleanup={(win) => (win as Gtk.Window).destroy()}>
@@ -31,12 +36,9 @@ export default function NotificationPopups() {
             <For each={notifications}>
               {(notification) => (
                 <Notification
+                  $={() => timeout(5000, () => dismiss(notification))}
                   notification={notification}
-                  onHoverLost={() =>
-                    setNotifications((ns) =>
-                      ns.filter((n) => n.id !== notification.id),
-                    )
-                  }
+                  onHoverLost={() => dismiss(notification)}
                 />
               )}
             </For>

@@ -21,14 +21,16 @@ const urgency = (n: AstalNotifd.Notification) => {
   }
 };
 
+type NotificationProps = JSX.IntrinsicElements["box"] & {
+  notification: AstalNotifd.Notification;
+  onHoverLost?: () => void;
+};
+
 export default function Notification({
   notification: n,
   onHoverLost,
   ...props
-}: {
-  notification: AstalNotifd.Notification;
-  onHoverLost?: () => void;
-}) {
+}: NotificationProps) {
   return (
     <Adw.Clamp maximumSize={450}>
       <box
