@@ -252,32 +252,34 @@ function Stats() {
       // />
 
       // Until circular progress gets merged
-      <levelbar value={value} widthRequest={40} tooltipText={tooltip} />
+      <levelbar
+        value={value}
+        heightRequest={25}
+        tooltipText={tooltip}
+        orientation={Gtk.Orientation.VERTICAL}
+        inverted
+      />
     );
   };
 
   return (
-    <box spacing={5} cssClasses={["p-1"]} valign={Gtk.Align.CENTER}>
-      <box spacing={5} orientation={Gtk.Orientation.VERTICAL}>
-        <Stat
-          value={cpu((val) => val / 100)}
-          tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
-        />
-        <Stat
-          value={memory((val) => val / 100)}
-          tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
-        />
-      </box>
-      <box spacing={5} orientation={Gtk.Orientation.VERTICAL}>
-        <Stat
-          value={gpu((val) => val / 100)}
-          tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
-        />
-        <Stat
-          value={temp((val) => val / 1000 / 100)}
-          tooltip={temp((val) => `Temp: ${val / 1000} °C`)}
-        />
-      </box>
+    <box spacing={5} class="p-1" valign={Gtk.Align.CENTER}>
+      <Stat
+        value={cpu((val) => val / 100)}
+        tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={memory((val) => val / 100)}
+        tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={gpu((val) => val / 100)}
+        tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={temp((val) => val / 1000 / 100)}
+        tooltip={temp((val) => `Temp: ${val / 1000} °C`)}
+      />
     </box>
   );
 }
