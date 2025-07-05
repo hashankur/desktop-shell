@@ -9,7 +9,7 @@ import app from "ags/gtk4/app";
 import { execAsync } from "ags/process";
 import Network from "gi://AstalNetwork";
 import Wp from "gi://AstalWp";
-import { warpStatus, warpToggle } from "@/util/warp";
+import { warpStatus, warpToggle } from "@/lib/warp";
 import type { Setter } from "ags";
 
 const audio = Wp.get_default()?.audio.defaultSpeaker!;

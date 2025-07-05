@@ -9,10 +9,10 @@ import PowerMenu from "@/widget/PowerMenu";
 import SideBar from "@/widget/sidebar";
 import NotificationPopups from "@/widget/notifications/NotificationPopups";
 import app from "ags/gtk4/app";
-import Util from "@/util/util";
 import { exec } from "ags/process";
-import { Gtk } from "ags/gtk4";
+import type { Gtk } from "ags/gtk4";
 import GLib from "gi://GLib";
+import { notifyLowBattery } from "@/lib/battery";
 
 let applauncher: Gtk.Window;
 
@@ -52,6 +52,6 @@ app.start({
     Desktop();
     SideBar();
 
-    Util.notifyLowBattery();
+    notifyLowBattery();
   },
 });

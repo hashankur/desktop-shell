@@ -4,7 +4,7 @@ import { Astal, Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import AstalNotifd from "gi://AstalNotifd";
 import Notification from "./Notification";
-import { useNotificationHandler } from "@/util/notification";
+import { useNotificationHandler } from "@/lib/notification";
 import { timeout } from "ags/time";
 
 export default function NotificationPopups() {
