@@ -57,7 +57,10 @@ function MainPage({ currentView, windowName }: MainPageProps) {
       <box spacing={10}>
         <StackBtn
           name="Network"
-          item={createBinding(network, "activeAccessPoint")((ap) => ap?.ssid)}
+          item={createBinding(
+            network,
+            "activeAccessPoint",
+          )((ap) => ap?.ssid ?? "Disabled")}
           icon={icons.network.wireless}
           currentView={currentView}
         />

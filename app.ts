@@ -1,8 +1,7 @@
 import AppLauncher from "@/widget/AppLauncher";
 import Bar from "@/widget/Bar";
-import Calendar from "@/widget/Calendar";
 import Clipboard from "@/widget/Clipboard";
-import Desktop from "@/widget/Desktop";
+// import Desktop from "@/widget/Desktop";
 import Media from "@/widget/Media";
 import OSD from "@/widget/OSD";
 import PowerMenu from "@/widget/PowerMenu";
@@ -42,16 +41,14 @@ app.start({
     // AppLauncher();
     Bar(0);
     // Bar(1) // initialize other monitors
-    Clipboard();
-    Media();
+    // Clipboard();
     OSD();
     PowerMenu();
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
-    Calendar();
-    Desktop();
     SideBar();
-
+    Media();
+    // Desktop();
     notifyLowBattery();
   },
 });

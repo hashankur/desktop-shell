@@ -41,17 +41,12 @@ function createSlider(
       }}
     >
       <box
-        cssClasses={["bg-surface", "p-2", "rounded-xl"]}
+        class="bg-surface p-2 rounded-xl"
         orientation={Gtk.Orientation.VERTICAL}
         spacing={5}
       >
         <slider
-          cssClasses={[
-            "min-h-[300px]",
-            "*:min-w-[25px]",
-            "rounded-[7px]",
-            "unset",
-          ]}
+          class="min-h-[300px] *:min-w-[25px] rounded-[7px] unset"
           orientation={Gtk.Orientation.VERTICAL}
           value={value}
           drawValue={false}

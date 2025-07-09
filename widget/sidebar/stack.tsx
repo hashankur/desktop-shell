@@ -1,12 +1,12 @@
+import type { Accessor, Setter } from "ags";
 import { Gtk } from "ags/gtk4";
 import { BackButton } from "./buttons";
-import type { Accessor } from "ags";
 
-type StackPageProps = {
+type StackPageProps = JSX.IntrinsicElements["box"] & {
   child?: JSX.Element;
   name: string;
   toggle?: any;
-  currentView: Accessor<string>;
+  currentView: Setter<string>;
 };
 
 function StackPage({ child, name, toggle, currentView }: StackPageProps) {

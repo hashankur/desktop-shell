@@ -1,10 +1,9 @@
+import { useNotificationHandler } from "@/lib/notification";
 import icons from "@/util/icons";
 import { createBinding, createState, For, onCleanup } from "ags";
 import { Gtk } from "ags/gtk4";
 import AstalNotifd from "gi://AstalNotifd";
 import Notification from "./Notification";
-import { useNotificationHandler } from "@/lib/notification";
-import { With } from "ags";
 
 export const WINDOW_NAME = "notifications";
 

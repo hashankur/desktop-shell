@@ -42,9 +42,9 @@ function Workspaces() {
                       "min-h-1",
                       "p-0",
                       "rounded-none",
-                      ...(fws.id === w.id
+                      ...(fws?.id === w?.id
                         ? ["text-on_primary", "bg-primary"]
-                        : w.activeWindowId !== 0
+                        : w?.activeWindowId !== 0
                           ? ["bg-primary_container"]
                           : ["bg-surface_container"]),
                     ]}
@@ -112,7 +112,7 @@ function Wifi() {
 
   return (
     <image
-      tooltipText={createBinding(wifi, "ssid")}
+      tooltipText={createBinding(wifi, "ssid")((v) => v ?? "Disabled")}
       iconName={createBinding(wifi, "iconName")}
     />
   );
@@ -123,16 +123,18 @@ function BluetoothStatus() {
   const device = devices[0];
 
   return (
-    <With value={createBinding(device, "connected")}>
-      {(v) => (
-        <image
-          tooltipText={
-            v ? createBinding(device, "name").as(String) : "Not Connected"
-          }
-          iconName={v ? icons.bluetooth.enabled : icons.bluetooth.disabled}
-        />
-      )}
-    </With>
+    <box>
+      <With value={createBinding(device, "connected")}>
+        {(v) => (
+          <image
+            tooltipText={
+              v ? createBinding(device, "name").as(String) : "Not Connected"
+            }
+            iconName={v ? icons.bluetooth.enabled : icons.bluetooth.disabled}
+          />
+        )}
+      </With>
+    </box>
   );
 }
 
@@ -313,7 +315,7 @@ function Right() {
     <box $type="end" halign={Gtk.Align.END} spacing={5}>
       <Media />
       <SysTray />
-      <Button onClicked={() => app.toggle_window("quick-settings")}>
+      <Button onClicked={() => app.toggle_window("sidebar")}>
         <box spacing={20}>
           <BluetoothStatus />
           <Wifi />
