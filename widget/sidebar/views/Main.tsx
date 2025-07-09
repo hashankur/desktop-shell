@@ -12,7 +12,7 @@ import { warpStatus, warpToggle } from "../warp";
 const audio = Wp.get_default()?.audio.defaultSpeaker!;
 const brightness = Brightness.get_default();
 const network = Network.get_default().wifi;
-const connected = network.activeAccessPoint?.ssid;
+const connected = network.activeAccessPoint?.ssid ?? "Disabled";
 
 type MainPage = {
   currentView: Variable<string>;

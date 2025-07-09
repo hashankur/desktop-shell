@@ -97,7 +97,7 @@ function Wifi() {
 
   return (
     <image
-      tooltipText={bind(wifi, "ssid").as(String)}
+      tooltipText={bind(wifi, "ssid").as((v) => v ?? "Disabled")}
       iconName={bind(wifi, "iconName")}
     />
   );
