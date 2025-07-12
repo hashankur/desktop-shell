@@ -5,13 +5,11 @@ import { createState, For } from "ags";
 import { Astal, Gdk, Gtk } from "ags/gtk4";
 import Adw from "gi://Adw";
 import AstalApps from "gi://AstalApps";
-import Graphene from "gi://Graphene";
 import Pango from "gi://Pango";
 
 const WINDOW_NAME = "app-launcher";
 
 export default function AppLauncher() {
-  let contentbox: Gtk.Box;
   let searchentry: Gtk.Entry;
   let win: Astal.Window;
 
@@ -30,7 +28,6 @@ export default function AppLauncher() {
     }
   }
 
-  // close on ESC
   // handle alt + number key
   function onKey(
     _e: Gtk.EventControllerKey,
@@ -38,28 +35,12 @@ export default function AppLauncher() {
     _: number,
     mod: number,
   ) {
-    if (keyval === Gdk.KEY_Escape) {
-      win.visible = false;
-      return;
-    }
-
     if (mod === Gdk.ModifierType.ALT_MASK) {
       for (const i of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {
         if (keyval === Gdk[`KEY_${i}`]) {
           return launch(list.get()[i - 1]);
         }
       }
-    }
-  }
-
-  // close on clickaway
-  function onClick(_e: Gtk.GestureClick, _: number, x: number, y: number) {
-    const [, rect] = contentbox.compute_bounds(win);
-    const position = new Graphene.Point({ x, y });
-
-    if (!rect.contains_point(position)) {
-      win.visible = false;
-      return true;
     }
   }
 
@@ -88,10 +69,8 @@ export default function AppLauncher() {
       }}
     >
       <Gtk.EventControllerKey onKeyPressed={onKey} />
-      <Gtk.GestureClick onPressed={onClick} />
       <Adw.Clamp maximumSize={600}>
         <box
-          $={(ref) => (contentbox = ref)}
           widthRequest={600}
           name="launcher-content"
           class="bg-surface rounded-2xl p-4"
