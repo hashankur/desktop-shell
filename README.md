@@ -21,7 +21,7 @@ brightnessctl
 matugen
 ```
 
-## Prerequisities
+## Prerequisites
 
 Install npm packages (use preferred package manager):
 
@@ -38,7 +38,7 @@ ags types
 ## Start Desktop Shell
 
 ```sh
-ags run --gtk4
+ags run
 ```
 
 > [!NOTE]
