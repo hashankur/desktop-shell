@@ -1,12 +1,46 @@
-import Pango from "gi://Pango";
-import AstalNotifd from "gi://AstalNotifd";
 import icons from "@/util/icons";
-import GLib from "gi://GLib";
+import { createBinding } from "ags";
 import { Gtk } from "ags/gtk4";
 import Adw from "gi://Adw";
+import AstalNotifd from "gi://AstalNotifd";
+import GLib from "gi://GLib";
+import Pango from "gi://Pango";
 
-const time = (time: number, format = "%I:%M %p") =>
+const time = (time: number, format = "%a %b %d %I:%M %p") =>
   GLib.DateTime.new_from_unix_local(time).format(format);
+
+const SECOND = 1;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+const WEEK = 7 * DAY;
+
+const relativeTime = (timestampInSeconds: number): string => {
+  const nowInSeconds = GLib.get_real_time() / 1_000_000; // current time in seconds
+  const diff = nowInSeconds - timestampInSeconds; // difference in seconds
+
+  if (diff < MINUTE) {
+    return "Just now";
+  }
+  if (diff < HOUR) {
+    const minutes = Math.floor(diff / MINUTE);
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  }
+  if (diff < DAY) {
+    const hours = Math.floor(diff / HOUR);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  }
+  if (diff < WEEK) {
+    const days = Math.floor(diff / DAY);
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  }
+  // For older notifications, display the exact date and time
+  return (
+    GLib.DateTime.new_from_unix_local(timestampInSeconds).format(
+      "%a %b %d %I:%M %p",
+    ) || ""
+  );
+};
 
 const fileExists = (path: string) => GLib.file_test(path, GLib.FileTest.EXISTS);
 
@@ -69,7 +103,8 @@ export default function Notification({
                 class="text-on_surface_variant font-medium text-sm"
                 hexpand
                 halign={Gtk.Align.END}
-                label={time(n.time) ?? ""}
+                label={createBinding(n, "time")((time) => relativeTime(time))}
+                tooltipText={time(n.time) ?? ""}
               />
               <button
                 onClicked={() => n.dismiss()}

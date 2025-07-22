@@ -25,8 +25,16 @@ function NotifsScrolledWindow() {
         spacing={8}
         cssClasses={["px-2"]}
       >
-        <For each={notifications}>
-          {(notification) => <Notification notification={notification} />}
+        <For
+          each={notifications.as((ns) => {
+            const sortedNs = [...ns];
+            sortedNs.sort((a, b) => b.time - a.time);
+            return sortedNs;
+          })}
+        >
+          {(notification: AstalNotifd.Notification) => (
+            <Notification notification={notification} />
+          )}
         </For>
         <box
           halign={Gtk.Align.CENTER}
