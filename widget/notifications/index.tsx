@@ -26,11 +26,7 @@ function NotifsScrolledWindow() {
         cssClasses={["px-2"]}
       >
         <For
-          each={notifications.as((ns) => {
-            const sortedNs = [...ns];
-            sortedNs.sort((a, b) => b.time - a.time);
-            return sortedNs;
-          })}
+          each={notifications((ns) => [...ns].sort((a, b) => b.time - a.time))}
         >
           {(notification: AstalNotifd.Notification) => (
             <Notification notification={notification} />
