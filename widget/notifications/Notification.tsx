@@ -1,5 +1,5 @@
+import { getTimeTooltip, useRelativeTime } from "@/lib/time";
 import icons from "@/util/icons";
-import { useRelativeTime, getTimeTooltip } from "@/lib/time";
 import { Gtk } from "ags/gtk4";
 import Adw from "gi://Adw";
 import AstalNotifd from "gi://AstalNotifd";

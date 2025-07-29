@@ -26,8 +26,10 @@ const WEEK = 7 * DAY;
 /**
  * Format a timestamp using GLib.DateTime
  */
-export const formatTime = (timestamp: number, format = "%a %b %d %I:%M %p"): string =>
-  GLib.DateTime.new_from_unix_local(timestamp).format(format) || "";
+export const formatTime = (
+  timestamp: number,
+  format = "%a %b %d, %I:%M %p",
+): string => GLib.DateTime.new_from_unix_local(timestamp).format(format) || "";
 
 /**
  * Get relative time string from a timestamp
@@ -54,7 +56,7 @@ export const getRelativeTime = (
     return `${days} day${days > 1 ? "s" : ""} ago`;
   }
   // For older timestamps, display the exact date and time
-  return formatTime(timestampInSeconds);
+  return formatTime(timestampInSeconds, "%b %d");
 };
 
 /**
