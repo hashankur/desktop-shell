@@ -14,6 +14,7 @@ import Tray from "gi://AstalTray";
 import Wp from "gi://AstalWp";
 import GLib from "gi://GLib";
 import Pango from "gi://Pango";
+import Calendar from "@/widget/calendar";
 
 const WINDOW_NAME = "bar";
 const MAX_WIDTH_CHARS = 50;
@@ -304,7 +305,7 @@ function Center() {
     <menubutton $type="center" hexpand halign={Gtk.Align.CENTER}>
       <label label={time} />
       <popover>
-        <Gtk.Calendar />
+        <Calendar />
       </popover>
     </menubutton>
   );
