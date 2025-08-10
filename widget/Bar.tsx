@@ -1,5 +1,5 @@
-import Button from "@/common/Button";
-import icons from "@/util/icons";
+import Button from "@/widget/common/Button";
+import icons from "@/constants/icons";
 import { createBinding, createComputed, For, With } from "ags";
 import { Astal, Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";

@@ -1,4 +1,4 @@
-import icons from "@/util/icons";
+import icons from "@/constants/icons";
 import type { Accessor } from "ags";
 import type { Setter } from "ags";
 import { Gtk } from "ags/gtk4";

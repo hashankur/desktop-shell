@@ -47,7 +47,7 @@ export default function Window({
     <window
       application={app}
       layer={Astal.Layer.OVERLAY}
-      margin={20}
+      margin={10}
       class="bg-transparent"
       defaultHeight={-1}
       visible={visible}

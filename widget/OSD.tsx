@@ -1,6 +1,6 @@
-import Window from "@/common/window";
+import Window from "@/widget/common/window";
 import Brightness from "@/lib/brightness";
-import icons from "@/util/icons";
+import icons from "@/constants/icons";
 import type { Accessor } from "ags";
 import { createBinding } from "ags";
 import { Astal, Gtk } from "ags/gtk4";

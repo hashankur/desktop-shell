@@ -1,6 +1,6 @@
 //https://github.com/PoSayDone/.dotfiles_nix/blob/main/home-manager/modules/ags/widget/Dashboard/items/Todos.tsx
 
-import icons from "@/util/icons";
+import icons from "@/constants/icons";
 import GoogleTasksService, { Task, TaskListsItem } from "@/lib/tasks";
 import { ComboBox, Spinner, Ref } from "../../../common/Types";
 import Pango from "gi://Pango?version=1.0";

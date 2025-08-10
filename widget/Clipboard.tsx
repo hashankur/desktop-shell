@@ -1,5 +1,5 @@
-import Window from "@/common/window";
-import icons from "@/util/icons";
+import Window from "@/widget/common/window";
+import icons from "@/constants/icons";
 import { createState, For } from "ags";
 import { Astal, Gtk } from "ags/gtk4";
 import { execAsync } from "ags/process";

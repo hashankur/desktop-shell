@@ -2,7 +2,7 @@
 
 import { Gdk, Gtk } from "ags/gtk4";
 import { getCalendarLayout } from "./Layout";
-import icons from "@/util/icons";
+import icons from "@/constants/icons";
 import { createState, For } from "ags";
 
 const [calendarJson, setCalendarJson] = createState(

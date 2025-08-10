@@ -1,5 +1,5 @@
-import Window from "@/common/window";
-import icons from "@/util/icons";
+import Window from "@/widget/common/window";
+import icons from "@/constants/icons";
 import { createComputed } from "ags";
 import { createState, For } from "ags";
 import { Astal, Gdk, Gtk } from "ags/gtk4";

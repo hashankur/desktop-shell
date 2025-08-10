@@ -1,5 +1,5 @@
-import Window from "@/common/window";
-import icons from "@/util/icons";
+import Window from "@/widget/common/window";
+import icons from "@/constants/icons";
 import app from "ags/gtk4/app";
 import { exec } from "ags/process";
 

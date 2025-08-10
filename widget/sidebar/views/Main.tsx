@@ -1,7 +1,7 @@
-import Button from "@/common/Button";
-// import Brightness from "@/lib/brightness";
-import icons from "@/util/icons";
-import Util from "@/util/util";
+import Button from "@/widget/common/Button";
+import Brightness from "@/lib/brightness";
+import icons from "@/constants/icons";
+import Util from "@/lib/util";
 import { StackBtn, ToggleBtn } from "@/widget/sidebar/buttons";
 import { createBinding, createState } from "ags";
 import { Gtk } from "ags/gtk4";

@@ -1,4 +1,4 @@
-import Window from "@/common/window";
+import Window from "@/widget/common/window";
 import NotificationWindow from "@/widget/notifications";
 import NetworkPage from "./views/Network";
 import MainPage from "./views/Main";

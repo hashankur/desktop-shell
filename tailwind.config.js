@@ -2,7 +2,7 @@
 import resolveConfig from "tailwindcss/resolveConfig";
 import defaultConfig from "tailwindcss/defaultConfig";
 
-import generatedColors from "./util/colors.json";
+import generatedColors from "./constants/colors.json";
 
 const config = resolveConfig(defaultConfig);
 module.exports = {

@@ -1,5 +1,5 @@
-import Window from "@/common/window";
-import icons from "@/util/icons";
+import Window from "@/widget/common/window";
+import icons from "@/constants/icons";
 import { With } from "ags";
 import { createBinding } from "ags";
 import { Astal, Gtk } from "ags/gtk4";

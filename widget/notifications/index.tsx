@@ -1,5 +1,5 @@
 import { useNotificationHandler } from "@/lib/notification";
-import icons from "@/util/icons";
+import icons from "@/constants/icons";
 import { createBinding, createState, For, onCleanup } from "ags";
 import { Gtk } from "ags/gtk4";
 import AstalNotifd from "gi://AstalNotifd";
