@@ -21,30 +21,24 @@ export default function SideBar() {
       marginLeft={0}
     >
       <box
-        cssClasses={[
-          "bg-surface_container_lowest",
-          "min-w-96",
-          "rounded-l-2xl",
-        ]}
+        class="bg-surface_container_lowest rounded-l-2xl"
         orientation={Gtk.Orientation.VERTICAL}
       >
-        <box vexpandSet={true}>
-          <stack
-            visibleChildName={currentView}
-            transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
-            transitionDuration={200}
-            cssClasses={["min-w-96", "p-5", "pb-0"]}
-            // setup={(self) => {
-            //   hook(self, App, "window-toggled", (_) => {
-            //     currentView.set("main");
-            //   });
-            // }}
-          >
-            <MainPage currentView={setCurrentView} windowName={WINDOW_NAME} />
-            {/* <NetworkPage currentView={currentView} />
-            <BluetoothPage currentView={currentView} /> */}
-          </stack>
-        </box>
+        <stack
+          visibleChildName={currentView}
+          transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
+          transitionDuration={200}
+          cssClasses={["p-5", "pb-0"]}
+          // setup={(self) => {
+          //   hook(self, App, "window-toggled", (_) => {
+          //     currentView.set("main");
+          //   });
+          // }}
+        >
+          <MainPage currentView={setCurrentView} windowName={WINDOW_NAME} />
+          {/* <NetworkPage currentView={setCurrentView} /> */}
+          {/* <BluetoothPage currentView={currentView} /> */}
+        </stack>
         <NotificationWindow />
       </box>
     </Window>

@@ -119,12 +119,7 @@ export default function Notification({
       <box
         widthRequest={450}
         name={notification.id.toString()}
-        cssClasses={[
-          "p-3",
-          "rounded-xl",
-          "min-h-[10px]",
-          getUrgencyClass(notification),
-        ]}
+        cssClasses={["p-3", "rounded-xl", getUrgencyClass(notification)]}
         orientation={Gtk.Orientation.VERTICAL}
         {...props}
       >

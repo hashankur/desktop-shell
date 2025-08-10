@@ -120,7 +120,7 @@ export default function Clipboard() {
         class="hover:bg-surface_container rounded-lg p-3 mb-2"
       >
         {item.isImage && item.imagePath ? (
-          <image file={item.imagePath} class="min-h-[200px] max-h-[300px]" />
+          <image file={item.imagePath} class="min-h-40" />
         ) : (
           <label
             label={item.content}
@@ -155,7 +155,7 @@ export default function Clipboard() {
     >
       <box
         orientation={Gtk.Orientation.VERTICAL}
-        class="bg-surface min-h-[500px] min-w-[500px] max-w-[800px] p-5 rounded-2xl"
+        class="bg-surface min-h-[500px] min-w-[500px] p-5 rounded-2xl"
         hexpand={false}
       >
         <SearchEntry />

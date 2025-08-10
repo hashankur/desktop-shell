@@ -1,4 +1,4 @@
-import Window from "@/common/window";
+import Window from "@/widget/common/window";
 import { createBinding, createState, For, onCleanup } from "ags";
 import { Astal, Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";

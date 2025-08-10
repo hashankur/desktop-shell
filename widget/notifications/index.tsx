@@ -23,7 +23,7 @@ function NotifsScrolledWindow() {
         orientation={Gtk.Orientation.VERTICAL}
         hexpand={false}
         spacing={8}
-        cssClasses={["px-2"]}
+        class="mx-1"
       >
         <For
           each={notifications((ns) => [...ns].sort((a, b) => b.time - a.time))}
@@ -32,6 +32,7 @@ function NotifsScrolledWindow() {
             <Notification notification={notification} />
           )}
         </For>
+
         <box
           halign={Gtk.Align.CENTER}
           valign={Gtk.Align.CENTER}
@@ -89,12 +90,8 @@ function ClearButton() {
 
 export default function Notifications() {
   return (
-    <box
-      cssClasses={["p-3", "rounded-3xl", "min-w-[475px]"]}
-      orientation={Gtk.Orientation.VERTICAL}
-      vexpand
-    >
-      <box cssClasses={["p-2"]} spacing={10}>
+    <box class="mx-2 mb-3" orientation={Gtk.Orientation.VERTICAL} vexpand>
+      <box class="px-3 py-2" spacing={10}>
         <label label={"Notifications"} hexpand xalign={0} />
         <DNDButton />
         <ClearButton />
