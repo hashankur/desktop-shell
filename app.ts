@@ -1,5 +1,6 @@
 import AppLauncher from "@/widget/AppLauncher";
 import Bar from "@/widget/Bar";
+import Clipboard from "@/widget/Clipboard";
 // import Desktop from "@/widget/Desktop";
 import { notifyLowBattery } from "@/lib/battery";
 import Media from "@/widget/Media";
@@ -21,14 +22,15 @@ app.start({
     AppLauncher();
     Bar(0);
     // Bar(1) // initialize other monitors
-    // Clipboard();
+    Clipboard();
+    // Desktop();
+    Media();
     OSD();
     PowerMenu();
     // App.get_monitors().map(NotificationPopups);
     NotificationPopups();
     SideBar();
-    Media();
-    // Desktop();
+
     notifyLowBattery();
   },
 });

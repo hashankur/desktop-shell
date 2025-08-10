@@ -1,163 +1,181 @@
 import Window from "@/common/window";
-import { bind, Variable } from "astal";
-import { App, Astal, Gtk, hook, Widget } from "astal/gtk4";
-import { execAsync } from "astal/process";
+import icons from "@/util/icons";
+import { createState, For } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import { execAsync } from "ags/process";
 import Pango from "gi://Pango";
 
 const WINDOW_NAME = "clipboard";
+const THUMB_DIR = "/tmp/cliphist/thumbs";
 
-const cliphist = Variable<string[]>([]);
-const changes = Variable<string[]>([]);
-const query = Variable<string>(" ");
-const init = Variable<boolean>(true);
-
-const thumb_dir = "/tmp/cliphist/thumbs";
-let existingThumbs = "";
-
-execAsync(`mkdir -p "${thumb_dir}"`).then(() => {
-  execAsync(`ls ${thumb_dir}`).then((output) => {
-    existingThumbs = output;
-  });
-});
-
-function differences<T>(list1: T[], list2: T[]): T[] {
-  return list1.filter((item) => !list2.includes(item));
+interface ClipboardItem {
+  id: string;
+  content: string;
+  isImage: boolean;
+  imagePath?: string;
 }
-
-function decodeImage(index: string) {
-  if (!existingThumbs.includes(index)) {
-    execAsync([
-      "bash",
-      "-c",
-      `cliphist decode ${index} | magick - -resize 512x ${thumb_dir}/${index}.png`,
-    ]).then(() => {
-      existingThumbs += index;
-    });
-  }
-  return `${thumb_dir}/${index}.png`;
-}
-
-const itemWidget = (item: string, image: any) => (
-  <button
-    hexpand={false}
-    vexpand
-    visible={item.match(query.get()) != null}
-    on_Clicked={() => {
-      execAsync([
-        "sh",
-        "-c",
-        `cliphist decode ${(item.match("[0-9]+") ?? [""])[0]} | wl-copy`,
-      ]);
-      App.toggle_window(WINDOW_NAME);
-    }}
-    cssClasses={["hover:bg-surface_container", "rounded-lg", "p-3"]}
-  >
-    {image ? (
-      <image
-        file={item}
-        cssClasses={["min-h-[450px]"]}
-        keepAspectRatio={true}
-        contentFit={Gtk.ContentFit.COVER}
-      />
-    ) : (
-      <label
-        label={item.split("\t").slice(1).join("\t")}
-        xalign={0}
-        wrap
-        wrapMode={Pango.WrapMode.WORD_CHAR}
-        vexpand
-        hexpand={false}
-      />
-    )}
-  </button>
-);
 
 export default function Clipboard() {
-  const Entry = Widget.Entry({
-    text: bind(query),
-    hexpand: true,
-    canFocus: true,
-    placeholderText: "Search",
-    onActivate: () => {
-      App.toggle_window(WINDOW_NAME);
-    },
-    setup: (self) => {
-      hook(self, self, "notify::text", () => {
-        query.set(self.get_text());
+  let searchentry: Gtk.Entry;
+  let win: Astal.Window;
+
+  const [items, setItems] = createState(new Array<ClipboardItem>());
+  const [filteredItems, setFilteredItems] = createState(
+    new Array<ClipboardItem>(),
+  );
+  const [query, setQuery] = createState("");
+  const [existingThumbs, setExistingThumbs] = createState<Set<string>>(
+    new Set(),
+  );
+
+  // Initialize thumbnail directory
+  execAsync(`mkdir -p "${THUMB_DIR}"`).then(() => {
+    execAsync(`ls ${THUMB_DIR}`).then((output) => {
+      setExistingThumbs(new Set(output.split("\n").filter(Boolean)));
+    });
+  });
+
+  function parseClipboardItem(line: string): ClipboardItem {
+    const parts = line.split("\t");
+    const id = parts[0];
+    const content = parts.slice(1).join("\t");
+
+    const imageRegex = /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/;
+    const isImage = imageRegex.test(line);
+
+    return {
+      id,
+      content,
+      isImage,
+      imagePath: isImage ? generateImagePath(id) : undefined,
+    };
+  }
+
+  function generateImagePath(id: string): string {
+    const thumbs = existingThumbs.get();
+    if (!thumbs.has(id)) {
+      execAsync([
+        "bash",
+        "-c",
+        `cliphist decode ${id} | magick - -resize 512x ${THUMB_DIR}/${id}.png`,
+      ]).then(() => {
+        setExistingThumbs(new Set([...thumbs, id]));
       });
-    },
-  });
-
-  const Items: Variable<Gtk.Widget[]> = Variable([]);
-
-  const ItemsWatcher = Variable.derive([changes], (changes) => {
-    for (let item of changes.slice(0, 150)) {
-      itemHolder.set(item);
     }
-  });
+    return `${THUMB_DIR}/${id}.png`;
+  }
 
-  const itemHolder = Variable("");
+  function loadClipboardHistory() {
+    execAsync("cliphist list").then((output) => {
+      const clipboardItems = output
+        .split("\n")
+        .filter(Boolean)
+        .slice(0, 150)
+        .map(parseClipboardItem);
 
-  const regex = /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/;
+      setItems(clipboardItems);
+      setFilteredItems(clipboardItems);
+    });
+  }
 
-  const watcher = Variable.derive([itemHolder], (item) => {
-    const image = item.match(regex);
+  function copyToClipboard(item: ClipboardItem) {
+    execAsync(["sh", "-c", `cliphist decode ${item.id} | wl-copy`]).then(() => {
+      win.hide();
+    });
+  }
 
-    if (image) {
-      // print(decodeImage(item.split("\t")[0]));
-      item = decodeImage(item.split("\t")[0]);
-      // console.info(item);
+  function updateFilteredItems(searchQuery: string) {
+    if (!searchQuery.trim()) {
+      setFilteredItems(items.get());
+    } else {
+      setFilteredItems(
+        items
+          .get()
+          .filter((item) =>
+            item.content.toLowerCase().includes(searchQuery.toLowerCase()),
+          ),
+      );
     }
+  }
 
-    // print(item);
-    init.get()
-      ? Items.set([...Items.get(), itemWidget(item, image)])
-      : Items.set([itemWidget(item, image), ...Items.get()]);
-  });
+  function SearchEntry() {
+    return (
+      <entry
+        $={(ref) => (searchentry = ref)}
+        onNotifyText={({ text }) => {
+          setQuery(text);
+          updateFilteredItems(text);
+        }}
+        class="px-5 py-2 bg-surface_container_low rounded-3xl mb-3"
+        primaryIconName={icons.ui.search}
+        placeholderText="Search clipboard history..."
+      />
+    );
+  }
+
+  function ClipboardItemWidget({ item }: { item: ClipboardItem }) {
+    return (
+      <button
+        onClicked={() => copyToClipboard(item)}
+        class="hover:bg-surface_container rounded-lg p-3 mb-2"
+      >
+        {item.isImage && item.imagePath ? (
+          <image file={item.imagePath} class="min-h-[200px] max-h-[300px]" />
+        ) : (
+          <label
+            label={item.content}
+            xalign={0}
+            wrap
+            wrapMode={Pango.WrapMode.WORD_CHAR}
+            maxWidthChars={80}
+            ellipsize={Pango.EllipsizeMode.END}
+            class="text-on_surface"
+          />
+        )}
+      </button>
+    );
+  }
 
   return (
     <Window
       name={WINDOW_NAME}
-      className={WINDOW_NAME}
-      application={App}
-      visible={false}
+      $={(ref) => (win = ref)}
       keymode={Astal.Keymode.EXCLUSIVE}
       layer={Astal.Layer.OVERLAY}
-      vexpand={true}
-      hexpand={false}
-      setup={(self) => {
-        hook(self, self, "notify::visible", () => {
-          if (!self.get_visible()) {
-            query.set(" ");
-          } else {
-            execAsync("cliphist list").then((output) => {
-              changes.set(differences(output.split("\n"), cliphist.get()));
-              cliphist.set(output.split("\n"));
-              init.set(false);
-            });
-            query.set("");
-            Entry.grab_focus();
-          }
-        });
+      onNotifyVisible={({ visible }) => {
+        if (visible) {
+          loadClipboardHistory();
+          searchentry.grab_focus();
+          setQuery("");
+          updateFilteredItems("");
+        } else {
+          setQuery("");
+        }
       }}
     >
       <box
-        vertical
+        orientation={Gtk.Orientation.VERTICAL}
+        class="bg-surface min-h-[500px] min-w-[500px] max-w-[800px] p-5 rounded-2xl"
         hexpand={false}
-        cssClasses={[
-          "bg-surface",
-          "min-h-[500px]",
-          "min-w-[500px]",
-          "p-5",
-          "rounded-2xl",
-        ]}
       >
-        {Entry}
-        <Gtk.ScrolledWindow hexpand={false}>
-          <box vertical spacing={5} vexpand hexpand={false}>
-            {bind(Items)}
+        <SearchEntry />
+
+        <scrolledwindow
+          hscrollbarPolicy={Gtk.PolicyType.NEVER}
+          vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}
+          hexpand={false}
+          vexpand
+        >
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            spacing={0}
+            hexpand={false}
+          >
+            <For each={filteredItems}>
+              {(item) => <ClipboardItemWidget item={item} />}
+            </For>
           </box>
-        </Gtk.ScrolledWindow>
+        </scrolledwindow>
       </box>
     </Window>
   );
