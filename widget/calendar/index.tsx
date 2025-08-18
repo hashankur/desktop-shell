@@ -15,17 +15,17 @@ const [monthYearLabel, setMonthYearLabel] = createState(
 
 const { CENTER, START, END } = Gtk.Align;
 
-function getDateInXMonthsTime(x) {
-  var currentDate = new Date(); // Get the current date
-  var targetMonth = currentDate.getMonth() + x; // Calculate the target month
-  var targetYear = currentDate.getFullYear(); // Get the current year
+function getDateInXMonthsTime(x: number) {
+  const currentDate = new Date(); // Get the current date
+  let targetMonth = currentDate.getMonth() + x; // Calculate the target month
+  let targetYear = currentDate.getFullYear(); // Get the current year
 
   // Adjust the year and month if necessary
   targetYear += Math.floor(targetMonth / 12);
   targetMonth = ((targetMonth % 12) + 12) % 12;
 
   // Create a new date object with the target year and month
-  var targetDate = new Date(targetYear, targetMonth, 1);
+  const targetDate = new Date(targetYear, targetMonth, 1);
 
   // Set the day to the last day of the month to get the desired date
   // targetDate.setDate(0);
@@ -44,16 +44,16 @@ const weekDays = [
   { day: "Su", today: 0 },
 ];
 
-const CalendarDay = (day, today) => {
+const CalendarDay = (day: string, today: number) => {
   return (
     <button
-      class={`min-w-5 min-h-6 rounded-full ${today == 1 ? "bg-primary_container" : today == -1 ? "" : ""}`}
+      class={`min-w-5 min-h-6 rounded-full ${today === 1 ? "bg-primary_container" : today === -1 ? "" : ""}`}
     >
       <overlay>
         <label
           label={String(day)}
           halign={CENTER}
-          class={`${today == 1 ? "text-primary" : today == -1 ? "text-surface_variant" : ""}`}
+          class={`${today === 1 ? "text-primary" : today === -1 ? "text-surface_letiant" : ""}`}
         />
       </overlay>
     </button>
@@ -72,22 +72,22 @@ export default () => {
     );
   };
 
-  const shiftCalendarXMonths = (x) => {
-    if (x == 0) monthshift = 0;
+  const shiftCalendarXMonths = (x: number) => {
+    if (x === 0) monthshift = 0;
     else monthshift += x;
-    let newDate;
-    if (monthshift == 0) newDate = new Date();
+    let newDate: Date;
+    if (monthshift === 0) newDate = new Date();
     else newDate = getDateInXMonthsTime(monthshift);
 
-    setCalendarJson(getCalendarLayout(newDate, monthshift == 0));
+    setCalendarJson(getCalendarLayout(newDate, monthshift === 0));
     setMonthYearLabel(
-      `${monthshift == 0 ? "" : "• "}${newDate.toLocaleString("default", { month: "long" })} ${newDate.getFullYear()}`,
+      `${monthshift === 0 ? "" : "• "}${newDate.toLocaleString("default", { month: "long" })} ${newDate.getFullYear()}`,
     );
   };
 
   const calendarHeader = () => {
     return (
-      <box class="" spacing={8} halign={Gtk.Align.FILL}>
+      <box spacing={8} halign={Gtk.Align.FILL}>
         {calendarMonthYear()}
         <box class="" halign={Gtk.Align.END} hexpand>
           <button onClicked={() => shiftCalendarXMonths(-1)}>
@@ -116,7 +116,17 @@ export default () => {
   };
 
   return (
-    <box class="">
+    <box
+      class="p-2"
+      $={(self) =>
+        self.connect("map", () => {
+          const newDate = new Date();
+          setCalendarJson(getCalendarLayout(newDate, true)); // Recalculate for the current month
+          // addCalendarChildren(calendarDays, calendarJson);
+          shiftCalendarXMonths(0);
+        })
+      }
+    >
       <box halign={CENTER}>
         <box hexpand={true} orientation={Gtk.Orientation.VERTICAL} spacing={5}>
           {calendarHeader()}
