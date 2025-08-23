@@ -1,60 +1,69 @@
-import { bind, execAsync, type Variable } from "astal";
 import Network from "gi://AstalNetwork";
 import { StackPage } from "@/widget/sidebar/stack";
-import { Gtk } from "astal/gtk4";
+import type { Accessor } from "ags";
+import type { Setter } from "ags";
+import { For, createBinding, createComputed } from "ags";
+import { Gtk } from "ags/gtk4";
+import { execAsync } from "ags/process";
 
 type NetworkPageProps = {
-  currentView: Variable<string>;
+  setCurrentView: Setter<string>;
 };
 
-function NetworkPage({ currentView }: NetworkPageProps) {
+export default function NetworkPage({ setCurrentView }: NetworkPageProps) {
   const network = Network.get_default().wifi;
-  const connected = bind(network, "activeAccessPoint");
+  const connectedNetwork = createBinding(
+    network,
+    "activeAccessPoint",
+  )((v) => v?.ssid ?? "");
+  const accessPoints = createBinding(network, "accessPoints").as((aps) => {
+    const uniqueAccessPoints = new Map<string, typeof aps[number]>();
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    aps
+      .filter((ap) => !!ap.ssid)
+      .forEach((ap) => {
+        const existingAp = uniqueAccessPoints.get(ap.ssid);
+        if (!existingAp || existingAp.strength < ap.strength) {
+          uniqueAccessPoints.set(ap.ssid, ap);
+        }
+      });
+    return Array.from(uniqueAccessPoints.values()).sort((a, b) => b.strength - a.strength);
+  });
 
   return (
-    <StackPage name="Network" toggle={network} currentView={currentView}>
-      <box vertical spacing={5}>
-        {bind(network, "accessPoints").as((ap) =>
-          ap
-            .filter((ap) => !!ap.ssid)
-            .sort((a, b) => b.strength - a.strength)
-            .map((ap) => (
-              <button
-                cssClasses={[
-                  "px-5",
-                  "py-2",
-                  "rounded-lg",
-                  "hover:bg-surface_container_low",
-                ]}
-                onClicked={() =>
-                  execAsync(`nmcli device wifi connect ${ap.bssid}`)
-                }
-              >
-                <box spacing={15} valign={Gtk.Align.CENTER}>
-                  <image
-                    cssClasses={["icon-lg"]}
-                    iconName={ap.iconName || ""}
+    <StackPage name="Network" toggle={network} setCurrentView={setCurrentView}>
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={5} vexpand homogeneous>
+        <For each={accessPoints}>
+          {(ap) => (
+            <button
+              class="px-5 py-2 rounded-lg hover:bg-surface_container_low"
+              onClicked={() =>
+                execAsync(`nmcli device wifi connect ${ap.bssid}`)
+              }
+            >
+              <box spacing={20} valign={Gtk.Align.CENTER}>
+                <image pixelSize={24} iconName={ap.iconName || ""} />
+                <box
+                  orientation={Gtk.Orientation.VERTICAL}
+                  valign={Gtk.Align.CENTER}
+                >
+                  <label
+                    class="text-lg/none text-semibold"
+                    label={ap.ssid}
+                    xalign={0}
                   />
-                  <box vertical valign={Gtk.Align.CENTER}>
                     <label
-                      cssClasses={["text-lg", "text-semibold"]}
-                      label={ap.ssid}
+                      class="text-sm/none text-semibold"
+                      label="Connected"
                       xalign={0}
+                      visible={connectedNetwork((v) => v === ap.ssid)}
                     />
-                    {connected?.get().ssid == ap.ssid && (
-                      <label
-                        cssClasses={["text-sm", "text-semibold"]}
-                        label="Connected"
-                      />
-                    )}
-                  </box>
                 </box>
-              </button>
-            )),
-        )}
+              </box>
+            </button>
+          )}
+        </For>
       </box>
     </StackPage>
   );
 }
-
-export default NetworkPage;

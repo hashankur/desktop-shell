@@ -1,16 +1,17 @@
-import Button from "@/widget/common/Button";
-import Brightness from "@/lib/brightness";
+import Adw from "gi://Adw?version=1";
+import Network from "gi://AstalNetwork";
+import Wp from "gi://AstalWp";
 import icons from "@/constants/icons";
-import Util from "@/lib/util";
+import Brightness from "@/lib/brightness";
+import { hideWindow } from "@/lib/utils";
+import { warpStatus, warpToggle } from "@/lib/warp";
+import Button from "@/widget/common/Button";
 import { StackBtn, ToggleBtn } from "@/widget/sidebar/buttons";
 import { createBinding, createState } from "ags";
+import type { Setter } from "ags";
 import { Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import { execAsync } from "ags/process";
-import Network from "gi://AstalNetwork";
-import Wp from "gi://AstalWp";
-import { warpStatus, warpToggle } from "@/lib/warp";
-import type { Setter } from "ags";
 
 const audio = Wp.get_default()?.audio.defaultSpeaker!;
 const brightness = Brightness.get_default();
@@ -18,43 +19,45 @@ const network = Network.get_default().wifi;
 const [inhibitStatus, setInhibitStatus] = createState(0);
 
 type MainPageProps = {
-  currentView: Setter<string>;
+  setCurrentView: Setter<string>;
   windowName: string;
 };
 
-function MainPage({ currentView, windowName }: MainPageProps) {
+function MainPage({ setCurrentView, windowName }: MainPageProps) {
   return (
     <box
+      $type="named"
       name="main"
       spacing={10}
       orientation={Gtk.Orientation.VERTICAL}
-      class="px-5"
+      class="mx-5"
     >
       <box halign={Gtk.Align.END}>
         <Button
-          class="bg-transparent"
+          size="icon"
           onClicked={() => {
             app.toggle_window("power-menu");
-            Util.hideWindow(windowName);
+            hideWindow(windowName);
           }}
         >
-          <image cssClasses={["p-3"]} iconName={icons.powermenu.shutdown} />
+          <image class="p-3" iconName={icons.powermenu.shutdown} />
         </Button>
         <Button
-          class="bg-transparent"
+          size="icon"
           onClicked={() => {
             execAsync([
               "sh",
               "-c",
               "XDG_CURRENT_DESKTOP=gnome gnome-control-center",
             ]);
-            Util.hideWindow(windowName);
+            hideWindow(windowName);
           }}
         >
-          <image cssClasses={["p-3"]} iconName={icons.ui.settings} />
+          <image class="p-3" iconName={icons.ui.settings} />
         </Button>
       </box>
-      <box spacing={10}>
+
+      <Adw.WrapBox naturalLineLength={400} childSpacing={10} lineSpacing={10}>
         <StackBtn
           name="Network"
           item={createBinding(
@@ -62,15 +65,13 @@ function MainPage({ currentView, windowName }: MainPageProps) {
             "activeAccessPoint",
           )((ap) => ap?.ssid ?? "Disabled")}
           icon={icons.network.wireless}
-          currentView={currentView}
+          setCurrentView={setCurrentView}
         />
         <StackBtn
           name="Bluetooth"
           icon={icons.bluetooth.enabled}
-          currentView={currentView}
+          setCurrentView={setCurrentView}
         />
-      </box>
-      <box spacing={10}>
         <ToggleBtn
           name="WARP"
           icon={icons.network.vpn}
@@ -93,7 +94,8 @@ function MainPage({ currentView, windowName }: MainPageProps) {
           }}
           item={inhibitStatus.as((v) => (v === 0 ? "Disabled" : "Enabled"))}
         />
-      </box>
+      </Adw.WrapBox>
+
       <box spacing={10} orientation={Gtk.Orientation.VERTICAL} class="pt-5">
         <box>
           <image iconName={createBinding(audio, "volumeIcon")} />

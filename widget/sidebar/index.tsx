@@ -1,11 +1,13 @@
+import { SIDEBAR_WIDTH } from "@/constants/spacing";
 import Window from "@/widget/common/window";
 import NotificationWindow from "@/widget/notifications";
-import NetworkPage from "./views/Network";
-import MainPage from "./views/Main";
-import BluetoothPage from "./views/Bluetooth";
-import { createBinding } from "ags";
-import { Astal, Gtk } from "ags/gtk4";
+import { createBinding, onCleanup } from "ags";
 import { createState } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import app from "ags/gtk4/app";
+import BluetoothPage from "./views/Bluetooth";
+import MainPage from "./views/Main";
+import NetworkPage from "./views/Network";
 
 const WINDOW_NAME = "sidebar";
 const [currentView, setCurrentView] = createState("main");
@@ -25,19 +27,24 @@ export default function SideBar() {
         orientation={Gtk.Orientation.VERTICAL}
       >
         <stack
-          visibleChildName={currentView}
           transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
           transitionDuration={200}
-          cssClasses={["p-5", "pb-0"]}
-          // setup={(self) => {
-          //   hook(self, App, "window-toggled", (_) => {
-          //     currentView.set("main");
-          //   });
-          // }}
+          vexpandSet
+            class="p-5 pb-0"
+          $={(self) => {
+            const unsub = currentView.subscribe(() =>
+                           self.set_visible_child_name(currentView.get()),
+                        );
+                        onCleanup(() => unsub());
+
+                    self.connect("unmap", () => {
+                      setCurrentView("main");
+                    });
+                }}
         >
-          <MainPage currentView={setCurrentView} windowName={WINDOW_NAME} />
-          {/* <NetworkPage currentView={setCurrentView} /> */}
-          {/* <BluetoothPage currentView={currentView} /> */}
+          <MainPage setCurrentView={setCurrentView} windowName={WINDOW_NAME} />
+          <NetworkPage setCurrentView={setCurrentView} />
+          {/*<BluetoothPage currentView={currentView} />*/}
         </stack>
         <NotificationWindow />
       </box>
