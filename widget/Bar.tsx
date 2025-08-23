@@ -1,93 +1,109 @@
+import Button from "@/widget/common/Button";
+import icons from "@/constants/icons";
+import { createBinding, createComputed, For, With } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import app from "ags/gtk4/app";
+import { execAsync } from "ags/process";
+import { createPoll } from "ags/time";
 import Battery from "gi://AstalBattery";
+import Bluetooth from "gi://AstalBluetooth";
 import Mpris from "gi://AstalMpris";
 import Network from "gi://AstalNetwork";
-import Bluetooth from "gi://AstalBluetooth";
-import Tray from "gi://AstalTray";
 import Niri from "gi://AstalNiri";
+import Tray from "gi://AstalTray";
 import Wp from "gi://AstalWp";
-import Button from "@/common/Button";
-import Window from "@/common/window";
-import icons from "@/util/icons";
-import { GLib, Variable, bind, execAsync } from "astal";
-import { App, Astal, Gtk, hook } from "astal/gtk4";
+import GLib from "gi://GLib";
 import Pango from "gi://Pango";
+import Calendar from "@/widget/calendar";
 
 const WINDOW_NAME = "bar";
 const MAX_WIDTH_CHARS = 50;
 
-const time = Variable("").poll(
-  1000,
-  () => GLib.DateTime.new_now_local().format("%a %d %b  •  %I:%M %p") ?? "",
-);
-
 function Workspaces() {
   const niri = Niri.get_default();
-  const workspaces = Variable.derive(
-    [bind(niri, "workspaces"), bind(niri, "focused_workspace")],
-    (ws, fws) =>
-      ws.map((w) => (
-        <button
-          onClicked={() =>
-            execAsync(`niri msg action focus-workspace ${w.id}`).catch(printerr)
-          }
-          hexpand
-          cssClasses={[
-            "min-h-1",
-            "p-0",
-            "rounded-none",
-            ...(fws.id === w.id
-              ? ["text-on_primary", "bg-primary"]
-              : w.activeWindowId < 1_000 // Num overflow?
-                ? ["bg-primary_container"]
-                : ["bg-surface_container"]),
-          ]}
-        />
-      )),
-  );
+  const workspaces = createBinding(niri, "workspaces");
+  const focusedWorkspace = createBinding(niri, "focusedWorkspace");
 
-  return <box spacing={3}>{workspaces()}</box>;
+  return (
+    <box>
+      <With value={focusedWorkspace}>
+        {(fws) => (
+          <box spacing={3}>
+            <For each={workspaces}>
+              {(w) => {
+                return (
+                  <button
+                    onClicked={() =>
+                      execAsync(
+                        `niri msg action focus-workspace ${w.id}`,
+                      ).catch(printerr)
+                    }
+                    hexpand
+                    cssClasses={[
+                      "min-h-1",
+                      "p-0",
+                      "rounded-none",
+                      ...(fws?.id === w?.id
+                        ? ["text-on_primary", "bg-primary"]
+                        : w?.activeWindowId !== 0
+                          ? ["bg-primary_container"]
+                          : ["bg-surface_container"]),
+                    ]}
+                  />
+                );
+              }}
+            </For>
+          </box>
+        )}
+      </With>
+    </box>
+  );
 }
 
 function Active() {
   const niri = Niri.get_default();
+  const activeWindow = createBinding(niri, "focusedWindow");
 
   return (
-    <>
-      {bind(niri, "focusedWindow").as((v) => (
+    <With value={activeWindow}>
+      {(activeWindow) => (
         <box spacing={5}>
-          <image iconName={`${v?.appId ?? "user-desktop"}-symbolic`} />
+          <image
+            iconName={`${activeWindow?.appId ?? "user-desktop"}-symbolic`}
+          />
           <label
-            label={v?.title ?? "Desktop"}
+            label={activeWindow?.title ?? "Desktop"}
             maxWidthChars={MAX_WIDTH_CHARS}
             ellipsize={Pango.EllipsizeMode.END}
           />
         </box>
-      ))}
-    </>
+      )}
+    </With>
   );
 }
 
 function SysTray() {
   const tray = Tray.get_default();
 
+  const items = createBinding(tray, "items");
+
+  const init = (btn: Gtk.MenuButton, item: Tray.TrayItem) => {
+    btn.menuModel = item.menuModel;
+    btn.insert_action_group("dbusmenu", item.actionGroup);
+    item.connect("notify::action-group", () => {
+      btn.insert_action_group("dbusmenu", item.actionGroup);
+    });
+  };
+
   return (
-    <box spacing={5}>
-      {bind(tray, "items").as((items) =>
-        items.map((item) => (
-          <menubutton
-            tooltipMarkup={bind(item, "tooltipMarkup")}
-            menuModel={bind(item, "menuModel")}
-            setup={(self) =>
-              hook(self, item, "notify::action-group", () =>
-                self.insert_action_group("dbusmenu", item.action_group),
-              )
-            }
-            cssClasses={["hover:bg-surface_container_low", "rounded-lg"]}
-          >
-            <image gicon={bind(item, "gicon")} />
+    <box>
+      <For each={items}>
+        {(item) => (
+          <menubutton $={(self) => init(self, item)}>
+            <image gicon={createBinding(item, "gicon")} />
           </menubutton>
-        )),
-      )}
+        )}
+      </For>
     </box>
   );
 }
@@ -97,8 +113,8 @@ function Wifi() {
 
   return (
     <image
-      tooltipText={bind(wifi, "ssid").as((v) => v ?? "Disabled")}
-      iconName={bind(wifi, "iconName")}
+      tooltipText={createBinding(wifi, "ssid")((v) => v ?? "Disabled")}
+      iconName={createBinding(wifi, "iconName")}
     />
   );
 }
@@ -108,21 +124,25 @@ function BluetoothStatus() {
   const device = devices[0];
 
   return (
-    <>
-      {bind(device, "connected").as((v) => (
-        <image
-          tooltipText={v ? bind(device, "name").as(String) : "Not Connected"}
-          iconName={v ? icons.bluetooth.enabled : icons.bluetooth.disabled}
-        />
-      ))}
-    </>
+    <box>
+      <With value={createBinding(device, "connected")}>
+        {(v) => (
+          <image
+            tooltipText={
+              v ? createBinding(device, "name").as(String) : "Not Connected"
+            }
+            iconName={v ? icons.bluetooth.enabled : icons.bluetooth.disabled}
+          />
+        )}
+      </With>
+    </box>
   );
 }
 
 function AudioLevel() {
   const speaker = Wp.get_default()?.audio.defaultSpeaker!;
 
-  return <image iconName={bind(speaker, "volumeIcon")} />;
+  return <image iconName={createBinding(speaker, "volumeIcon")} />;
 }
 
 function secondsToHoursMinutes(time: number, verb: string): string {
@@ -133,8 +153,12 @@ function secondsToHoursMinutes(time: number, verb: string): string {
 function BatteryLevel() {
   const bat = Battery.get_default();
 
-  const batteryTooltip = Variable.derive(
-    [bind(bat, "charging"), bind(bat, "timeToEmpty"), bind(bat, "timeToFull")],
+  const batteryTooltip = createComputed(
+    [
+      createBinding(bat, "charging"),
+      createBinding(bat, "timeToEmpty"),
+      createBinding(bat, "timeToFull"),
+    ],
     (charging, empty, full) => {
       return charging
         ? full === 0
@@ -146,13 +170,16 @@ function BatteryLevel() {
 
   return (
     <box
-      visible={bind(bat, "isPresent")}
+      visible={createBinding(bat, "isPresent")}
       spacing={5}
-      tooltipText={batteryTooltip()}
+      tooltipText={batteryTooltip}
     >
-      <image iconName={bind(bat, "batteryIconName")} />
+      <image iconName={createBinding(bat, "batteryIconName")} />
       <label
-        label={bind(bat, "percentage").as((p) => {
+        label={createBinding(
+          bat,
+          "percentage",
+        )((p) => {
           const level = Math.floor(p * 100);
           return level === 100 ? "Full" : `${level}%`;
         })}
@@ -163,27 +190,29 @@ function BatteryLevel() {
 
 function Media() {
   const spotify = Mpris.Player.new("spotify");
-
-  const formattedLabel = Variable.derive(
-    [bind(spotify, "artist"), bind(spotify, "title")],
-    (artist: string, title: string) => `${artist} - ${title}`,
+  const currentSong = createComputed(
+    [createBinding(spotify, "artist"), createBinding(spotify, "title")],
+    (artist, title) => `${artist} - ${title}`,
   );
 
   return (
     <Button
-      visible={bind(spotify, "available")}
+      visible={createBinding(spotify, "available")}
       onClicked={() => spotify.play_pause()}
     >
       <box spacing={5}>
         <image
-          iconName={bind(spotify, "playbackStatus").as((status) =>
+          iconName={createBinding(
+            spotify,
+            "playbackStatus",
+          )((status) =>
             status === Mpris.PlaybackStatus.PLAYING
               ? icons.media.playing
               : icons.media.stopped,
           )}
         />
         <label
-          label={formattedLabel()}
+          label={currentSong}
           maxWidthChars={MAX_WIDTH_CHARS}
           ellipsize={Pango.EllipsizeMode.END}
         />
@@ -193,21 +222,23 @@ function Media() {
 }
 
 function Stats() {
-  const cpu = Variable(0).poll(5000, [
+  const cpu = createPoll("", 5000, [
     "sh",
     "-c",
     "top -bn1 | grep Cpu | sed 's/\\,/\\./g' | awk '{print $2}'",
   ]);
-  const memory = Variable(0).poll(5000, [
+  const memory = createPoll("", 5000, [
     "sh",
     "-c",
     `free | awk '/^Mem/ {printf("%.2f\\n", ($3/$2) * 100)}'`,
   ]);
-  const gpu = Variable(0).poll(
+  const gpu = createPoll(
+    "",
     5000,
     "cat /sys/class/hwmon/hwmon6/device/gpu_busy_percent",
   );
-  const temp = Variable(0).poll(
+  const temp = createPoll(
+    "",
     5000,
     "cat /sys/class/thermal/thermal_zone0/temp",
   );
@@ -224,39 +255,41 @@ function Stats() {
       // />
 
       // Until circular progress gets merged
-      <levelbar value={value} widthRequest={40} tooltipText={tooltip} />
+      <levelbar
+        value={value}
+        heightRequest={25}
+        tooltipText={tooltip}
+        orientation={Gtk.Orientation.VERTICAL}
+        inverted
+      />
     );
   };
 
   return (
-    <box spacing={5} cssClasses={["p-1"]} valign={Gtk.Align.CENTER}>
-      <box spacing={5} vertical>
-        <Stat
-          value={cpu((val) => val / 100)}
-          tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
-        />
-        <Stat
-          value={memory((val) => val / 100)}
-          tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
-        />
-      </box>
-      <box spacing={5} vertical>
-        <Stat
-          value={gpu((val) => val / 100)}
-          tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
-        />
-        <Stat
-          value={temp((val) => val / 1000 / 100)}
-          tooltip={temp((val) => `Temp: ${val / 1000} °C`)}
-        />
-      </box>
+    <box spacing={5} class="p-1" valign={Gtk.Align.CENTER}>
+      <Stat
+        value={cpu((val) => val / 100)}
+        tooltip={cpu((val) => `CPU: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={memory((val) => val / 100)}
+        tooltip={memory((val) => `Memory: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={gpu((val) => val / 100)}
+        tooltip={gpu((val) => `GPU: ${Math.round(val)}% used`)}
+      />
+      <Stat
+        value={temp((val) => val / 1000 / 100)}
+        tooltip={temp((val) => `Temp: ${val / 1000} °C`)}
+      />
     </box>
   );
 }
 
 function Left() {
   return (
-    <box spacing={20}>
+    <box $type="start" spacing={20}>
       <Stats />
       <Active />
     </box>
@@ -264,11 +297,15 @@ function Left() {
 }
 
 function Center() {
+  const time = createPoll("", 1000, () => {
+    return GLib.DateTime.new_now_local().format("%a %d %b  •  %I:%M %p") ?? "";
+  });
+
   return (
-    <menubutton hexpand halign={Gtk.Align.CENTER}>
-      <label label={time()} />
+    <menubutton $type="center" hexpand halign={Gtk.Align.CENTER}>
+      <label label={time} />
       <popover>
-        <Gtk.Calendar />
+        <Calendar />
       </popover>
     </menubutton>
   );
@@ -276,10 +313,10 @@ function Center() {
 
 function Right() {
   return (
-    <box halign={Gtk.Align.END} spacing={5}>
+    <box $type="end" halign={Gtk.Align.END} spacing={5}>
       <Media />
       <SysTray />
-      <Button onClicked={() => App.toggle_window("quick-settings")}>
+      <Button onClicked={() => app.toggle_window("sidebar")}>
         <box spacing={20}>
           <BluetoothStatus />
           <Wifi />
@@ -295,7 +332,7 @@ export default function Bar(monitor: number) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
 
   return (
-    <Window
+    <window
       name={WINDOW_NAME}
       monitor={monitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
@@ -306,14 +343,17 @@ export default function Bar(monitor: number) {
       visible
       namespace={"astal-bar"}
     >
-      <box vertical cssClasses={["bg-surface_container_lowest"]}>
+      <box
+        orientation={Gtk.Orientation.VERTICAL}
+        class="bg-surface_container_lowest"
+      >
         <Workspaces />
-        <centerbox cssClasses={["px-1", "min-h-10"]}>
+        <centerbox class="px-1 min-h-10">
           <Left />
           <Center />
           <Right />
         </centerbox>
       </box>
-    </Window>
+    </window>
   );
 }

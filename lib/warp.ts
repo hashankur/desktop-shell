@@ -1,11 +1,14 @@
-import { exec, Variable } from "astal";
+import { createState } from "ags";
+import { exec } from "ags/process";
 
-let warpStatus = Variable(JSON.parse(exec("warp-cli -j status")).status);
+const [warpStatus, setWarpStatus] = createState(
+  JSON.parse(exec("warp-cli -j status")).status,
+);
 let pollingInterval: any;
 
 const checkWarpStatus = () => {
   const currentStatus = JSON.parse(exec("warp-cli -j status")).status;
-  warpStatus.set(currentStatus);
+  setWarpStatus(currentStatus);
 
   if (currentStatus === "Connected" || currentStatus === "Disconnected") {
     console.log(`Warp is now ${currentStatus.toLowerCase()}.`);
