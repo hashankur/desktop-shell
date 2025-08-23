@@ -44,7 +44,7 @@ export default function SideBar() {
         >
           <MainPage setCurrentView={setCurrentView} windowName={WINDOW_NAME} />
           <NetworkPage setCurrentView={setCurrentView} />
-          {/*<BluetoothPage currentView={currentView} />*/}
+          <BluetoothPage setCurrentView={setCurrentView} />
         </stack>
         <NotificationWindow />
       </box>
