@@ -1,119 +1,135 @@
-import { Gtk } from "astal/gtk4";
-import { GLib } from "astal";
-import Pango from "gi://Pango";
+import Adw from "gi://Adw";
 import AstalNotifd from "gi://AstalNotifd";
-import icons from "@/util/icons";
+import GLib from "gi://GLib";
+import Pango from "gi://Pango";
+import icons from "@/constants/icons";
+import { NOTIFICATION_WIDTH } from "@/constants/spacing";
+import { getTimeTooltip, useRelativeTime } from "@/lib/time";
+import { Gtk } from "ags/gtk4";
 
-const time = (time: number, format = "%I:%M %p") =>
-  GLib.DateTime.new_from_unix_local(time).format(format);
+const fileExists = (path: string): boolean =>
+  GLib.file_test(path, GLib.FileTest.EXISTS);
 
-const fileExists = (path: string) => GLib.file_test(path, GLib.FileTest.EXISTS);
-
-const urgency = (n: AstalNotifd.Notification) => {
+const getUrgencyClass = (notification: AstalNotifd.Notification): string => {
   const { CRITICAL } = AstalNotifd.Urgency;
+  return notification.urgency === CRITICAL
+    ? "bg-on_error"
+    : "bg-surface_container_low";
+};
 
-  switch (n.urgency) {
-    case CRITICAL:
-      return "bg-on_error";
-    default:
-      return "bg-surface_container_low";
+const NotificationIcon = ({
+  notification,
+}: {
+  notification: AstalNotifd.Notification;
+}) => {
+  if (notification.image && fileExists(notification.image)) {
+    return (
+      <image
+        file={notification.image}
+        overflow={Gtk.Overflow.HIDDEN}
+        valign={Gtk.Align.CENTER}
+        class="icon-2xl rounded-full"
+      />
+    );
   }
+
+  if (notification.appIcon || notification.desktopEntry) {
+    return (
+      <image
+        iconName={notification.appIcon || notification.desktopEntry}
+        valign={Gtk.Align.CENTER}
+        class="icon-2xl rounded-full"
+      />
+    );
+  }
+
+  return <></>;
+};
+
+const NotificationHeader = ({
+  notification,
+}: {
+  notification: AstalNotifd.Notification;
+}) => (
+  <box spacing={10}>
+    <label
+      class="text-on_surface_variant font-medium text-sm"
+      halign={Gtk.Align.START}
+      label={notification.appName || "Unknown"}
+    />
+    <label
+      class="text-on_surface_variant font-medium text-sm"
+      hexpand
+      halign={Gtk.Align.END}
+      label={useRelativeTime(notification.time)}
+      tooltipText={getTimeTooltip(notification.time)}
+    />
+    <button
+      onClicked={() => notification.dismiss()}
+      class="rounded-full min-w-1.5 min-h-1.5 p-1.5 bg-surface_container_highest/50 hover:bg-on_error hover:text-error"
+    >
+      <image iconName={icons.ui.close} />
+    </button>
+  </box>
+);
+
+const NotificationContent = ({
+  notification,
+}: {
+  notification: AstalNotifd.Notification;
+}) => (
+  <box orientation={Gtk.Orientation.VERTICAL}>
+    <NotificationHeader notification={notification} />
+    <label
+      class="text-lg font-extrabold"
+      maxWidthChars={30}
+      wrap
+      halign={Gtk.Align.START}
+      xalign={0}
+      label={notification.summary}
+      tooltipMarkup={notification.summary}
+      ellipsize={Pango.EllipsizeMode.END}
+    />
+    {notification.body && (
+      <label
+        class="text-sm"
+        maxWidthChars={30}
+        wrap
+        halign={Gtk.Align.START}
+        xalign={0}
+        label={notification.body}
+        tooltipMarkup={notification.body}
+        ellipsize={Pango.EllipsizeMode.END}
+      />
+    )}
+  </box>
+);
+
+type NotificationProps = JSX.IntrinsicElements["box"] & {
+  notification: AstalNotifd.Notification;
+  onHoverLost?: () => void;
 };
 
 export default function Notification({
-  n,
-  showActions = true,
-}: {
-  n: AstalNotifd.Notification;
-  showActions?: boolean;
-}) {
+  notification,
+  onHoverLost,
+  ...props
+}: NotificationProps) {
   return (
-    <box
-      name={n.id.toString()}
-      cssClasses={[
-        "p-3",
-        "rounded-xl",
-        "min-w-[435px]",
-        "min-h-[10px]",
-        urgency(n),
-      ]}
-      vertical
-    >
-      <box cssClasses={["pb-1"]} spacing={15}>
-        {n.image && fileExists(n.image) ? (
-          <image
-            file={n.image}
-            overflow={Gtk.Overflow.HIDDEN}
-            valign={Gtk.Align.CENTER}
-            cssClasses={["icon-2xl", "rounded-full"]}
-          />
-        ) : (
-          (n.appIcon || n.desktopEntry) && (
-            <image
-              iconName={n.appIcon || n.desktopEntry}
-              valign={Gtk.Align.CENTER}
-              cssClasses={["icon-2xl", "rounded-full"]}
-            />
-          )
-        )}
-        <box vertical>
-          <box spacing={10}>
-            <label
-              cssClasses={[
-                "text-on_surface_variant",
-                "font-medium",
-                "text-[14px]",
-              ]}
-              halign={Gtk.Align.START}
-              label={n.appName || "Unknown"}
-            />
-            <label
-              cssClasses={[
-                "text-on_surface_variant",
-                "font-medium",
-                "text-[14px]",
-              ]}
-              hexpand
-              halign={Gtk.Align.END}
-              label={time(n.time) ?? ""}
-            />
-            <button
-              onClicked={() => n.dismiss()}
-              cssClasses={[
-                "rounded-full",
-                "min-w-2",
-                "min-h-2",
-                "p-2",
-                "bg-surface_container_highest/50",
-                "hover:bg-on_error",
-                "hover:text-error",
-              ]}
-            >
-              <image iconName={icons.ui.close} />
-            </button>
-          </box>
-          <label
-            ellipsize={Pango.EllipsizeMode.END}
-            maxWidthChars={30}
-            cssClasses={["text-xl", "mb-1", "font-bold"]}
-            halign={Gtk.Align.START}
-            xalign={0}
-            label={n.summary}
-          />
-          {n.body && (
-            <label
-              cssClasses={["text-[15px]"]}
-              maxWidthChars={30}
-              wrap
-              halign={Gtk.Align.START}
-              xalign={0}
-              label={n.body}
-              tooltipMarkup={n.body}
-              ellipsize={Pango.EllipsizeMode.END}
-            />
-          )}
+    <Adw.Clamp maximumSize={NOTIFICATION_WIDTH}>
+      <box
+        widthRequest={NOTIFICATION_WIDTH}
+        name={notification.id.toString()}
+        cssClasses={["p-3", "rounded-xl", getUrgencyClass(notification)]}
+        orientation={Gtk.Orientation.VERTICAL}
+        {...props}
+      >
+        <Gtk.EventControllerMotion onLeave={onHoverLost} />
+        <box spacing={15}>
+          <NotificationIcon notification={notification} />
+          <NotificationContent notification={notification} />
         </box>
       </box>
-    </box>
+    </Adw.Clamp>
   );
 }

@@ -1,9 +1,11 @@
-import Wp from "gi://AstalWp";
-import Window from "@/common/window";
+import Window from "@/widget/common/window";
 import Brightness from "@/lib/brightness";
-import icons from "@/util/icons";
-import { bind, type Binding, timeout } from "astal";
-import { Astal, Gtk, hook } from "astal/gtk4";
+import icons from "@/constants/icons";
+import type { Accessor } from "ags";
+import { createBinding } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import { timeout } from "ags/time";
+import Wp from "gi://AstalWp";
 
 const WINDOW_NAME = "osd";
 const TIMEOUT = 2000;
@@ -11,18 +13,17 @@ const TIMEOUT = 2000;
 const TRANSITION = Gtk.RevealerTransitionType.SLIDE_LEFT;
 
 function createSlider(
-  bindable: Brightness | Wp.Endpoint,
-  iconName: string | Binding<string>,
-  hookProperty,
-  cssClasses = [],
+  toggle: (visibility: () => void) => void,
+  iconName: string | Accessor<string>,
+  value: Accessor<number>,
   onDragged = null,
 ) {
   return (
     <revealer
       transitionType={TRANSITION}
-      setup={(self) => {
+      $={(self) => {
         let i = 0;
-        hook(self, bind(bindable, hookProperty), () => {
+        const setVisibility = () => {
           self.set_reveal_child(true);
           self.set_opacity(1);
 
@@ -34,23 +35,20 @@ function createSlider(
               self.set_opacity(0.1); // 1px artifact workaround
             }
           });
-        });
+        };
+
+        toggle(setVisibility);
       }}
     >
       <box
-        cssClasses={["bg-surface", "p-2", "rounded-xl", ...cssClasses]}
-        vertical
+        class="bg-surface p-2 rounded-xl"
+        orientation={Gtk.Orientation.VERTICAL}
         spacing={5}
       >
         <slider
-          cssClasses={[
-            "min-h-[300px]",
-            "*:min-w-[25px]",
-            "rounded-[7px]",
-            "unset",
-          ]}
+          class="min-h-[300px] *:min-w-[25px] rounded-[7px] unset"
           orientation={Gtk.Orientation.VERTICAL}
-          value={bind(bindable, hookProperty)}
+          value={value}
           drawValue={false}
           inverted
         />
@@ -64,10 +62,11 @@ function BrightnessSlider() {
   const brightness = Brightness.get_default();
 
   return createSlider(
-    brightness,
+    (set) => {
+      brightness?.connect("notify::screen", set);
+    },
     icons.brightness.screen,
-    "screen",
-    [],
+    createBinding(brightness, "screen"),
     null, // onDragged can be added here if needed
   );
 }
@@ -76,10 +75,12 @@ function VolumeSlider() {
   const audio = Wp.get_default()?.audio.defaultSpeaker!;
 
   return createSlider(
-    audio,
-    bind(audio, "volumeIcon"),
-    "volume",
-    [],
+    (visibility) => {
+      audio?.connect("notify::volume", visibility);
+      audio?.connect("notify::mute", visibility);
+    },
+    createBinding(audio, "volumeIcon"),
+    createBinding(audio, "volume"),
     null, // onDragged can be added here if needed
   );
 }
@@ -95,7 +96,7 @@ export default function OSD() {
       defaultWidth={-1}
       margin={10}
     >
-      <box cssClasses={["bg-transparent"]}>
+      <box class="bg-transparent">
         <BrightnessSlider />
         <VolumeSlider />
       </box>

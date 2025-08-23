@@ -3,11 +3,11 @@ import { StackPage } from "../stack";
 import { bind, type Variable } from "astal";
 import { Gtk } from "astal/gtk4";
 
-type BluetoothPage = {
+type BluetoothPageProps = {
   currentView: Variable<string>;
 };
 
-function BluetoothPage({ currentView }: BluetoothPage) {
+function BluetoothPage({ currentView }: BluetoothPageProps) {
   const bluetooth = AstalBluetooth.get_default();
 
   return (

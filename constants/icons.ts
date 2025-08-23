@@ -27,6 +27,7 @@ export default {
   network: {
     wired: "network-wired-symbolic",
     wireless: "network-wireless-symbolic",
+    vpn: "network-vpn-symbolic",
   },
   ui: {
     add: "list-add",
