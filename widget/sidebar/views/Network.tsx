@@ -17,7 +17,7 @@ export default function NetworkPage({ setCurrentView }: NetworkPageProps) {
     "activeAccessPoint",
   )((v) => v?.ssid ?? "");
   const accessPoints = createBinding(network, "accessPoints").as((aps) => {
-    const uniqueAccessPoints = new Map<string, typeof aps[number]>();
+    const uniqueAccessPoints = new Map<string, (typeof aps)[number]>();
     // biome-ignore lint/complexity/noForEach: <explanation>
     aps
       .filter((ap) => !!ap.ssid)
@@ -27,12 +27,19 @@ export default function NetworkPage({ setCurrentView }: NetworkPageProps) {
           uniqueAccessPoints.set(ap.ssid, ap);
         }
       });
-    return Array.from(uniqueAccessPoints.values()).sort((a, b) => b.strength - a.strength);
+    return Array.from(uniqueAccessPoints.values()).sort(
+      (a, b) => b.strength - a.strength,
+    );
   });
 
   return (
     <StackPage name="Network" toggle={network} setCurrentView={setCurrentView}>
-      <box orientation={Gtk.Orientation.VERTICAL} spacing={5} vexpand homogeneous>
+      <box
+        orientation={Gtk.Orientation.VERTICAL}
+        spacing={5}
+        vexpand
+        homogeneous
+      >
         <For each={accessPoints}>
           {(ap) => (
             <button
@@ -52,12 +59,12 @@ export default function NetworkPage({ setCurrentView }: NetworkPageProps) {
                     label={ap.ssid}
                     xalign={0}
                   />
-                    <label
-                      class="text-sm/none text-semibold"
-                      label="Connected"
-                      xalign={0}
-                      visible={connectedNetwork((v) => v === ap.ssid)}
-                    />
+                  <label
+                    class="text-sm/none text-semibold"
+                    label="Connected"
+                    xalign={0}
+                    visible={connectedNetwork((v) => v === ap.ssid)}
+                  />
                 </box>
               </box>
             </button>

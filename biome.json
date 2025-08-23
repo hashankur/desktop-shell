@@ -3,11 +3,11 @@
   "vcs": {
     "enabled": false,
     "clientKind": "git",
-    "useIgnoreFile": false
+    "useIgnoreFile": true
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": []
+    "ignore": ["@girs", "*.d.ts"]
   },
   "formatter": {
     "enabled": true,

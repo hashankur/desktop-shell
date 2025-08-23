@@ -15,7 +15,7 @@ type StackBtnProps = {
 
 function StackBtn({ name, icon, item, setCurrentView }: StackBtnProps) {
   return (
-    <Adw.Clamp maximumSize={(450 / 2)}>
+    <Adw.Clamp maximumSize={450 / 2}>
       <button
         onClicked={() => setCurrentView(name)}
         class="px-5 py-3 bg-primary_container rounded-3xl min-h-10"
@@ -60,7 +60,7 @@ type ToggleBtnProps = {
 
 function ToggleBtn({ name, icon, item, ...props }: ToggleBtnProps) {
   return (
-    <Adw.Clamp maximumSize={(450 / 2)}>
+    <Adw.Clamp maximumSize={450 / 2}>
       <button
         class="px-5 py-3 bg-primary_container rounded-3xl min-h-10"
         {...props}

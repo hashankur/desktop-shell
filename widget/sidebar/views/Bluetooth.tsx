@@ -11,35 +11,39 @@ type BluetoothPageProps = {
 
 function BluetoothPage({ setCurrentView }: BluetoothPageProps) {
   const bluetooth = AstalBluetooth.get_default();
-  const devices = createBinding(bluetooth, "devices")
+  const devices = createBinding(bluetooth, "devices");
 
   return (
     <StackPage $type="named" name="Bluetooth" setCurrentView={setCurrentView}>
       <box orientation={Gtk.Orientation.VERTICAL} spacing={5}>
         <For each={devices}>
-        {(device) =>(
+          {(device) => (
             <button
               class="px-5 py-2 rounded-lg hover:bg-surface_container_low"
-
-              onClicked={() => device.connect_device().catch((err)=>print(err))}
+              onClicked={() =>
+                device.connect_device().catch((err) => print(err))
+              }
             >
               <box spacing={15} valign={Gtk.Align.CENTER}>
                 <image pixelSize={24} iconName={device.icon || ""} />
-                <box orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER}>
+                <box
+                  orientation={Gtk.Orientation.VERTICAL}
+                  valign={Gtk.Align.CENTER}
+                >
                   <label
                     class="text-lg/none text-semibold"
                     label={device.name}
                     xalign={0}
                   />
-                    <label
-                      class="text-sm/none text-semibold"
-                      label="Connected"
-                      visible={device.connected}
-                    />
+                  <label
+                    class="text-sm/none text-semibold"
+                    label="Connected"
+                    visible={device.connected}
+                  />
                 </box>
               </box>
             </button>
-            )}
+          )}
         </For>
       </box>
     </StackPage>
