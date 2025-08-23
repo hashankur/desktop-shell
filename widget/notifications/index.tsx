@@ -1,8 +1,8 @@
-import { useNotificationHandler } from "@/lib/notification";
-import icons from "@/constants/icons";
-import { createBinding, createState, For, onCleanup } from "ags";
-import { Gtk } from "ags/gtk4";
 import AstalNotifd from "gi://AstalNotifd";
+import icons from "@/constants/icons";
+import { useNotificationHandler } from "@/lib/notification";
+import { For, createBinding, createState, onCleanup } from "ags";
+import { Gtk } from "ags/gtk4";
 import Notification from "./Notification";
 
 export const WINDOW_NAME = "notifications";
@@ -18,7 +18,7 @@ onCleanup(useNotificationHandler(notifd, notifications, setNotifications));
 
 function NotifsScrolledWindow() {
   return (
-    <Gtk.ScrolledWindow vexpand>
+    <scrolledwindow vexpand>
       <box
         orientation={Gtk.Orientation.VERTICAL}
         hexpand={false}
@@ -48,7 +48,7 @@ function NotifsScrolledWindow() {
           <label label="Your inbox is empty" cssClasses={["text-xl"]} />
         </box>
       </box>
-    </Gtk.ScrolledWindow>
+    </scrolledwindow>
   );
 }
 

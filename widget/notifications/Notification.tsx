@@ -1,10 +1,11 @@
-import { getTimeTooltip, useRelativeTime } from "@/lib/time";
-import icons from "@/constants/icons";
-import { Gtk } from "ags/gtk4";
 import Adw from "gi://Adw";
 import AstalNotifd from "gi://AstalNotifd";
 import GLib from "gi://GLib";
 import Pango from "gi://Pango";
+import icons from "@/constants/icons";
+import { NOTIFICATION_WIDTH } from "@/constants/spacing";
+import { getTimeTooltip, useRelativeTime } from "@/lib/time";
+import { Gtk } from "ags/gtk4";
 
 const fileExists = (path: string): boolean =>
   GLib.file_test(path, GLib.FileTest.EXISTS);
@@ -115,9 +116,9 @@ export default function Notification({
   ...props
 }: NotificationProps) {
   return (
-    <Adw.Clamp maximumSize={450}>
+    <Adw.Clamp maximumSize={NOTIFICATION_WIDTH}>
       <box
-        widthRequest={450}
+        widthRequest={NOTIFICATION_WIDTH}
         name={notification.id.toString()}
         cssClasses={["p-3", "rounded-xl", getUrgencyClass(notification)]}
         orientation={Gtk.Orientation.VERTICAL}
