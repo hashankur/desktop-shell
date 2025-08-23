@@ -1,48 +1,46 @@
 import AstalBluetooth from "gi://AstalBluetooth";
+import type { Setter } from "ags";
+import { For } from "ags";
+import { createBinding } from "ags";
+import { Gtk } from "ags/gtk4";
 import { StackPage } from "../stack";
-import { bind, type Variable } from "astal";
-import { Gtk } from "astal/gtk4";
 
 type BluetoothPageProps = {
-  currentView: Variable<string>;
+  setCurrentView: Setter<string>;
 };
 
-function BluetoothPage({ currentView }: BluetoothPageProps) {
+function BluetoothPage({ setCurrentView }: BluetoothPageProps) {
   const bluetooth = AstalBluetooth.get_default();
+  const devices = createBinding(bluetooth, "devices")
 
   return (
-    <StackPage name="Bluetooth" currentView={currentView}>
-      <box vertical spacing={5}>
-        {bind(bluetooth, "devices").as((device) =>
-          device.map((device) => (
+    <StackPage $type="named" name="Bluetooth" setCurrentView={setCurrentView}>
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={5}>
+        <For each={devices}>
+        {(device) =>(
             <button
-              cssClasses={[
-                "px-5",
-                "py-2",
-                "rounded-lg",
-                "hover:bg-surface_container_low",
-              ]}
-              onClicked={() => print(device.connect_device())}
+              class="px-5 py-2 rounded-lg hover:bg-surface_container_low"
+
+              onClicked={() => device.connect_device().catch((err)=>print(err))}
             >
               <box spacing={15} valign={Gtk.Align.CENTER}>
-                <image cssClasses={["icon-lg"]} iconName={device.icon || ""} />
-                <box vertical valign={Gtk.Align.CENTER}>
+                <image pixelSize={24} iconName={device.icon || ""} />
+                <box orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER}>
                   <label
-                    cssClasses={["text-lg", "text-semibold"]}
+                    class="text-lg/none text-semibold"
                     label={device.name}
                     xalign={0}
                   />
-                  {device.connected && (
                     <label
-                      cssClasses={["text-sm", "text-semibold"]}
+                      class="text-sm/none text-semibold"
                       label="Connected"
+                      visible={device.connected}
                     />
-                  )}
                 </box>
               </box>
             </button>
-          )),
-        )}
+            )}
+        </For>
       </box>
     </StackPage>
   );
