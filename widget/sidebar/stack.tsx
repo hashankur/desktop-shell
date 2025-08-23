@@ -29,9 +29,7 @@ function StackPage({ children, name, toggle, setCurrentView }: StackPageProps) {
           // }}
         />
       </box>
-      <scrolledwindow>
-        {children}
-      </scrolledwindow>
+      <scrolledwindow>{children}</scrolledwindow>
     </box>
   );
 }

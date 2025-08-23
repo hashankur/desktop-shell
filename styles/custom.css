@@ -33,11 +33,11 @@ highlight {
   @apply bg-primary;
 }
 
-levelbar>trough>block {
+levelbar > trough > block {
   @apply bg-on_secondary rounded-none;
 }
 
-levelbar>trough>block.filled {
+levelbar > trough > block.filled {
   @apply bg-secondary;
 }
 

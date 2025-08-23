@@ -30,17 +30,17 @@ export default function SideBar() {
           transitionType={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT}
           transitionDuration={200}
           vexpandSet
-            class="p-5 pb-0"
+          class="p-5 pb-0"
           $={(self) => {
             const unsub = currentView.subscribe(() =>
-                           self.set_visible_child_name(currentView.get()),
-                        );
-                        onCleanup(() => unsub());
+              self.set_visible_child_name(currentView.get()),
+            );
+            onCleanup(() => unsub());
 
-                    self.connect("unmap", () => {
-                      setCurrentView("main");
-                    });
-                }}
+            self.connect("unmap", () => {
+              setCurrentView("main");
+            });
+          }}
         >
           <MainPage setCurrentView={setCurrentView} windowName={WINDOW_NAME} />
           <NetworkPage setCurrentView={setCurrentView} />
