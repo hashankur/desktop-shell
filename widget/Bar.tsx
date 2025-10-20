@@ -1,10 +1,3 @@
-import Button from "@/widget/common/Button";
-import icons from "@/constants/icons";
-import { createBinding, createComputed, For, With } from "ags";
-import { Astal, Gtk } from "ags/gtk4";
-import app from "ags/gtk4/app";
-import { execAsync } from "ags/process";
-import { createPoll } from "ags/time";
 import Battery from "gi://AstalBattery";
 import Bluetooth from "gi://AstalBluetooth";
 import Mpris from "gi://AstalMpris";
@@ -14,7 +7,15 @@ import Tray from "gi://AstalTray";
 import Wp from "gi://AstalWp";
 import GLib from "gi://GLib";
 import Pango from "gi://Pango";
+import icons from "@/constants/icons";
 import Calendar from "@/widget/calendar";
+import Button from "@/widget/common/Button";
+import { createState } from "ags";
+import { For, With, createBinding, createComputed } from "ags";
+import { Astal, Gtk } from "ags/gtk4";
+import app from "ags/gtk4/app";
+import { execAsync } from "ags/process";
+import { createPoll } from "ags/time";
 
 const WINDOW_NAME = "bar";
 const MAX_WIDTH_CHARS = 50;
@@ -63,22 +64,41 @@ function Workspaces() {
 function Active() {
   const niri = Niri.get_default();
   const activeWindow = createBinding(niri, "focusedWindow");
+  const [activeWindowTitle, setActiveWindowTitle] = createState("Desktop");
+
+  // focusedWindow.title bind does not seem to detect changes while focused
+  niri.connect("window-focus-changed", (a) => {
+    setActiveWindowTitle(a.focusedWindow?.title ?? "Desktop");
+  });
+
+  const icons = {
+    "dev.zed.Zed-Dev": "zed",
+    "zen-beta": "zen-browser",
+    Zotero: "zotero",
+  };
+
+  const remapIcon = (appId: string) => {
+    if (appId in icons) {
+      return icons[appId as keyof typeof icons];
+    }
+    return appId ?? "user-desktop";
+  };
 
   return (
-    <With value={activeWindow}>
-      {(activeWindow) => (
-        <box spacing={5}>
-          <image
-            iconName={`${activeWindow?.appId ?? "user-desktop"}-symbolic`}
-          />
-          <label
-            label={activeWindow?.title ?? "Desktop"}
-            maxWidthChars={MAX_WIDTH_CHARS}
-            ellipsize={Pango.EllipsizeMode.END}
-          />
-        </box>
-      )}
-    </With>
+    <box>
+      <With value={activeWindow}>
+        {(activeWindow) => (
+          <box spacing={5}>
+            <image iconName={`${remapIcon(activeWindow?.appId)}-symbolic`} />
+            <label
+              label={activeWindowTitle}
+              maxWidthChars={MAX_WIDTH_CHARS}
+              ellipsize={Pango.EllipsizeMode.END}
+            />
+          </box>
+        )}
+      </With>
+    </box>
   );
 }
 
