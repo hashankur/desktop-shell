@@ -1,11 +1,10 @@
-import Window from "@/widget/common/window";
-import icons from "@/constants/icons";
-import { createComputed } from "ags";
-import { createState, For } from "ags";
-import { Astal, Gdk, Gtk } from "ags/gtk4";
 import Adw from "gi://Adw";
 import AstalApps from "gi://AstalApps";
 import Pango from "gi://Pango";
+import icons from "@/constants/icons";
+import Window from "@/widget/common/window";
+import { For, createState } from "ags";
+import { Astal, Gdk, Gtk } from "ags/gtk4";
 
 const WINDOW_NAME = "app-launcher";
 
@@ -86,7 +85,12 @@ export default function AppLauncher() {
                   class="hover:bg-surface_container px-4 mt-1 rounded-xl"
                 >
                   <box spacing={20}>
-                    <image class="my-2 icon-xl" iconName={app.iconName} />
+                    <image
+                      class="my-2 icon-xl"
+                      {...(app.iconName.startsWith("/")
+                        ? { file: app.iconName }
+                        : { iconName: app.iconName })}
+                    />
                     <box>
                       <box
                         orientation={Gtk.Orientation.VERTICAL}
