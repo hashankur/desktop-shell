@@ -1,0 +1,76 @@
+import { Button, HorizontalBox, ProgressIndicator } from "std-widgets.slint";
+import { CircularProgressIndicator } from "circular-progress.slint";
+import { Styles } from "styles.slint";
+
+export component AppWindow inherits Window {
+    in-out property <int> counter: 42;
+    in property <string> sys_time;
+    callback request-increase-value();
+    default-font-family: "Satoshi Variable";
+    default-font-size: 14px;
+    default-font-weight: 500;
+    background: Styles.surface_container_lowest;
+
+    VerticalLayout {
+        HorizontalLayout {
+            spacing: 3px;
+
+            for ws in [true, true, false, true, true, false, false]: Rectangle {
+                height: 3px;
+                background: ws ? Styles.primary : Styles.primary_container;
+            }
+        }
+
+        HorizontalLayout {
+            padding: 2px;
+            padding-left: 15px;
+            padding-right: 15px;
+            spacing: 10px;
+
+            VerticalLayout {
+                alignment: center;
+
+                HorizontalLayout {
+                    min-width: 250px;
+                    alignment: start;
+                    horizontal-stretch: 1;
+                    spacing: 5px;
+
+                    for stat in [0.15, 0.75, 0.25, 0.55]: CircularProgressIndicator {
+                        progress: stat;
+                        width: 20px;
+                        height: 20px;
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                horizontal-stretch: 1;
+                alignment: center;
+
+                Text {
+                    vertical-alignment: center;
+                    text: root.sys_time;
+                }
+            }
+
+            HorizontalLayout {
+                min-width: 250px;
+                alignment: end;
+                horizontal-stretch: 1;
+
+                Text {
+                    vertical-alignment: center;
+                    text: "Counter: \{root.counter}";
+                }
+
+                Button {
+                    text: "Increase value";
+                    clicked => {
+                        root.request-increase-value();
+                    }
+                }
+            }
+        }
+    }
+}
