@@ -1,0 +1,27 @@
+import { State } from "../state.slint";
+
+export component Center {
+    in-out property <string> sys_time: "";
+    callback get_sys_time();
+
+    time_updater := Timer {
+        interval: 1s;
+        triggered => {
+            root.sys_time = State.dateTime();
+        }
+    }
+
+    init => {
+        time_updater.start();
+    }
+
+    HorizontalLayout {
+        horizontal-stretch: 1;
+        alignment: center;
+
+        Text {
+            vertical-alignment: center;
+            text: root.sys_time;
+        }
+    }
+}

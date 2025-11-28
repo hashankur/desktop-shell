@@ -1,10 +1,13 @@
 import { Button, HorizontalBox, ProgressIndicator } from "std-widgets.slint";
 import { CircularProgressIndicator } from "circular-progress.slint";
 import { Styles } from "styles.slint";
+import { Center } from "bar/center.slint";
+import { State } from "state.slint";
+
+export {State}
 
 export component AppWindow inherits Window {
     in-out property <int> counter: 42;
-    in property <string> sys_time;
     callback request-increase-value();
     default-font-family: "Satoshi Variable";
     default-font-size: 14px;
@@ -44,15 +47,7 @@ export component AppWindow inherits Window {
                 }
             }
 
-            HorizontalLayout {
-                horizontal-stretch: 1;
-                alignment: center;
-
-                Text {
-                    vertical-alignment: center;
-                    text: root.sys_time;
-                }
-            }
+            Center { }
 
             HorizontalLayout {
                 min-width: 250px;
