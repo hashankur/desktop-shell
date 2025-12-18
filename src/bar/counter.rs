@@ -1,7 +1,7 @@
-use crate::AppWindow;
+use crate::Bar;
 use slint::ComponentHandle;
 
-pub fn setup(ui: &AppWindow) {
+pub fn setup(ui: &Bar) {
     ui.on_request_increase_value({
         let ui_handle = ui.as_weak();
         move || {

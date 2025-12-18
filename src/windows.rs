@@ -1,24 +1,28 @@
 use spell_framework::{
-    cast_spell,
+    enchant_spells,
     layer_properties::{BoardType, LayerAnchor, LayerType, WindowConf},
+    slint_adapter::SpellMultiWinHandler,
     wayland_adapter::SpellWin,
 };
 use std::error::Error;
 
-pub fn setup_bar() -> SpellWin {
-    let window_conf = WindowConf::new(
-        1920,
-        40,
-        (Some(LayerAnchor::TOP), None),
-        (0, 0, 0, 0),
-        LayerType::Top,
-        BoardType::None,
-        Some(40),
-    );
+pub fn setup() -> Vec<SpellWin> {
+    let windows = SpellMultiWinHandler::conjure_spells(vec![(
+        "top-bar",
+        WindowConf::new(
+            1920,
+            40,
+            (Some(LayerAnchor::TOP), None),
+            (0, 0, 0, 0),
+            LayerType::Top,
+            BoardType::None,
+            Some(30),
+        ),
+    )]);
 
-    SpellWin::invoke_spell("bar", window_conf)
+    windows
 }
 
-pub fn run_spell(waywindow: SpellWin) -> Result<(), Box<dyn Error>> {
-    cast_spell(waywindow, None, None)
+pub fn run_spells(windows: Vec<SpellWin>) -> Result<(), Box<dyn Error>> {
+    enchant_spells(windows, vec![None], vec![None])
 }

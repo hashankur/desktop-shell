@@ -7,8 +7,10 @@ use chrono::Local;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let waywindow = windows::setup_bar();
-    let ui = AppWindow::new().unwrap();
+    let window_list = windows::setup();
+    let ui = Bar::new().unwrap();
+
+    let ui_weak = ui.as_weak();
 
     ui.global::<State>().on_dateTime(move || {
         let now = Local::now();
@@ -17,7 +19,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     bar::counter::setup(&ui);
-    // Remove any Rust timer logic that set system time directly.
 
-    windows::run_spell(waywindow)
+    windows::run_spells(window_list)
 }
