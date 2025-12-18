@@ -21,9 +21,9 @@ export component Bar inherits Window {
         HorizontalLayout {
             spacing: 3px;
 
-            for ws in [true, true, false, true, true, false, false]: Rectangle {
+            for ws in State.workspaces: Rectangle {
                 height: 3px;
-                background: ws ? Styles.primary : Styles.primary_container;
+                background: ws.id == State.workspaceFocused ? Styles.primary : ws.active_window_id != 0 ? Styles.primary_container : Styles.surface_container;
             }
         }
 
@@ -71,7 +71,7 @@ export component Bar inherits Window {
 
                 Text {
                     vertical-alignment: center;
-                    text: "Active: \{State.workspaceActivated}";
+                    text: "Active: \{State.workspaceFocused}";
                 }
             }
         }

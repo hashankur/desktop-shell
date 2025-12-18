@@ -1,3 +1,10 @@
+export struct Workspace {
+    id: int,
+    active_window_id: int,
+}
+
 export global State {
     pure callback dateTime() -> string;
+    in-out property <int> workspaceFocused: 0;
+    in-out property <[Workspace]> workspaces: [];
 }

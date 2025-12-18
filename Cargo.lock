@@ -1189,9 +1189,13 @@ name = "desktop-shell"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "niri-ipc",
+ "serde",
+ "serde_json",
  "slint",
  "slint-build",
  "spell-framework",
+ "tokio",
 ]
 
 [[package]]
@@ -2959,6 +2963,16 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
+
+[[package]]
+name = "niri-ipc"
+version = "25.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a336854faf3818ec2399152c994796e2e8d723867f9987f1e0cfeaae1dadaed1"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "nix"
