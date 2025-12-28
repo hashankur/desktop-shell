@@ -4,7 +4,7 @@ export struct Workspace {
 }
 
 export global State {
-    pure callback dateTime() -> string;
+    in property <string> sys_time: "";
     in-out property <int> workspaceFocused: 0;
     in-out property <[Workspace]> workspaces: [];
 }

@@ -1,74 +1,73 @@
-slint::include_modules!();
+// #[derive(Debug, Clone)]
+// enum SystemState {
+//     FocusedWorkspace { id: i32 },
+//     Workspaces(Vec<Workspace>),
+// }
 
-mod bar;
-mod niri;
-mod windows;
+use std::env;
+use std::path::PathBuf;
+use std::time::{Duration, Instant};
 
 use chrono::Local;
-use slint::{ModelRc, VecModel};
-use std::{error::Error, rc::Rc, sync::mpsc::channel, thread, time::Duration};
-use tokio::{join, runtime::Runtime};
+use layer_shika::calloop::TimeoutAction;
+use layer_shika::prelude::*;
+use layer_shika::slint::SharedString;
+use layer_shika::slint_interpreter::Value;
+use layer_shika::{AnchorEdges, Shell, Surface};
 
-use crate::niri::niri_event_listener;
+fn main() -> Result<()> {
+    env::set_var("SLINT_STYLE", "cosmic-dark");
 
-#[derive(Debug, Clone)]
-enum SystemState {
-    FocusedWorkspace {
-        id: i32,
-    },
-    Workspaces(Vec<Workspace>),
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Info)
+        .init();
+
+    let ui_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ui/app-window.slint");
+
+    let mut shell = Shell::from_file(ui_path)
+        .surface("Bar")
+        .height(42)
+        .anchor(AnchorEdges::top_bar())
+        .exclusive_zone(42)
+        .namespace("bar")
+        .build()?;
+
+    shell
+        .select(Surface::named("Bar"))
+        .with_component(|component| {
+            let set_property = |name: &str, value: Value| {
+                if let Err(e) = component.set_property(name, value) {
+                    log::error!("Failed to set initial {}: {}", name, e);
+                }
+            };
+
+            // set_property("test", SharedString::from("bello").into());
+        });
+
+    let handle = shell.event_loop_handle();
+
+    handle.add_timer(Duration::from_secs(1), |_instant, app_state| {
+        let time_str = current_time_string();
+
+        for surface in app_state.all_outputs() {
+            if let Err(e) = surface.component_instance().set_global_property(
+                "State",
+                "sys_time",
+                Value::from(SharedString::from(time_str.clone())),
+            ) {
+                log::error!("Failed to set time property: {e}");
+            }
+        }
+
+        TimeoutAction::ToInstant(Instant::now() + Duration::from_secs(1))
+    })?;
+
+    shell.run()?;
+
+    Ok(())
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let window_list = windows::setup();
-
-    let (tx, rx) = channel::<SystemState>();
-    let ui = Bar::new().unwrap();
-    let ui_weak = ui.as_weak();
-
-    ui.global::<State>().on_dateTime(move || {
-        let now = Local::now();
-        let formatted = now.format("%a %d %b  •  %I:%M %p").to_string();
-        formatted.into()
-    });
-
-    thread::spawn(move || {
-        let rt = Runtime::new().unwrap();
-        rt.block_on(async {
-            join!(
-                // IPC
-                niri_event_listener(tx.clone())
-            )
-        })
-    });
-
-    let timer = slint::Timer::default();
-    timer.start(
-        slint::TimerMode::Repeated,
-        Duration::from_millis(50),
-        move || {
-            // Process all available updates from Tokio
-            while let Ok(update) = rx.try_recv() {
-                if let Some(ui) = ui_weak.upgrade() {
-                    match update {
-                        SystemState::FocusedWorkspace { id } => {
-                            ui.global::<State>().set_workspaceFocused(id);
-                        }
-                        SystemState::Workspaces(mut workspaces) => {
-                            workspaces.sort_by_key(|ws| ws.id);
-                            let vec_model = VecModel::from(workspaces);
-                            let model_handle: ModelRc<Workspace> =
-                                ModelRc::from(Rc::new(vec_model));
-                            ui.global::<State>().set_workspaces(model_handle);
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        },
-    );
-
-    bar::counter::setup(&ui);
-
-    windows::run_spells(window_list)
+fn current_time_string() -> String {
+    let now = Local::now();
+    now.format("%a %d %b  •  %I:%M %p").to_string()
 }
