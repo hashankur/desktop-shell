@@ -1,5 +1,6 @@
 import Quickshell
 import QtQuick
+import QtQuick.Layouts
 
 import qs.config
 
@@ -25,14 +26,44 @@ Scope {
                 id: rectanglesRow
             }
 
-            Item {
+            RowLayout {
                 anchors.top: rectanglesRow.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
+                anchors.margins: 20
+                spacing: 10
 
-                Clock {
-                    anchors.centerIn: parent
+                // Left section
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    FocusedWindow {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                // Center section
+                Item {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: implicitWidth
+
+                    Clock {
+                        anchors.centerIn: parent
+                    }
+                }
+
+                // Right section
+                Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    Mpris {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
             }
         }
