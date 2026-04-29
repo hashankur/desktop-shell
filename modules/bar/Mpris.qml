@@ -22,4 +22,10 @@ Text {
 
         return artist + " - " + title;
     }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: activePlayer.togglePlaying()
+    }
 }

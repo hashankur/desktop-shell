@@ -60,9 +60,16 @@ Scope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    Mpris {
+                    Row {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
+                        spacing: 10
+
+                        Mpris {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Battery {}
                     }
                 }
             }
