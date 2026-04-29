@@ -1,27 +1,26 @@
 import QtQuick
+import Quickshell
 
+import qs.components
 import qs.config
 import qs.services
 
 Row {
-    spacing: 4
+    spacing: 5
+    readonly property var hasIcon: Quickshell.iconPath(Niri.focusedWindow?.appId, true)
 
-    Image {
-        anchors.verticalCenter: parent.verticalCenter
-        source: Niri.focusedWindow?.iconPath ? "file://" + Niri.focusedWindow?.iconPath : ""
-        sourceSize.width: 16
-        sourceSize.height: 16
-        visible: Niri.focusedWindow?.iconPath !== ""
-        smooth: true
+    Icon {
+        source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId + "-symbolic") : ""
+        visible: hasIcon
     }
 
     // Fallback for missing icons
     Rectangle {
         anchors.verticalCenter: parent.verticalCenter
-        width: 16
-        height: 16
-        color: "#CCC"
-        visible: Niri.focusedWindow?.iconPath === ""
+        width: 14
+        height: 14
+        color: Appearance.colors.on_surface
+        visible: !hasIcon
         radius: 12
     }
 
