@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Universal
 import Quickshell.Services.UPower
 
+import qs.components
 import qs.config
 import qs.services
 
@@ -13,15 +14,15 @@ Item {
     // Color based on battery level
     function getBatteryColor() {
         if (Battery.isCharging) {
-            return "#4CAF50"; // Green when charging
+            return Appearance.colors.primary;
         }
         if (Battery.percentage >= 0.5) {
-            return Appearance.colors.on_surface; // Normal color when above 50%
+            return Appearance.colors.on_surface;
         }
         if (Battery.percentage >= 0.2) {
-            return "#FFC107"; // Amber when 20-50%
+            return Appearance.colors.tertiary;
         }
-        return "#F44336"; // Red when below 20%
+        return Appearance.colors.error; // Red when below 20%
     }
 
     // Format time in seconds to human readable format
@@ -59,8 +60,6 @@ Item {
         anchors.fill: parent
         radius: height / 2
         color: Appearance.colors.surface_container
-        border.color: getBatteryColor()
-        border.width: 1
 
         // Progress indicator
         Rectangle {
@@ -71,7 +70,7 @@ Item {
                 margins: 1
             }
             width: parent.width * Battery.percentage - 2
-            radius: parent.radius - 1
+            radius: Math.min(parent.radius - 1, width / 2) // Fix clipping?
             color: getBatteryColor()
 
             Behavior on width {
@@ -109,6 +108,14 @@ Item {
             radius: 4
             implicitWidth: 150
             implicitHeight: 40
+        }
+
+        contentItem: Text {
+            text: getTooltipText()
+            color: Appearance.colors.on_surface
+            font.pixelSize: 12
+            wrapMode: Text.WordWrap
+            padding: 8
         }
     }
 
