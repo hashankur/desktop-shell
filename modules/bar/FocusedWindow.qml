@@ -29,7 +29,7 @@ Row {
         width: 500
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
-        text: Niri.focusedWindow?.title ?? ""
+        text: Niri.focusedWindow?.title ?? "Desktop"
         font.family: Appearance.font.sans
         font.pixelSize: Appearance.fontSize.normal
         font.weight: Font.Medium

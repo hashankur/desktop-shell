@@ -1,3 +1,5 @@
+//@ pragma IconTheme MoreWaita
+
 import QtQuick
 import Quickshell
 
