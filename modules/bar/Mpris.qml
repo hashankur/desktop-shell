@@ -7,13 +7,14 @@ import qs.components
 import qs.config
 
 Row {
-    spacing: 10
-
     // Get the active/current player from the values array
     readonly property var activePlayer: Mpris.players.values && Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
 
+    spacing: 10
+    visible: activePlayer !== null
+
     Icon {
-        source: activePlayer.isPlaying != MprisPlaybackState.Playing ? Quickshell.iconPath("media-playback-start-symbolic") : Quickshell.iconPath("media-playback-pause-symbolic")
+        source: activePlayer?.isPlaying != MprisPlaybackState.Playing ? Quickshell.iconPath("media-playback-start-symbolic") : Quickshell.iconPath("media-playback-pause-symbolic")
     }
 
     Text {

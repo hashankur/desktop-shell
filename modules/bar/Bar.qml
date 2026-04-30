@@ -65,6 +65,10 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 10
 
+                        SystemStats {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
                         Mpris {
                             anchors.verticalCenter: parent.verticalCenter
                         }
