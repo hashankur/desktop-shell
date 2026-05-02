@@ -56,41 +56,12 @@ Item {
         return text;
     }
 
-    Rectangle {
+    ProgressBar {
         anchors.fill: parent
-        radius: height / 2
-        color: Appearance.colors.surface_container
-
-        // Progress indicator
-        Rectangle {
-            anchors {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
-                margins: 1
-            }
-            width: parent.width * Battery.percentage - 2
-            radius: Math.min(parent.radius - 1, width / 2) // Fix clipping?
-            color: getBatteryColor()
-
-            Behavior on width {
-                NumberAnimation {
-                    duration: 300
-                    easing.type: Easing.InOutQuad
-                }
-            }
-        }
-
-        // Battery percentage text
-        // Text {
-        //     anchors.centerIn: parent
-        //     text: `${Math.round(Battery.percentage * 100)}%`
-        //     font.family: Appearance.font.mono
-        //     font.pixelSize: 10
-        //     font.weight: Font.Bold
-        //     color: Battery.percentage > 0.5 ? Appearance.colors.on_surface : Appearance.colors.surface
-        //     z: 1
-        // }
+        progress: Battery.percentage
+        barColor: getBatteryColor()
+        backgroundColor: Appearance.colors.surface_container
+        animationDuration: 300
     }
 
     // Tooltip

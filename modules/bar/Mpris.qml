@@ -10,7 +10,7 @@ Row {
     // Get the active/current player from the values array
     readonly property var activePlayer: Mpris.players.values && Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
 
-    spacing: 10
+    spacing: 5
     visible: activePlayer !== null
 
     Icon {
