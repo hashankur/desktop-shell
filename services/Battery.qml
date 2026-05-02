@@ -5,6 +5,7 @@ import Quickshell.Services.UPower
 import QtQuick
 import Quickshell.Io
 import qs.services
+import qs.config
 
 Singleton {
     property bool available: UPower.displayDevice.isLaptopBattery
@@ -31,10 +32,10 @@ Singleton {
             Quickshell.execDetached(["notify-send", "Low battery", "Consider plugging in your device", "-u", "critical", "-a", "Shell"]);
     }
 
-    onIsCriticalAndNotChargingChanged: {
-        if (available && isCriticalAndNotCharging)
-            Quickshell.execDetached(["notify-send", "Critically low battery", "Please charge!\nAutomatic suspend triggers at %1".arg(Config.data.power.battery.suspend), "-u", "critical", "-a", "Shell"]);
-    }
+    // onIsCriticalAndNotChargingChanged: {
+    //     if (available && isCriticalAndNotCharging)
+    //         Quickshell.execDetached(["notify-send", "Critically low battery", "Please charge!\nAutomatic suspend triggers at %1".arg(Config.data.power.battery.suspend), "-u", "critical", "-a", "Shell"]);
+    // }
 
     onIsSuspendingAndNotChargingChanged: {
         if (available && isSuspendingAndNotCharging) {

@@ -39,9 +39,17 @@ Scope {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    FocusedWindow {
-                        anchors.left: parent.left
+                    Row {
                         anchors.verticalCenter: parent.verticalCenter
+                        spacing: 20
+
+                        SystemStats {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        FocusedWindow {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
 
@@ -63,11 +71,7 @@ Scope {
                     Row {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: 10
-
-                        SystemStats {
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
+                        spacing: 20
 
                         Mpris {
                             anchors.verticalCenter: parent.verticalCenter

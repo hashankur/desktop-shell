@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Widgets
 
 import qs.components
 import qs.config
@@ -9,23 +10,25 @@ Row {
     spacing: 5
     readonly property var hasIcon: Quickshell.iconPath(Niri.focusedWindow?.appId, true)
 
-    Icon {
-        source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId + "-symbolic") : ""
-        visible: hasIcon
-    }
+    // IconImage {
+    //     implicitSize: 14
+    //     anchors.verticalCenter: parent.verticalCenter
+    //     smooth: true
+    //     source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId) : ""
+    //     visible: hasIcon
+    // }
 
-    // Fallback for missing icons
-    Rectangle {
-        anchors.verticalCenter: parent.verticalCenter
-        width: 14
-        height: 14
-        color: Appearance.colors.on_surface
-        visible: !hasIcon
-        radius: 12
-    }
+    // // Fallback for missing icons
+    // Rectangle {
+    //     anchors.verticalCenter: parent.verticalCenter
+    //     width: 14
+    //     height: 14
+    //     color: Appearance.colors.on_surface
+    //     visible: !hasIcon
+    //     radius: 12
+    // }
 
     Text {
-        // FIXME: Make the width proportional to the width of the container.
         width: 500
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
