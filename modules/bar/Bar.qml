@@ -3,6 +3,8 @@ import QtQuick
 import QtQuick.Layouts
 
 import qs.config
+import qs.components
+import qs.modules.bar.components
 
 Scope {
     Variants {
@@ -78,6 +80,8 @@ Scope {
                         }
 
                         Battery {}
+
+                        NotificationsHistory {}
                     }
                 }
             }
