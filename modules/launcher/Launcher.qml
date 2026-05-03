@@ -55,9 +55,7 @@ PanelWindow {
             launcher.visible = true;
         }
 
-        searchField.text = "";
-        listView.currentIndex = 0;
-        updateResults();
+        resetSearchState();
         focusTimer.restart();
     }
 
@@ -81,9 +79,7 @@ PanelWindow {
             focusTimer.restart();
         } else {
             revealProgress = 0;
-            searchField.text = "";
-            updateResults();
-            listView.currentIndex = 0;
+            resetSearchState();
         }
     }
 
@@ -169,7 +165,9 @@ PanelWindow {
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: launcher.hasQuery ? launcher.listHeight : 0
-                visible: launcher.hasQuery
+                opacity: launcher.hasQuery ? 1 : 0
+                visible: launcher.hasQuery || opacity > 0
+                clip: true
 
                 Behavior on Layout.preferredHeight {
                     NumberAnimation {
@@ -278,6 +276,12 @@ PanelWindow {
 
     // Application list management
     property list<DesktopEntry> foundEntries: []
+
+    function resetSearchState() {
+        searchField.text = "";
+        foundEntries = [];
+        listView.currentIndex = -1;
+    }
 
     function updateResults() {
         const query = searchField.text.toLowerCase().trim();
