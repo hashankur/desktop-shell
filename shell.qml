@@ -21,4 +21,9 @@ ShellRoot {
         active: true
         component: Osd {}
     }
+
+    LazyLoader {
+        active: true
+        component: NotificationHost {}
+    }
 }
