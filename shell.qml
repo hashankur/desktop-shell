@@ -3,10 +3,11 @@
 import QtQuick
 import Quickshell
 
-import qs.components
-import qs.modules
 import qs.modules.bar
+import qs.modules.frame
 import qs.modules.launcher
+import qs.modules.notifications
+import qs.modules.osd
 
 ShellRoot {
     id: root
@@ -15,7 +16,10 @@ ShellRoot {
 
     Bar {}
 
-    Launcher {}
+    LazyLoader {
+        active: true
+        component: Launcher {}
+    }
 
     LazyLoader {
         active: true
