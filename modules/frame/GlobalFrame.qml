@@ -19,7 +19,6 @@ Variants {
             top: true
             bottom: true
         }
-        aboveWindows: true
         focusable: false
         exclusiveZone: 0
         color: "transparent"
