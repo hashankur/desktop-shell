@@ -10,10 +10,6 @@ Item {
     property real radius: 24
     property real thickness: 1
     property real inset: 0
-    property real insetTop: root.inset
-    property real insetLeft: root.inset
-    property real insetRight: root.inset
-    property real insetBottom: root.inset
 
     anchors.fill: parent
 
@@ -40,10 +36,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            anchors.topMargin: root.thickness + root.insetTop
-            anchors.leftMargin: root.thickness + root.insetLeft
-            anchors.rightMargin: root.thickness + root.insetRight
-            anchors.bottomMargin: root.thickness + root.insetBottom
+            anchors.margins: root.thickness
             radius: Math.max(0, root.radius - root.thickness)
         }
     }
