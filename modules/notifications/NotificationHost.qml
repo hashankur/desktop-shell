@@ -4,12 +4,14 @@ import QtQuick.Controls
 import Quickshell
 
 import qs.services
+import "components"
 
 PanelWindow {
     id: host
     color: "transparent"
     implicitWidth: 400
     implicitHeight: 500
+    focusable: false
     screen: Quickshell.screens[0]
     anchors.top: true
     anchors.right: true
@@ -20,6 +22,14 @@ PanelWindow {
     exclusiveZone: 0
 
     property var activeToasts: []
+    property int toastCount: 0
+    visible: toastCount > 0
+
+    Component {
+        id: toastComponent
+
+        NotificationToast {}
+    }
 
     Column {
         id: stack
@@ -38,14 +48,20 @@ PanelWindow {
             timeout: notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 4000
         }
 
-        var comp = Qt.createComponent(Qt.resolvedUrl("./components/NotificationToast.qml"))
-        if (comp.status === Component.Ready) {
-            var obj = comp.createObject(stack, { notificationData: toastData, notificationObject: notification })
-            if (obj) {
-                activeToasts.push(obj)
-            }
-        } else {
-            console.warn("Toast component not ready:", comp.status, comp.errorString())
+        var obj = toastComponent.createObject(stack, { notificationData: toastData, notificationObject: notification })
+        if (obj) {
+            activeToasts.push(obj)
+            toastCount = activeToasts.length
+
+            // Keep host visibility in sync after toast self-destruction.
+            obj.destroyed.connect(function() {
+                for (var i = activeToasts.length - 1; i >= 0; --i) {
+                    if (activeToasts[i] === obj || activeToasts[i] === null) {
+                        activeToasts.splice(i, 1)
+                    }
+                }
+                toastCount = activeToasts.length
+            })
         }
     }
 
