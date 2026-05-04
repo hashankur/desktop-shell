@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import qs.modules.notifications
 
 Singleton {
     id: root
@@ -13,6 +14,12 @@ Singleton {
     property string persistencePath: "/home/han/.config/quickshell/notifications.json"
     property var pendingToasts: []
     property var historyWindow: null
+
+    Component {
+        id: historyWindowComponent
+
+        NotificationHistory {}
+    }
 
     signal toastQueued(var notification)
 
@@ -113,18 +120,13 @@ Singleton {
                 return
             }
 
-            var comp = Qt.createComponent(Qt.resolvedUrl("../modules/notifications/NotificationHistory.qml"))
-            if (comp.status === Component.Ready) {
-                root.historyWindow = comp.createObject(null)
-                if (!root.historyWindow) {
-                    console.error("Failed to create NotificationHistory window")
-                    return
-                }
-
-                root.historyWindow.visible = true
-            } else {
-                console.warn("NotificationHistory component not ready:", comp.status, comp.errorString())
+            root.historyWindow = historyWindowComponent.createObject(null)
+            if (!root.historyWindow) {
+                console.error("Failed to create NotificationHistory window")
+                return
             }
+
+            root.historyWindow.visible = true
         } catch (e) {
             console.warn("openHistory failed:", e)
         }
