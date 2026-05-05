@@ -12,7 +12,7 @@ Item {
     property var notificationObject: null
 
     width: 400
-    height: 120
+    implicitHeight: 100
 
     Rectangle {
         id: content
@@ -27,7 +27,7 @@ Item {
         RowLayout {
             anchors.fill: parent
             anchors.margins:  10
-            spacing: 0
+            spacing: 10
 
             // Album art / Icon on left
             Rectangle {
@@ -56,7 +56,7 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.margins: 14
+                Layout.margins: 5
                 spacing: 4
 
                 // Header row with app name and close button
