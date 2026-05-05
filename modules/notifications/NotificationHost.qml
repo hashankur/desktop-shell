@@ -10,7 +10,7 @@ PanelWindow {
     id: host
     color: "transparent"
     implicitWidth: 400
-    implicitHeight: 500
+    implicitHeight: stack.implicitHeight
     focusable: false
     screen: Quickshell.screens[0]
     anchors.top: true
@@ -21,9 +21,7 @@ PanelWindow {
     margins.left: 18
     exclusiveZone: 0
 
-    property var activeToasts: []
-    property int toastCount: 0
-    visible: toastCount > 0
+    visible: stack.children.length > 0
 
     Component {
         id: toastComponent
@@ -49,20 +47,6 @@ PanelWindow {
         }
 
         var obj = toastComponent.createObject(stack, { notificationData: toastData, notificationObject: notification })
-        if (obj) {
-            activeToasts.push(obj)
-            toastCount = activeToasts.length
-
-            // Keep host visibility in sync after toast self-destruction.
-            obj.destroyed.connect(function() {
-                for (var i = activeToasts.length - 1; i >= 0; --i) {
-                    if (activeToasts[i] === obj || activeToasts[i] === null) {
-                        activeToasts.splice(i, 1)
-                    }
-                }
-                toastCount = activeToasts.length
-            })
-        }
     }
 
     Component.onCompleted: {
