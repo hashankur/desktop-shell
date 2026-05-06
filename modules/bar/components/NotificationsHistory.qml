@@ -18,8 +18,10 @@ Rectangle {
         anchors.fill: parent
         onClicked: {
             try {
-                Notifications.openHistory()
-            } catch (e) { console.warn("Failed opening notifications:", e) }
+                Dashboard.open("overview");
+            } catch (e) {
+                console.warn("Failed opening notifications:", e);
+            }
         }
     }
 }
