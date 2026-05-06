@@ -21,12 +21,12 @@ Item {
         border {
             width: 2
             color: Appearance.colors.surface_container
-        }  
+        }
         radius: 12
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins:  10
+            anchors.margins: 10
             spacing: 10
 
             // Album art / Icon on left
@@ -81,7 +81,9 @@ Item {
                     Button {
                         text: "×"
                         onClicked: root.dismiss()
-                        background: Rectangle { color: "transparent" }
+                        background: Rectangle {
+                            color: "transparent"
+                        }
                         contentItem: Text {
                             text: "×"
                             color: Appearance.colors.on_surface_variant
@@ -118,7 +120,11 @@ Item {
             }
         }
 
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 200
+            }
+        }
 
         Timer {
             id: hideTimer
@@ -132,24 +138,26 @@ Item {
             anchors.fill: parent
             onClicked: {
                 if (root.notificationObject && root.notificationObject.actions && root.notificationObject.actions.length > 0) {
-                    root.notificationObject.actions[0].invoke()
+                    root.notificationObject.actions[0].invoke();
                 }
-                root.dismiss()
+                root.dismiss();
             }
         }
 
         Component.onCompleted: {
-            content.opacity = 1.0
-            hideTimer.start()
+            content.opacity = 1.0;
+            hideTimer.start();
         }
     }
 
     function dismiss() {
-        content.opacity = 0
-        hideTimer.stop()
+        content.opacity = 0;
+        hideTimer.stop();
         if (root.notificationObject) {
-            root.notificationObject.dismiss()
+            root.notificationObject.dismiss();
         }
-        Qt.callLater(function() { root.destroy() })
+        Qt.callLater(function () {
+            root.destroy();
+        });
     }
 }

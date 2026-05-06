@@ -79,6 +79,10 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
+                        DashboardLauncher {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
                         Battery {}
 
                         NotificationsHistory {}

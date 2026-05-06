@@ -8,6 +8,8 @@ import qs.modules.frame
 import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.osd
+import qs.modules.dashboard
+import qs.services
 
 ShellRoot {
     id: root
@@ -21,13 +23,15 @@ ShellRoot {
         component: Launcher {}
     }
 
-    LazyLoader {
-        active: true
-        component: Osd {}
-    }
+    Osd {}
 
     LazyLoader {
         active: true
         component: NotificationHost {}
+    }
+
+    LazyLoader {
+        active: true
+        component: DashboardSurface {}
     }
 }
