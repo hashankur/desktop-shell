@@ -62,8 +62,8 @@ Item {
                     spacing: Appearance.spacing.large
 
                     ClippingRectangle {
-                        Layout.preferredWidth: 500
-                        Layout.preferredHeight: 500
+                        Layout.preferredWidth: 400
+                        Layout.preferredHeight: 400
                         radius: Appearance.rounding.large
                         color: Appearance.colors.surface_container
 

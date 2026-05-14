@@ -12,13 +12,13 @@ Singleton {
 
     function normalizeView(viewName) {
         switch ((viewName || "").toLowerCase()) {
-        case "mpris":
-        case "music":
+            case "mpris":
+            case "music":
             return "mpris";
-        case "calendar":
-        case "notifications":
-        case "overview":
-        default:
+            case "calendar":
+            case "notifications":
+            case "overview":
+            default:
             return "overview";
         }
     }
@@ -27,7 +27,7 @@ Singleton {
         dashboardWindow = window;
         if (window) {
             window.closeRequested.connect(function () {
-                root.close();
+                    root.close();
             });
         }
     }

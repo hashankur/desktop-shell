@@ -19,15 +19,15 @@ Item {
 
     function iconName() {
         if (!root.connected)
-            return "network-wireless-offline-symbolic"
+        return "network-wireless-offline-symbolic"
         if (root.signal > 90)
-            return "network-wireless-signal-excellent-symbolic"
+        return "network-wireless-signal-excellent-symbolic"
         if (root.signal > 70)
-            return "network-wireless-signal-good-symbolic"
+        return "network-wireless-signal-good-symbolic"
         if (root.signal > 40)
-            return "network-wireless-signal-ok-symbolic"
+        return "network-wireless-signal-ok-symbolic"
         if (root.signal > 0)
-            return "network-wireless-signal-weak-symbolic"
+        return "network-wireless-signal-weak-symbolic"
         return "network-wireless-symbolic"
     }
 

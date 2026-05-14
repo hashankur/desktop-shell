@@ -3,7 +3,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 
+import qs.components
 import qs.config
 
 Item {
@@ -12,8 +14,8 @@ Item {
     property int month: (new Date()).getMonth()
     property int year: (new Date()).getFullYear()
 
-    implicitWidth: 390
-    implicitHeight: 520
+    implicitWidth: 400
+    implicitHeight: 500
 
     function previousMonth() {
         if (root.month === 0) {
@@ -48,29 +50,29 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
 
+                Text {
+                    text: new Date().toLocaleString(Qt.locale(), "MMMM yyyy")
+                    color: Appearance.colors.primary
+                    font.family: Appearance.font.sans
+                    font.pixelSize: Appearance.fontSize.extraLarge
+                    font.weight: Font.Bold
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
                 ToolButton {
                     text: "chevron_left"
                     onClicked: root.previousMonth()
                 }
 
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    text: Qt.formatDate(new Date(root.year, root.month, 1), Qt.locale(), "MMMM yyyy")
-                    color: Appearance.colors.on_surface
-                    font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.fontSize.large
-                    font.weight: Font.Medium
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
                 ToolButton {
-                    text: "chevron_right"
+                    icon: {
+                        name: "pan-start-symbolic"
+                        height: 16
+                        width: 16
+                    }
                     onClicked: root.nextMonth()
                 }
             }
@@ -81,7 +83,20 @@ Item {
 
                 DayOfWeekRow {
                     locale: Qt.locale()
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.fillWidth: true
+
+                    delegate: Text {
+                        required property string shortName
+
+                        text: shortName
+                        color: Appearance.colors.on_surface
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        padding: 10
+                        font.family: Appearance.font.sans
+                        font.pixelSize: Appearance.fontSize.normal
+                        font.weight: Font.Medium
+                    }
                 }
 
                 MonthGrid {
@@ -90,7 +105,7 @@ Item {
                     year: root.year
                     locale: Qt.locale()
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 360
+                    Layout.fillHeight: true
 
                     delegate: Rectangle {
                         id: dayCard
@@ -100,9 +115,7 @@ Item {
                         readonly property color dayTextColor: dayData.month === monthGrid.month ? Appearance.colors.on_surface : Appearance.colors.on_surface_variant
                         readonly property color dayBackgroundColor: dayData.today ? Appearance.colors.surface_container_high : "transparent"
 
-                        width: monthGrid.width / 7
-                        height: 42
-                        radius: Appearance.rounding.small
+                        radius: Appearance.rounding.full
                         color: dayBackgroundColor
 
                         Text {
