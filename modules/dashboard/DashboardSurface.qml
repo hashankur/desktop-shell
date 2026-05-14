@@ -16,8 +16,6 @@ PanelWindow {
 
     property int currentViewIndex: 0
 
-    implicitWidth: 980
-    implicitHeight: 660
     visible: false
     color: "transparent"
     focusable: true
@@ -29,7 +27,16 @@ PanelWindow {
     anchors.bottom: true
 
     Item {
+        id: content
         anchors.fill: parent
+        focus: true
+
+        Keys.onReleased: function (event) {
+            if (event.key === Qt.Key_Escape) {
+                root.closeRequested();
+                event.accepted = true;
+            }
+        }
 
         Rectangle {
             id: frame
@@ -37,7 +44,7 @@ PanelWindow {
             anchors.top: parent.top
             anchors.topMargin: 18
             width: Math.min(980, parent.width - Appearance.spacing.large * 2)
-            height: 660
+            height: 500
             radius: Appearance.rounding.large
             color: Appearance.colors.surface_container_lowest
             border.color: Appearance.colors.surface_container
@@ -47,27 +54,6 @@ PanelWindow {
                 anchors.fill: parent
                 anchors.margins: Appearance.padding.large
                 spacing: Appearance.spacing.normal
-
-                RowLayout {
-                    Layout.fillWidth: true
-
-                    Text {
-                        text: "Dashboard"
-                        color: Appearance.colors.on_surface
-                        font.family: Appearance.font.sans
-                        font.pixelSize: Appearance.fontSize.large
-                        font.weight: Font.Medium
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Button {
-                        text: "Close"
-                        onClicked: root.closeRequested()
-                    }
-                }
 
                 TabBar {
                     id: tabBar
@@ -99,13 +85,13 @@ PanelWindow {
                             DashboardComponents.DashboardCalendar {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: 390
+                                Layout.preferredWidth: 400
                             }
 
                             DashboardComponents.DashboardNotifications {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                Layout.preferredWidth: 470
+                                Layout.preferredWidth: 450
                             }
                         }
                     }
@@ -136,13 +122,6 @@ PanelWindow {
 
     function openView(viewName) {
         applyView(viewName);
-    }
-
-    Keys.onReleased: function (event) {
-        if (event.key === Qt.Key_Escape) {
-            root.closeRequested();
-            event.accepted = true;
-        }
     }
 
     Component.onCompleted: {

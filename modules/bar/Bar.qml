@@ -79,10 +79,6 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        DashboardLauncher {
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
                         Wifi {
                             anchors.verticalCenter: parent.verticalCenter
                         }
