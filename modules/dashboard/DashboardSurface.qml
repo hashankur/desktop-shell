@@ -21,6 +21,7 @@ PanelWindow {
     color: "transparent"
     exclusiveZone: 0
     screen: Quickshell.screens[0]
+
     anchors.left: true
     anchors.right: true
     anchors.top: true
