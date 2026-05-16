@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 
+import qs.components
 import qs.config
 import qs.services
 import "./components" as DashboardComponents
@@ -18,7 +19,6 @@ PanelWindow {
 
     visible: false
     color: "transparent"
-    focusable: true
     exclusiveZone: 0
     screen: Quickshell.screens[0]
     anchors.left: true
@@ -59,14 +59,17 @@ PanelWindow {
                     id: tabBar
                     Layout.fillWidth: true
                     currentIndex: root.currentViewIndex
+                    background: Rectangle {
+                        color: "transparent"
+                    }
 
-                    TabButton {
+                    StyledTabButton {
                         text: "Overview"
                         onClicked: root.openView("overview")
                     }
 
-                    TabButton {
-                        text: "MPRIS"
+                    StyledTabButton {
+                        text: "Media"
                         onClicked: root.openView("mpris")
                     }
                 }
