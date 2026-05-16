@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import qs.config
+import qs.components
 import qs.modules.bar.components
 
 Scope {
@@ -10,6 +11,7 @@ Scope {
         model: Quickshell.screens
 
         PanelWindow {
+            id: barWindow
             required property var modelData
             screen: modelData
 
@@ -76,6 +78,11 @@ Scope {
 
                         Mpris {
                             anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        SystemTray {
+                            anchors.verticalCenter: parent.verticalCenter
+                            parentWindow: barWindow
                         }
 
                         Wifi {

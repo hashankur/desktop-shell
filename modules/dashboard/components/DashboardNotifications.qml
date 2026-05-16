@@ -16,9 +16,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.large
-        color: Appearance.colors.surface_container_low
-        border.color: Appearance.colors.surface_container
-        border.width: 1
+        color: Appearance.colors.surface_container_lowest
 
         ColumnLayout {
             anchors.fill: parent
