@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 
@@ -14,8 +15,13 @@ Row {
     //     implicitSize: 14
     //     anchors.verticalCenter: parent.verticalCenter
     //     smooth: true
-    //     source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId) : ""
+    //     source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId + "-symbolic") : ""
     //     visible: hasIcon
+    //     layer.enabled: true
+    //     layer.effect: MultiEffect {
+    //         brightness: 0.3
+    //         contrast: -1.0
+    //     }
     // }
 
     // // Fallback for missing icons
