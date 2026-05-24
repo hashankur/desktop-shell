@@ -1,7 +1,8 @@
 import QtQuick
+import Quickshell.Widgets
 import qs.config
 
-Rectangle {
+ClippingRectangle {
     id: root
 
     property real progress: 0.0

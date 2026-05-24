@@ -32,9 +32,7 @@ PanelWindow {
     property real revealProgress: 0.0
     readonly property bool hasQuery: searchField.text.trim().length > 0
     readonly property int visibleEntryCount: Math.min(maxVisibleEntries, foundEntries.length)
-    readonly property int listHeight: visibleEntryCount > 0
-        ? (visibleEntryCount * entryHeight + (visibleEntryCount - 1) * entrySpacing)
-        : 0
+    readonly property int listHeight: visibleEntryCount > 0 ? (visibleEntryCount * entryHeight + (visibleEntryCount - 1) * entrySpacing) : 0
 
     Behavior on revealProgress {
         NumberAnimation {
@@ -68,8 +66,10 @@ PanelWindow {
         target: "launcher"
 
         function toggle() {
-            if (launcher.visible) launcher.closeLauncher();
-            else launcher.openLauncher();
+            if (launcher.visible)
+                launcher.closeLauncher();
+            else
+                launcher.openLauncher();
         }
     }
 
@@ -88,10 +88,7 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         width: Math.min(780, parent.width - Appearance.spacing.large * 2)
-        height: Math.min(
-            620,
-            (Appearance.spacing.normal * 2) + 48 + (launcher.hasQuery ? (Appearance.spacing.normal + launcher.listHeight) : 0)
-        )
+        height: Math.min(620, (Appearance.spacing.normal * 2) + 48 + (launcher.hasQuery ? (Appearance.spacing.normal + launcher.listHeight) : 0))
         radius: 22
         color: Appearance.colors.surface_container_lowest
         border.color: Appearance.colors.surface_container
@@ -127,9 +124,11 @@ PanelWindow {
                     anchors.rightMargin: 12
                     anchors.topMargin: 2
                     anchors.bottomMargin: 2
-                    background: Rectangle { color: "transparent" }
+                    background: Rectangle {
+                        color: "transparent"
+                    }
                     placeholderText: "Search applications..."
-                    font.pixelSize: Appearance.fontSize.normal
+                    font.pixelSize: Appearance.fontSize.sm
                     color: Appearance.colors.on_surface
                     placeholderTextColor: Appearance.colors.on_surface_variant
                     focus: true
@@ -139,8 +138,9 @@ PanelWindow {
                     onAccepted: launchCurrent()
                     Keys.onEnterPressed: launchCurrent()
                     Keys.onReturnPressed: launchCurrent()
-                    Keys.onPressed: function(event) {
-                        if (!(event.modifiers & Qt.AltModifier)) return;
+                    Keys.onPressed: function (event) {
+                        if (!(event.modifiers & Qt.AltModifier))
+                            return;
                         if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
                             const targetIndex = event.key - Qt.Key_1;
                             launchAtIndex(targetIndex);
@@ -200,13 +200,13 @@ PanelWindow {
 
                         width: ListView.view.width
                         height: launcher.entryHeight
-                        color: index === listView.currentIndex
-                            ? Appearance.colors.surface_container
-                            : "transparent"
+                        color: index === listView.currentIndex ? Appearance.colors.surface_container : "transparent"
                         radius: 10
 
                         Behavior on color {
-                            ColorAnimation { duration: 120 }
+                            ColorAnimation {
+                                duration: 120
+                            }
                         }
 
                         RowLayout {
@@ -230,8 +230,8 @@ PanelWindow {
                                 Text {
                                     text: delegate.modelData.name
                                     color: Appearance.colors.on_surface
-                                    font.pixelSize: Appearance.fontSize.large
-                                    font.weight: Font.DemiBold
+                                    font.pixelSize: Appearance.fontSize.base
+                                    font.weight: Font.Bold
                                     font.family: Appearance.font.sans
                                     elide: Text.ElideRight
                                 }
@@ -239,7 +239,7 @@ PanelWindow {
                                 Text {
                                     text: delegate.modelData.comment ?? delegate.modelData.name
                                     color: Appearance.colors.on_surface_variant
-                                    font.pixelSize: Appearance.fontSize.normal
+                                    font.pixelSize: Appearance.fontSize.sm
                                     font.family: Appearance.font.sans
                                     elide: Text.ElideRight
                                     visible: text.length > 0
@@ -249,8 +249,8 @@ PanelWindow {
 
                             Text {
                                 text: "Alt " + (index + 1)
-                                color: Appearance.colors.on_surface
-                                font.pixelSize: Appearance.fontSize.normal
+                                color: Appearance.colors.on_surface_variant
+                                font.pixelSize: Appearance.fontSize.xs
                                 font.family: Appearance.font.sans
                                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                 Layout.preferredWidth: 56
@@ -288,12 +288,7 @@ PanelWindow {
         if (query === "") {
             foundEntries = [];
         } else {
-            foundEntries = DesktopEntries.applications.values
-                .filter(app =>
-                    app.name.toLowerCase().includes(query)
-                    || (app.comment?.toLowerCase().includes(query) ?? false)
-                )
-                .slice(0, launcher.maxVisibleEntries);
+            foundEntries = DesktopEntries.applications.values.filter(app => app.name.toLowerCase().includes(query) || (app.comment?.toLowerCase().includes(query) ?? false)).slice(0, launcher.maxVisibleEntries);
         }
         listView.currentIndex = foundEntries.length > 0 ? 0 : -1;
     }

@@ -10,41 +10,25 @@ import qs.services
 Row {
     id: root
 
-    // Get the active/current player from the values array
-    readonly property var activePlayer: Mpris.players.values && Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
-    readonly property bool isSpotify: {
-        if (!activePlayer) {
-            return false
-        }
-
-        var app = (activePlayer.appName || "").toLowerCase()
-        var identity = (activePlayer.identity || "").toLowerCase()
-        var service = (activePlayer.service || "").toLowerCase()
-        return app.indexOf("spotify") !== -1
-            || identity.indexOf("spotify") !== -1
-            || service.indexOf("spotify") !== -1
-    }
-
+    // Get spotify player is available
+    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] : null
     spacing: 5
-    visible: root.activePlayer !== null && root.isSpotify
+    visible: root.activePlayer !== null
 
     Icon {
         source: root.activePlayer?.isPlaying != MprisPlaybackState.Playing ? Quickshell.iconPath("media-playback-start-symbolic") : Quickshell.iconPath("media-playback-pause-symbolic")
     }
 
-    Text {
-        color: Appearance.colors.on_surface
-        font.family: Appearance.font.sans
-        font.pixelSize: Appearance.fontSize.normal
-        font.weight: Font.Medium
+    StyledText {
+        font.pixelSize: Appearance.fontSize.sm
 
         text: {
             if (root.activePlayer === null) {
                 return "No media playing";
             }
 
-            var artist = root.activePlayer.trackArtist || "Unknown Artist";
-            var title = root.activePlayer.trackTitle || "Unknown Track";
+            var artist = root.activePlayer?.trackArtist || "Unknown Artist";
+            var title = root.activePlayer?.trackTitle || "Unknown Track";
 
             return artist + " - " + title;
         }
@@ -53,12 +37,12 @@ Row {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onClicked: (mouse) => {
+            onClicked: mouse => {
                 if (mouse.button == Qt.LeftButton && root.activePlayer) {
-                    activePlayer.togglePlaying()
+                    activePlayer.togglePlaying();
                 }
                 if (mouse.button == Qt.RightButton) {
-                    Dashboard.toggle("mpris")
+                    Dashboard.toggle("mpris");
                 }
             }
         }

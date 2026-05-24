@@ -34,14 +34,11 @@ Row {
     //     radius: 12
     // }
 
-    Text {
+    StyledText {
         width: 500
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
         text: Niri.focusedWindow?.title ?? "Desktop"
-        font.family: Appearance.font.sans
-        font.pixelSize: Appearance.fontSize.normal
-        font.weight: Font.Medium
-        color: Appearance.colors.on_surface
+        font.pixelSize: Appearance.fontSize.sm
     }
 }

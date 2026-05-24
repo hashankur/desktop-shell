@@ -28,6 +28,7 @@ Row {
             readonly property var trayItem: modelData
             readonly property bool isPassive: trayItemRoot.trayItem.status === Status.Passive
             readonly property bool isAttention: trayItemRoot.trayItem.status === Status.NeedsAttention
+            readonly property string iconSource: trayItemRoot.trayItem && trayItemRoot.trayItem.icon ? trayItemRoot.trayItem.icon.toString() : ""
 
             width: 16
             height: 16
@@ -35,7 +36,8 @@ Row {
 
             Image {
                 anchors.fill: parent
-                source: trayItemRoot.trayItem.icon
+                visible: trayItemRoot.iconSource !== ""
+                source: trayItemRoot.iconSource
                 fillMode: Image.PreserveAspectFit
                 smooth: true
             }

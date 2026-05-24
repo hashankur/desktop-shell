@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Widgets
 
 import qs.components
@@ -58,6 +59,8 @@ Scope {
             anchors.bottom: true
             margins.bottom: screen.height / 10
             exclusiveZone: 0
+
+            WlrLayershell.layer: WlrLayer.Overlay
 
             implicitWidth: 300
             implicitHeight: 50

@@ -54,7 +54,6 @@ PanelWindow {
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: Appearance.padding.large
-                spacing: Appearance.spacing.normal
 
                 TabBar {
                     id: tabBar
@@ -86,13 +85,13 @@ PanelWindow {
                             anchors.fill: parent
                             spacing: Appearance.spacing.normal
 
-                            DashboardComponents.DashboardCalendar {
+                            DashboardComponents.Calendar {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: 400
                             }
 
-                            DashboardComponents.DashboardNotifications {
+                            DashboardComponents.Notifications {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 Layout.preferredWidth: 450
@@ -101,7 +100,7 @@ PanelWindow {
                     }
 
                     Item {
-                        DashboardComponents.DashboardMpris {
+                        DashboardComponents.Mpris {
                             anchors.centerIn: parent
                             width: parent.width
                         }

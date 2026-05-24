@@ -1,15 +1,13 @@
 import QtQuick
 
+import qs.components
 import qs.config
 import qs.services
 
-Text {
+StyledText {
     text: Time.time
-    color: Appearance.colors.on_surface
-    font.family: Appearance.font.sans
-    font.pixelSize: Appearance.fontSize.normal
-    font.weight: Font.Medium
-    
+    font.pixelSize: Appearance.fontSize.sm
+
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
