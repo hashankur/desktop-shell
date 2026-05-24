@@ -32,6 +32,6 @@ ShellRoot {
 
     LazyLoader {
         active: true
-        component: DashboardSurface {}
+        component: DashboardWindow {}
     }
 }

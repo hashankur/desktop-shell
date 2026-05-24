@@ -67,9 +67,9 @@ JsonObject {
 
     component Rounding: JsonObject {
         property real scale: 1
-        property int small: 12 * scale
-        property int normal: 17 * scale
-        property int large: 25 * scale
+        property int small: 5 * scale
+        property int normal: 10 * scale
+        property int large: 20 * scale
         property int full: 1000 * scale
     }
 
@@ -98,14 +98,13 @@ JsonObject {
 
     component FontSize: JsonObject {
         property real scale: 1
-        property int ultraSmall: 8 * scale
-        property int extraSmall: 10 * scale
-        property int small: 11 * scale
-        property int smaller: 12 * scale
-        property int normal: 14 * scale
-        property int larger: 15 * scale
-        property int large: 18 * scale
-        property int extraLarge: 28 * scale
+        property int xs: 12 * scale
+        property int sm: 14 * scale
+        property int base: 16 * scale
+        property int lg: 18 * scale
+        property int xl: 20 * scale
+        property int xxl: 24 * scale
+        property int xxxl: 30 * scale
     }
 
     component FontStuff: JsonObject {

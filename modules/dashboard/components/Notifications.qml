@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import qs.components
 import qs.config
 import qs.services
 
@@ -26,12 +27,9 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
 
-                Text {
+                StyledText {
                     text: "Notifications"
-                    color: Appearance.colors.on_surface
-                    font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.fontSize.large
-                    font.weight: Font.Medium
+                    font.pixelSize: Appearance.fontSize.lg
                 }
 
                 Item {
@@ -60,7 +58,8 @@ Item {
                     readonly property string entryTime: Qt.formatDateTime(new Date(entryData.timestamp), "MMM d · hh:mm")
                     readonly property string entryTitle: entryData.title || ""
                     readonly property string entryBody: entryData.body || ""
-                    readonly property bool entryHasIcon: entryData.icon && entryData.icon !== ""
+                    readonly property string entryIconSource: entryData.icon && entryData.icon !== "" ? entryData.icon.toString() : ""
+                    readonly property bool entryHasIcon: entryIconSource !== ""
 
                     width: listView.width
                     height: 96
@@ -85,7 +84,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 8
                                 visible: notificationCard.entryHasIcon
-                                source: notificationCard.entryData.icon
+                                source: notificationCard.entryIconSource
                                 fillMode: Image.PreserveAspectFit
                                 smooth: true
                             }
@@ -99,43 +98,35 @@ Item {
                             RowLayout {
                                 Layout.fillWidth: true
 
-                                Text {
+                                StyledText {
                                     text: notificationCard.entryApp
                                     color: Appearance.colors.on_surface_variant
-                                    font.family: Appearance.font.sans
-                                    font.pixelSize: Appearance.fontSize.small
+                                    font.pixelSize: Appearance.fontSize.xs
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
 
-                                Text {
+                                StyledText {
                                     text: notificationCard.entryTime
                                     color: Appearance.colors.on_surface_variant
-                                    font.family: Appearance.font.sans
-                                    font.pixelSize: Appearance.fontSize.small
+                                    font.pixelSize: Appearance.fontSize.xs
                                 }
                             }
 
-                            Text {
+                            StyledText {
                                 text: notificationCard.entryTitle
-                                color: Appearance.colors.on_surface
-                                font.family: Appearance.font.sans
-                                font.pixelSize: Appearance.fontSize.normal
-                                font.weight: Font.Medium
+                                font.weight: Font.Bold
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
 
-                            Text {
+                            StyledText {
                                 text: notificationCard.entryBody
                                 color: Appearance.colors.on_surface_variant
-                                font.family: Appearance.font.sans
-                                font.pixelSize: Appearance.fontSize.small
+                                font.pixelSize: Appearance.fontSize.sm
                                 elide: Text.ElideRight
                                 maximumLineCount: 2
                                 wrapMode: Text.WordWrap
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
                             }
                         }
                     }

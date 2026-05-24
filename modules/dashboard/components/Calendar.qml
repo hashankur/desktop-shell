@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
 
 import qs.components
 import qs.config
@@ -52,7 +51,7 @@ Item {
                     text: new Date().toLocaleString(Qt.locale(), "MMMM yyyy")
                     color: Appearance.colors.primary
                     font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.fontSize.extraLarge
+                    font.pixelSize: Appearance.fontSize.xxl
                     font.weight: Font.Bold
                 }
 
@@ -66,11 +65,11 @@ Item {
                 }
 
                 ToolButton {
-                    icon: {
-                        name: "pan-start-symbolic"
-                        height: 16
-                        width: 16
-                    }
+                    // icon: {
+                    //     name: "pan-start-symbolic"
+                    //     height: 16
+                    //     width: 16
+                    // }
                     onClicked: root.nextMonth()
                 }
             }
@@ -83,7 +82,7 @@ Item {
                     locale: Qt.locale()
                     Layout.fillWidth: true
 
-                    delegate: Text {
+                    delegate: StyledText {
                         required property string shortName
 
                         text: shortName
@@ -91,9 +90,6 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         padding: 10
-                        font.family: Appearance.font.sans
-                        font.pixelSize: Appearance.fontSize.normal
-                        font.weight: Font.Medium
                     }
                 }
 
@@ -116,13 +112,11 @@ Item {
                         radius: Appearance.rounding.full
                         color: dayBackgroundColor
 
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: dayCard.dayLabel
                             color: dayCard.dayTextColor
-                            font.family: Appearance.font.sans
-                            font.pixelSize: Appearance.fontSize.normal
-                            font.weight: Font.Medium
+                            font.pixelSize: Appearance.fontSize.sm
                         }
                     }
                 }
