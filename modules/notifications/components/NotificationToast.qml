@@ -3,13 +3,17 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 
+import qs.components
 import qs.config
-import qs.services
 
 Item {
     id: root
-    property var notificationData: ({})
+    property var notificationData
     property var notificationObject: null
+    property int autoHideTimeout: notificationData?.timeout > 0 ? notificationData.timeout : 4000
+    property bool autoHideEnabled: true
+
+    signal dismissed
 
     width: 400
     implicitHeight: 100
@@ -17,64 +21,68 @@ Item {
     Rectangle {
         id: content
         anchors.fill: parent
-        color: Appearance.colors.surface_container_lowest
-        border {
-            width: 2
-            color: Appearance.colors.surface_container
-        }
+        color: Appearance.colors.surface_container_low
+        border.width: 2
+        border.color: Appearance.colors.surface_container
         radius: 12
+        opacity: 0
 
         RowLayout {
             anchors.fill: parent
             anchors.margins: 10
-            spacing: 10
+            spacing: 15
 
-            // Album art / Icon on left
-            Rectangle {
-                Layout.preferredWidth: 64
-                Layout.preferredHeight: 64
-                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                radius: 12
-                color: Appearance.colors.surface_container_low
-                clip: true
+            // Rectangle {
+            //     Layout.preferredWidth: 64
+            //     Layout.preferredHeight: 64
+            //     Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            //     radius: 12
+            //     color: "transparent"
+            //     clip: true
 
-                Image {
-                    anchors.fill: parent
-                    source: notificationData.icon || ""
-                    fillMode: Image.PreserveAspectCrop
-                    visible: notificationData.icon && notificationData.icon !== ""
-                }
+            //     Image {
+            //         id: iconImage
+            //         anchors.fill: parent
+            //         source: {
+            //             if (root.notificationData.image && root.notificationData.image !== "") {
+            //                 return String(root.notificationData.image);
+            //             }
+            //             if (root.notificationData.icon) {
+            //                 return Quickshell.iconPath(root.notificationData.icon, true);
+            //             }
+            //             return "";
+            //         }
+            //         fillMode: Image.PreserveAspectCrop
+            //         visible: source !== ""
+            //     }
 
-                Rectangle {
-                    anchors.fill: parent
-                    visible: !parent.Image
-                    color: Appearance.colors.primary
-                }
-            }
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         visible: !iconImage.visible
+            //         color: Appearance.colors.primary
+            //     }
+            // }
 
-            // Text content on right
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.margins: 5
                 spacing: 4
 
-                // Header row with app name and close button
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 6
 
-                    Text {
-                        text: notificationData.app || "Notification"
+                    StyledText {
+                        text: root.notificationData?.app || "Notification"
                         color: Appearance.colors.on_surface_variant
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.fontSize.xs
                         Layout.fillWidth: true
                     }
 
-                    Text {
-                        text: Qt.formatDateTime(new Date(notificationData.timestamp || Date.now()), "MMM d")
+                    StyledText {
+                        text: Qt.formatDateTime(new Date(root.notificationData?.timestamp || Date.now()), "MMM d")
                         color: Appearance.colors.on_surface_variant
-                        font.pixelSize: 11
+                        font.pixelSize: Appearance.fontSize.xs
                         Layout.alignment: Qt.AlignRight
                     }
 
@@ -87,35 +95,28 @@ Item {
                         contentItem: Text {
                             text: "×"
                             color: Appearance.colors.on_surface_variant
-                            font.pixelSize: 18
+                            font.pixelSize: 14
                             horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
                         }
-                        Layout.preferredWidth: 24
-                        Layout.preferredHeight: 24
                     }
                 }
 
-                // Title
-                Text {
-                    text: notificationData.title || ""
-                    color: Appearance.colors.on_surface
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
+                StyledText {
+                    text: root.notificationData?.title || ""
+                    font.weight: Font.Black
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                     maximumLineCount: 1
                 }
 
-                // Body / Subtitle
-                Text {
-                    text: notificationData.body || ""
+                StyledText {
+                    text: root.notificationData?.body || ""
                     color: Appearance.colors.on_surface_variant
-                    font.pixelSize: 12
+                    font.pixelSize: Appearance.fontSize.sm
                     elide: Text.ElideRight
                     Layout.fillWidth: true
-                    maximumLineCount: 1
                     Layout.fillHeight: true
+                    maximumLineCount: 1
                 }
             }
         }
@@ -126,37 +127,40 @@ Item {
             }
         }
 
-        Timer {
-            id: hideTimer
-            interval: Math.max(0, notificationData.timeout > 0 ? notificationData.timeout : 4000)
-            running: false
-            repeat: false
-            onTriggered: root.dismiss()
-        }
-
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                if (root.notificationObject && root.notificationObject.actions && root.notificationObject.actions.length > 0) {
+                if (root.notificationObject?.actions?.length > 0) {
                     root.notificationObject.actions[0].invoke();
                 }
                 root.dismiss();
             }
         }
+    }
 
-        Component.onCompleted: {
+    Timer {
+        id: autoHideTimer
+        interval: root.autoHideTimeout
+        onTriggered: root.dismiss()
+    }
+
+    Component.onCompleted: {
+        if (root.notificationData) {
             content.opacity = 1.0;
-            hideTimer.start();
+            if (root.autoHideEnabled) {
+                autoHideTimer.start();
+            }
         }
     }
 
     function dismiss() {
         content.opacity = 0;
-        hideTimer.stop();
+        autoHideTimer.stop();
         if (root.notificationObject) {
             root.notificationObject.dismiss();
         }
-        Qt.callLater(function () {
+        Qt.callLater(() => {
+            root.dismissed();
             root.destroy();
         });
     }
