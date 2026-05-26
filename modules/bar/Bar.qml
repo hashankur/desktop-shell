@@ -23,7 +23,7 @@ Scope {
 
             implicitHeight: 44
 
-            color: Appearance.colors.surface_container_lowest
+            color: Appearance.colors.surface
 
             Workspaces {
                 id: rectanglesRow

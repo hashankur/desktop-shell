@@ -11,7 +11,7 @@ TabButton {
         text: control.text
         font: control.font
         opacity: enabled ? 1.0 : 0.3
-        color: control.focus ? Appearance.colors.on_surface_variant : Appearance.colors.on_surface
+        color: control.focus ? Appearance.colors.on_secondary : Appearance.colors.on_surface
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
@@ -22,6 +22,6 @@ TabButton {
         implicitHeight: 40
         opacity: enabled ? 1 : 0.3
         radius: Appearance.rounding.large
-        color: control.focus ? Appearance.colors.surface_container_low : Appearance.colors.surface_container_lowest
+        color: control.focus ? Appearance.colors.secondary : Appearance.colors.surface
     }
 }

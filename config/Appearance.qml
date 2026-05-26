@@ -92,7 +92,7 @@ JsonObject {
     }
 
     component FontFamily: JsonObject {
-        property string sans: "Satoshi Variable"
+        property string sans: "Outfit"
         property string mono: "Iosevka"
     }
 

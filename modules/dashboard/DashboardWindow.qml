@@ -47,8 +47,8 @@ PanelWindow {
             width: Math.min(980, parent.width - Appearance.spacing.large * 2)
             height: 500
             radius: Appearance.rounding.large
-            color: Appearance.colors.surface_container_lowest
-            border.color: Appearance.colors.surface_container
+            color: Appearance.colors.surface
+            border.color: Appearance.colors.surface_bright
             border.width: 1
 
             ColumnLayout {
@@ -62,6 +62,7 @@ PanelWindow {
                     background: Rectangle {
                         color: "transparent"
                     }
+                    spacing: Appearance.spacing.normal
 
                     StyledTabButton {
                         text: "Overview"
