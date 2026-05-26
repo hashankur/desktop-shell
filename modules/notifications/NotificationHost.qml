@@ -25,7 +25,6 @@ PanelWindow {
 
     Component {
         id: toastComponent
-
         NotificationToast {}
     }
 
@@ -38,29 +37,35 @@ PanelWindow {
     }
 
     function pushToast(notification) {
-        var toastData = {
-            title: notification.summary || "",
-            body: notification.body || "",
-            icon: notification.appIcon || "",
-            timestamp: Date.now(),
-            timeout: notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 4000
-        }
+        var obj = toastComponent.createObject(stack, {
+            notificationData: {
+                title: notification.summary || "",
+                body: notification.body || "",
+                icon: notification.appIcon || "",
+                image: notification.image || "",
+                app: notification.appName || "",
+                timestamp: Date.now(),
+                timeout: notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 4000
+            },
+            notificationObject: notification
+        });
 
-        var obj = toastComponent.createObject(stack, { notificationData: toastData, notificationObject: notification })
+        if (obj) {
+            obj.dismissed.connect(() => obj.destroy());
+        }
     }
 
     Component.onCompleted: {
-        var pending = Notifications.takePendingToasts()
+        var pending = Notifications.takePendingToasts();
         for (var i = 0; i < pending.length; i++) {
-            pushToast(pending[i])
+            pushToast(pending[i]);
         }
     }
 
     Connections {
         target: Notifications
-
         function onToastQueued(notification) {
-            pushToast(notification)
+            pushToast(notification);
         }
     }
 }

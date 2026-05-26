@@ -15,12 +15,6 @@ Singleton {
     property var pendingToasts: []
     property var historyWindow: null
 
-    Component {
-        id: historyWindowComponent
-
-        NotificationHistory {}
-    }
-
     signal toastQueued(var notification)
 
     ListModel {
@@ -48,6 +42,7 @@ Singleton {
         id: notificationServer
         bodySupported: true
         imageSupported: true
+        bodyImagesSupported: true
         actionsSupported: true
         actionIconsSupported: true
         keepOnReload: true
@@ -60,6 +55,7 @@ Singleton {
                 body: notification.body || "",
                 app: notification.appName || "",
                 icon: notification.appIcon || "",
+                image: notification.image || "",
                 timestamp: Date.now(),
                 id: notification.id
             };
