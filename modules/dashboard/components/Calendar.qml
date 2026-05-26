@@ -37,7 +37,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.large
-        color: Appearance.colors.surface_container_lowest
+        color: "transparent"
 
         ColumnLayout {
             anchors.fill: parent

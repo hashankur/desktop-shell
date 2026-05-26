@@ -90,8 +90,8 @@ PanelWindow {
         width: Math.min(780, parent.width - Appearance.spacing.large * 2)
         height: Math.min(620, (Appearance.spacing.normal * 2) + 48 + (launcher.hasQuery ? (Appearance.spacing.normal + launcher.listHeight) : 0))
         radius: 22
-        color: Appearance.colors.surface_container_lowest
-        border.color: Appearance.colors.surface_container
+        color: Appearance.colors.surface
+        border.color: Appearance.colors.surface_bright
 
         ColumnLayout {
             anchors {
@@ -231,7 +231,7 @@ PanelWindow {
                                     text: delegate.modelData.name
                                     color: Appearance.colors.on_surface
                                     font.pixelSize: Appearance.fontSize.base
-                                    font.weight: Font.Bold
+                                    font.weight: Font.DemiBold
                                     font.family: Appearance.font.sans
                                     elide: Text.ElideRight
                                 }

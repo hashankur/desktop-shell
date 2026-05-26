@@ -5,8 +5,8 @@ import qs.config
 Text {
     color: Appearance.colors.on_surface
     font {
-        family: "Satoshi Variable"
+        family: Appearance.font.sans
         pixelSize: Appearance.fontSize.base
-        weight: Font.Medium
+        // weight: Font.Medium
     }
 }
