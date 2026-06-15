@@ -1,5 +1,7 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell
+import Quickshell.Widgets
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -59,17 +61,29 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                ToolButton {
-                    text: "chevron_left"
+                Button {
+                    contentItem: Icon {
+                        source: Quickshell.iconPath("go-previous-symbolic")
+                    }
+                    background: Rectangle {
+                        implicitWidth: 30
+                        implicitHeight: 30
+                        radius: 100
+                        color: "transparent"
+                    }
                     onClicked: root.previousMonth()
                 }
 
-                ToolButton {
-                    // icon: {
-                    //     name: "pan-start-symbolic"
-                    //     height: 16
-                    //     width: 16
-                    // }
+                Button {
+                    contentItem: Icon {
+                        source: Quickshell.iconPath("go-next-symbolic")
+                    }
+                    background: Rectangle {
+                        implicitWidth: 30
+                        implicitHeight: 30
+                        radius: 100
+                        color: "transparent"
+                    }
                     onClicked: root.nextMonth()
                 }
             }

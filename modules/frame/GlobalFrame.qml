@@ -27,7 +27,7 @@ Variants {
         BorderFrame {
             anchors.fill: parent
             anchors.topMargin: 44
-            color: Appearance.colors.surface_container_lowest
+            color: Appearance.colors.surface
             radius: 20 // Inner radius + spacing
             thickness: 0
         }

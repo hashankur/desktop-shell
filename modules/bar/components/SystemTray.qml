@@ -4,8 +4,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Services.SystemTray
 
+import qs.components
 import qs.config
 
 Row {
@@ -34,12 +36,10 @@ Row {
             height: 16
             // visible: !isPassive || isAttention
 
-            Image {
+            IconImage {
                 anchors.fill: parent
                 visible: trayItemRoot.iconSource !== ""
                 source: trayItemRoot.iconSource
-                fillMode: Image.PreserveAspectFit
-                smooth: true
             }
 
             MouseArea {

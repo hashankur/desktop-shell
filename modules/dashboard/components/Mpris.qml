@@ -36,8 +36,7 @@ Item {
                 visible: root.artUrl !== ""
                 source: root.artUrl
                 fillMode: Image.PreserveAspectCrop
-                asynchronous: false
-                smooth: true
+                retainWhileLoading: true
             }
 
             Rectangle {
@@ -66,7 +65,6 @@ Item {
                 font.pixelSize: Appearance.fontSize.xxxl
                 font.weight: Font.Black
                 wrapMode: Text.WordWrap
-                Layout.fillWidth: true
             }
 
             Text {
@@ -80,13 +78,12 @@ Item {
             }
 
             Text {
-                text: root.activePlayer ? root.activePlayer?.trackAlbum : "Unknown album"
+                text: root.activePlayer ? root.activePlayer?.trackAlbum : ""
                 color: Appearance.colors.on_surface_variant
                 font.family: Appearance.font.sans
                 font.pixelSize: Appearance.fontSize.lg
                 font.weight: Font.Medium
                 wrapMode: Text.WordWrap
-                Layout.fillWidth: true
             }
 
             Item {
