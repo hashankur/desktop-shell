@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 
 import qs.components
 import qs.config
@@ -12,30 +13,29 @@ Item {
     property int signal: WifiStatus.signal // 0-100
     property string ssid: WifiStatus.ssid
 
-    signal clicked()
+    signal clicked
 
-    implicitWidth: 14
-    implicitHeight: 14
+    implicitWidth: 16
+    implicitHeight: 16
 
     function iconName() {
         if (!root.connected)
-        return "network-wireless-offline-symbolic"
+            return "network-wireless-offline-symbolic";
         if (root.signal > 90)
-        return "network-wireless-signal-excellent-symbolic"
+            return "network-wireless-signal-excellent-symbolic";
         if (root.signal > 70)
-        return "network-wireless-signal-good-symbolic"
+            return "network-wireless-signal-good-symbolic";
         if (root.signal > 40)
-        return "network-wireless-signal-ok-symbolic"
+            return "network-wireless-signal-ok-symbolic";
         if (root.signal > 0)
-        return "network-wireless-signal-weak-symbolic"
-        return "network-wireless-symbolic"
+            return "network-wireless-signal-weak-symbolic";
+        return "network-wireless-signal-none-symbolic";
     }
 
     // Icon image
     Icon {
         id: img
         source: Quickshell.iconPath(iconName(), true)
-        smooth: true
     }
 
     MouseArea {
@@ -50,14 +50,14 @@ Item {
         visible: ma.containsMouse
         text: {
             if (!root.connected) {
-                return qsTr("Wi‑Fi: disconnected")
+                return qsTr("Wi‑Fi: disconnected");
             }
 
             if (root.ssid) {
-                return qsTr("%1 — %2%").arg(root.ssid).arg(root.signal)
+                return qsTr("%1 — %2%").arg(root.ssid).arg(root.signal);
             }
 
-            return qsTr("Wi‑Fi: connected — %1%").arg(root.signal)
+            return qsTr("Wi‑Fi: connected — %1%").arg(root.signal);
         }
     }
 }
