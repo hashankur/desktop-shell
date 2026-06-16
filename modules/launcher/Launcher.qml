@@ -9,9 +9,12 @@ import Quickshell.Widgets
 
 import qs.components
 import qs.config
+import qs.services
+import "./components" as LauncherComponents
 
 PanelWindow {
-    id: launcher
+    id: root
+
     visible: false
     anchors {
         left: true
@@ -26,13 +29,11 @@ PanelWindow {
     focusable: true
     color: "transparent"
 
+    property string mode: "apps"
     property int maxVisibleEntries: 5
     property int entryHeight: 64
     property int entrySpacing: 4
     property real revealProgress: 0.0
-    readonly property bool hasQuery: searchField.text.trim().length > 0
-    readonly property int visibleEntryCount: Math.min(maxVisibleEntries, foundEntries.length)
-    readonly property int listHeight: visibleEntryCount > 0 ? (visibleEntryCount * entryHeight + (visibleEntryCount - 1) * entrySpacing) : 0
 
     Behavior on revealProgress {
         NumberAnimation {
@@ -48,28 +49,103 @@ PanelWindow {
         onTriggered: searchField.forceActiveFocus()
     }
 
-    function openLauncher() {
-        if (!launcher.visible) {
-            launcher.visible = true;
+    LauncherComponents.AppModeData {
+        id: appData
+    }
+    LauncherComponents.ClipboardModeData {
+        id: clipData
+    }
+
+    property var activeData: root.mode === "clipboard" ? clipData : appData
+
+    Connections {
+        target: Cliphist
+        function onEntriesChanged() {
+            if (root.mode === "clipboard") {
+                clipData.onEntriesChanged();
+                updateListVisibility();
+            }
+        }
+    }
+
+    function openLauncher(modeName) {
+        root.mode = modeName;
+
+        if (!root.visible) {
+            root.visible = true;
         }
 
+        root.activeData.refresh();
         resetSearchState();
+        root.updateResults("");
         focusTimer.restart();
     }
 
     function closeLauncher() {
-        launcher.visible = false;
+        root.visible = false;
     }
 
-    // IPC for external control
+    function resetSearchState() {
+        searchField.text = "";
+        root.activeData.reset();
+        resultsList.model = [];
+        resultsList.currentIndex = -1;
+        resultsList.hasItems = false;
+    }
+
+    function updateResults(text) {
+        root.activeData.filter(text);
+        updateListVisibility();
+    }
+
+    function updateListVisibility() {
+        var entries = root.activeData.foundEntries;
+        resultsList.model = entries;
+        resultsList.hasItems = entries.length > 0 && (root.mode === "clipboard" || searchField.text.trim().length > 0);
+        resultsList.currentIndex = entries.length > 0 ? 0 : -1;
+    }
+
+    function activateCurrent() {
+        if (resultsList.currentIndex >= 0) {
+            root.activeData.activate(resultsList.currentIndex);
+            root.closeLauncher();
+        }
+    }
+
+    function activateAtIndex(index) {
+        if (index >= 0 && index < root.activeData.foundEntries.length) {
+            root.activeData.activate(index);
+            root.closeLauncher();
+        }
+    }
+
     IpcHandler {
         target: "launcher"
 
         function toggle() {
-            if (launcher.visible)
-                launcher.closeLauncher();
+            if (root.visible)
+                root.closeLauncher();
             else
-                launcher.openLauncher();
+                root.openLauncher("apps");
+        }
+    }
+
+    IpcHandler {
+        target: "clipboard"
+
+        function toggle() {
+            if (root.visible)
+                root.closeLauncher();
+            else
+                root.openLauncher("clipboard");
+        }
+
+        function open() {
+            root.openLauncher("clipboard");
+        }
+
+        function close() {
+            root.closeLauncher();
         }
     }
 
@@ -79,7 +155,7 @@ PanelWindow {
             focusTimer.restart();
         } else {
             revealProgress = 0;
-            resetSearchState();
+            clipData.cleanTempFiles();
         }
     }
 
@@ -88,7 +164,7 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         width: Math.min(780, parent.width - Appearance.spacing.large * 2)
-        height: Math.min(620, (Appearance.spacing.normal * 2) + 48 + (launcher.hasQuery ? (Appearance.spacing.normal + launcher.listHeight) : 0))
+        height: Math.min(620, (Appearance.spacing.normal * 2) + 48 + (resultsList.hasItems ? (Appearance.spacing.normal + Math.min(resultsList.listHeight, resultsList.maxHeight)) : 0))
         radius: 22
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
@@ -100,212 +176,53 @@ PanelWindow {
             }
             spacing: 10
 
-            // Search field
-            Rectangle {
+            LauncherComponents.SearchField {
+                id: searchField
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48
-                radius: 24
-                color: Appearance.colors.surface_container
+                placeholderText: root.activeData.placeholderText
+                iconSource: root.activeData.iconSource
+                maxVisibleEntries: root.activeData.maxVisibleEntries
 
-                IconImage {
-                    id: searchIcon
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: 16
-                    width: 18
-                    height: 18
-                    source: Quickshell.iconPath("system-search-symbolic", true)
+        onSearchChanged: function (text) {
+          root.updateResults(text);
+        }
+
+                onAccepted: root.activateCurrent()
+
+                onUpPressed: {
+                    if (resultsList.entriesCount > 0) {
+                        resultsList.currentIndex = Math.max(0, resultsList.currentIndex - 1);
+                    }
                 }
 
-                TextField {
-                    id: searchField
-                    anchors.fill: parent
-                    anchors.leftMargin: 42
-                    anchors.rightMargin: 12
-                    anchors.topMargin: 2
-                    anchors.bottomMargin: 2
-                    background: Rectangle {
-                        color: "transparent"
+                onDownPressed: {
+                    if (resultsList.entriesCount > 0) {
+                        resultsList.currentIndex = Math.min(resultsList.entriesCount - 1, resultsList.currentIndex + 1);
                     }
-                    placeholderText: "Search applications..."
-                    font.pixelSize: Appearance.fontSize.sm
-                    color: Appearance.colors.on_surface
-                    placeholderTextColor: Appearance.colors.on_surface_variant
-                    focus: true
-                    activeFocusOnTab: true
+                }
 
-                    onTextChanged: updateResults()
-                    onAccepted: launchCurrent()
-                    Keys.onEnterPressed: launchCurrent()
-                    Keys.onReturnPressed: launchCurrent()
-                    Keys.onPressed: function (event) {
-                        if (!(event.modifiers & Qt.AltModifier))
-                            return;
-                        if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
-                            const targetIndex = event.key - Qt.Key_1;
-                            launchAtIndex(targetIndex);
-                            event.accepted = true;
-                        }
-                    }
-                    Keys.onDownPressed: {
-                        if (listView.count > 0) {
-                            listView.incrementCurrentIndex();
-                        }
-                    }
-                    Keys.onUpPressed: {
-                        if (listView.count > 0) {
-                            listView.decrementCurrentIndex();
-                        }
-                    }
-                    Keys.onEscapePressed: launcher.closeLauncher()
+                onEscapePressed: root.closeLauncher()
+
+                onAltNumberPressed: function (index) {
+                    root.activateAtIndex(index);
                 }
             }
 
-            // Results list
-            Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: launcher.hasQuery ? launcher.listHeight : 0
-                opacity: launcher.hasQuery ? 1 : 0
-                visible: launcher.hasQuery || opacity > 0
-                clip: true
+            LauncherComponents.ResultsList {
+                id: resultsList
+                entryHeight: root.entryHeight
+                entrySpacing: root.entrySpacing
+                maxVisibleEntries: root.activeData.maxVisibleEntries
+                maxHeight: root.mode === "clipboard" ? 480 : 320
 
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation {
-                        duration: Appearance.anim.durations.small
-                        easing.bezierCurve: Appearance.anim.curves.standardDecel
-                    }
-                }
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: Appearance.anim.durations.small
-                        easing.bezierCurve: Appearance.anim.curves.standard
-                    }
-                }
-
-                ListView {
-                    id: listView
-                    anchors.fill: parent
-                    model: foundEntries
-                    currentIndex: foundEntries.length > 0 ? 0 : -1
-                    spacing: launcher.entrySpacing
-                    clip: true
-                    interactive: false
-                    boundsBehavior: Flickable.StopAtBounds
-
-                    delegate: Rectangle {
-                        id: delegate
-                        required property DesktopEntry modelData
-                        required property int index
-
-                        width: ListView.view.width
-                        height: launcher.entryHeight
-                        color: index === listView.currentIndex ? Appearance.colors.surface_container : "transparent"
-                        radius: 10
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 120
-                            }
-                        }
-
-                        RowLayout {
-                            anchors {
-                                fill: parent
-                                margins: Appearance.padding.normal
-                            }
-                            spacing: Appearance.spacing.large
-
-                            IconImage {
-                                Layout.preferredWidth: 36
-                                Layout.preferredHeight: 36
-                                source: Quickshell.iconPath(delegate.modelData.icon, true)
-                                visible: source !== ""
-                            }
-
-                            Column {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                Text {
-                                    text: delegate.modelData.name
-                                    color: Appearance.colors.on_surface
-                                    font.pixelSize: Appearance.fontSize.base
-                                    font.weight: Font.DemiBold
-                                    font.family: Appearance.font.sans
-                                    elide: Text.ElideRight
-                                }
-
-                                Text {
-                                    text: delegate.modelData.comment ?? delegate.modelData.name
-                                    color: Appearance.colors.on_surface_variant
-                                    font.pixelSize: Appearance.fontSize.sm
-                                    font.family: Appearance.font.sans
-                                    elide: Text.ElideRight
-                                    visible: text.length > 0
-                                    width: 500
-                                }
-                            }
-
-                            Text {
-                                text: "Alt " + (index + 1)
-                                color: Appearance.colors.on_surface_variant
-                                font.pixelSize: Appearance.fontSize.xs
-                                font.family: Appearance.font.sans
-                                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                                Layout.preferredWidth: 56
-                                horizontalAlignment: Text.AlignRight
-                            }
-                        }
-
-                        MouseArea {
-                            id: mouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onEntered: listView.currentIndex = delegate.index
-                            onClicked: {
-                                delegate.modelData.execute();
-                                launcher.closeLauncher();
-                            }
-                        }
-                    }
+                onItemClicked: function (index) {
+                    root.activateAtIndex(index);
                 }
             }
         }
-    }
-
-    // Application list management
-    property list<DesktopEntry> foundEntries: []
-
-    function resetSearchState() {
-        searchField.text = "";
-        foundEntries = [];
-        listView.currentIndex = -1;
-    }
-
-    function updateResults() {
-        const query = searchField.text.toLowerCase().trim();
-        if (query === "") {
-            foundEntries = [];
-        } else {
-            foundEntries = DesktopEntries.applications.values.filter(app => app.name.toLowerCase().includes(query) || (app.comment?.toLowerCase().includes(query) ?? false)).slice(0, launcher.maxVisibleEntries);
-        }
-        listView.currentIndex = foundEntries.length > 0 ? 0 : -1;
-    }
-
-    function launchAtIndex(index) {
-        if (index >= 0 && index < foundEntries.length) {
-            foundEntries[index].execute();
-            launcher.closeLauncher();
-            searchField.text = "";
-        }
-    }
-
-    function launchCurrent() {
-        launchAtIndex(listView.currentIndex);
     }
 
     Component.onCompleted: {
-        updateResults();
+        appData.filter("");
     }
 }
