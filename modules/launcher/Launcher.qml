@@ -2,10 +2,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
-import Quickshell.Widgets
 
 import qs.components
 import qs.config
@@ -30,17 +28,8 @@ PanelWindow {
     color: "transparent"
 
     property string mode: "apps"
-    property int maxVisibleEntries: 5
     property int entryHeight: 64
     property int entrySpacing: 4
-    property real revealProgress: 0.0
-
-    Behavior on revealProgress {
-        NumberAnimation {
-            duration: Appearance.anim.durations.normal
-            easing.bezierCurve: Appearance.anim.curves.emphasizedDecel
-        }
-    }
 
     Timer {
         id: focusTimer
@@ -68,6 +57,13 @@ PanelWindow {
         }
     }
 
+    Connections {
+        target: clipData
+        function onThumbnailDecoded() {
+            updateListVisibility();
+        }
+    }
+
     function openLauncher(modeName) {
         root.mode = modeName;
 
@@ -76,21 +72,15 @@ PanelWindow {
         }
 
         root.activeData.refresh();
-        resetSearchState();
+        root.activeData.reset();
+        searchField.text = "";
         root.updateResults("");
-        focusTimer.restart();
+        focusTimer.attempts = 0;
+        focusTimer.start();
     }
 
     function closeLauncher() {
         root.visible = false;
-    }
-
-    function resetSearchState() {
-        searchField.text = "";
-        root.activeData.reset();
-        resultsList.model = [];
-        resultsList.currentIndex = -1;
-        resultsList.hasItems = false;
     }
 
     function updateResults(text) {
@@ -151,10 +141,10 @@ PanelWindow {
 
     onVisibleChanged: {
         if (visible) {
-            revealProgress = 1;
-            focusTimer.restart();
+            focusTimer.attempts = 0;
+            focusTimer.start();
         } else {
-            revealProgress = 0;
+            focusTimer.stop();
             clipData.cleanTempFiles();
         }
     }
@@ -164,7 +154,7 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         width: Math.min(780, parent.width - Appearance.spacing.large * 2)
-        height: Math.min(620, (Appearance.spacing.normal * 2) + 48 + (resultsList.hasItems ? (Appearance.spacing.normal + Math.min(resultsList.listHeight, resultsList.maxHeight)) : 0))
+        height: Math.min(500, (Appearance.spacing.normal * 2) + 48 + (resultsList.hasItems ? (Appearance.spacing.normal + resultsList.listHeight) : 0))
         radius: 22
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
@@ -172,7 +162,7 @@ PanelWindow {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: 14
+                margins: 10
             }
             spacing: 10
 
@@ -183,9 +173,9 @@ PanelWindow {
                 iconSource: root.activeData.iconSource
                 maxVisibleEntries: root.activeData.maxVisibleEntries
 
-        onSearchChanged: function (text) {
-          root.updateResults(text);
-        }
+                onSearchChanged: function (text) {
+                    root.updateResults(text);
+                }
 
                 onAccepted: root.activateCurrent()
 
@@ -213,16 +203,11 @@ PanelWindow {
                 entryHeight: root.entryHeight
                 entrySpacing: root.entrySpacing
                 maxVisibleEntries: root.activeData.maxVisibleEntries
-                maxHeight: root.mode === "clipboard" ? 480 : 320
 
                 onItemClicked: function (index) {
                     root.activateAtIndex(index);
                 }
             }
         }
-    }
-
-    Component.onCompleted: {
-        appData.filter("");
     }
 }
