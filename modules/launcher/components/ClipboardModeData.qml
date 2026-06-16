@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-import qs.config
 import qs.services
 
 Item {
@@ -15,6 +14,8 @@ Item {
     readonly property int maxVisibleEntries: 8
 
     property var foundEntries: []
+
+    signal thumbnailDecoded
 
     property var _decodeQueue: []
     property var _decoding: false
@@ -112,6 +113,7 @@ Item {
                 for (var i = 0; i < root.foundEntries.length; i++) {
                     if (root.foundEntries[i]._rawId === entry._rawId) {
                         root.foundEntries[i].thumbnailSource = `file://${entry._tempPath}`;
+                        root.thumbnailDecoded();
                         break;
                     }
                 }

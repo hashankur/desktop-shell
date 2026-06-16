@@ -70,7 +70,7 @@ Rectangle {
       spacing: 2
 
       Text {
-        Layout.fillWidth: true
+        width: parent.width
         text: root.primaryText
         color: Appearance.colors.on_surface
         font.pixelSize: Appearance.fontSize.base
@@ -81,7 +81,7 @@ Rectangle {
       }
 
       Text {
-        Layout.fillWidth: true
+        width: parent.width
         text: root.secondaryText
         color: Appearance.colors.on_surface_variant
         font.pixelSize: Appearance.fontSize.sm
