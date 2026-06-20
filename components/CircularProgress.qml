@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import qs.config
+import qs.components
 
 Item {
     id: circularProgress
@@ -73,30 +74,10 @@ Item {
     }
 
     // Tooltip
-    MouseArea {
-        id: mouseArea
+    TooltipArea {
+        id: rootTooltip
         anchors.fill: parent
-        hoverEnabled: true
-
-        ToolTip {
-            visible: mouseArea.containsMouse
-            text: `${Math.round(value * 100)}%`
-            delay: 300
-            timeout: 3000
-
-            background: Rectangle {
-                color: Appearance.colors.surface_container
-                border.color: Appearance.colors.outline
-                border.width: 1
-                radius: 4
-            }
-
-            contentItem: Text {
-                text: `${Math.round(circularProgress.value * 100)}%`
-                color: Appearance.colors.on_surface
-                font.pixelSize: 11
-                padding: 6
-            }
-        }
+        delay: 300
+        text: `${Math.round(circularProgress.value * 100)}%`
     }
 }

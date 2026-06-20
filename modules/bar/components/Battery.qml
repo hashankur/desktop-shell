@@ -1,6 +1,4 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Universal
 import Quickshell
 import Quickshell.Services.UPower
 import Quickshell.Widgets
@@ -9,9 +7,12 @@ import qs.components
 import qs.config
 import qs.services
 
-Item {
+TooltipArea {
+    id: root
     implicitWidth: 16
     implicitHeight: 16
+
+    text: getTooltipText()
 
     // Color based on battery level
     function getBatteryColor() {
@@ -58,47 +59,7 @@ Item {
         return text;
     }
 
-    // ProgressBar {
-    //     anchors.fill: parent
-    //     progress: Battery.percentage
-    //     barColor: getBatteryColor()
-    //     backgroundColor: Appearance.colors.surface_container
-    //     animationDuration: 300
-    // }
-
-    Icon{
+    Icon {
         source: Quickshell.iconPath(UPower.displayDevice.iconName)
-    }
-
-    // Tooltip
-    ToolTip {
-        visible: mouseArea.containsMouse
-        text: getTooltipText()
-        delay: 500
-        timeout: 5000
-        z: 1000
-
-        background: Rectangle {
-            color: Appearance.colors.surface_container
-            border.color: Appearance.colors.outline
-            border.width: 1
-            radius: 4
-            implicitWidth: 150
-            implicitHeight: 40
-        }
-
-        contentItem: Text {
-            text: getTooltipText()
-            color: Appearance.colors.on_surface
-            font.pixelSize: 12
-            wrapMode: Text.WordWrap
-            padding: 8
-        }
-    }
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true
     }
 }

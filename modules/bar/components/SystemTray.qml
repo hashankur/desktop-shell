@@ -14,6 +14,7 @@ Row {
     id: root
 
     property var parentWindow
+    property var currentMenu: null
 
     readonly property int trayCount: SystemTray.items.values ? SystemTray.items.values.length : 0
 
@@ -23,7 +24,7 @@ Row {
     Repeater {
         model: SystemTray.items.values
 
-        delegate: Item {
+        delegate: TooltipArea {
             id: trayItemRoot
             required property var modelData
 
@@ -31,6 +32,8 @@ Row {
             readonly property bool isPassive: trayItemRoot.trayItem.status === Status.Passive
             readonly property bool isAttention: trayItemRoot.trayItem.status === Status.NeedsAttention
             readonly property string iconSource: trayItemRoot.trayItem && trayItemRoot.trayItem.icon ? trayItemRoot.trayItem.icon.toString() : ""
+
+            text: trayItemRoot.trayItem.tooltipTitle || trayItemRoot.trayItem.title || trayItemRoot.trayItem.id || ""
 
             width: 16
             height: 16
@@ -55,34 +58,41 @@ Row {
                     } else if (mouse.button === Qt.MiddleButton) {
                         trayItemRoot.trayItem.secondaryActivate();
                     } else if (mouse.button === Qt.RightButton) {
-                        // Show the tray item's menu if available. Map click to window coordinates.
-                        if (trayItemRoot.trayItem.hasMenu || trayItemRoot.trayItem.menu) {
-                            try {
-                                var displayX = mouse.x;
-                                var displayY = mouse.y;
-
-                                if (root.parentWindow && root.parentWindow.contentItem) {
-                                    var mappedPoint = trayItemRoot.mapToItem(root.parentWindow.contentItem, mouse.x, mouse.y);
-                                    displayX = mappedPoint.x;
-                                    displayY = mappedPoint.y;
-                                }
-
-                                trayItemRoot.trayItem.display(root.parentWindow, displayX, displayY);
-                            } catch (e) {
-                                // Fallback: call secondaryActivate if display is not available
-                                trayItemRoot.trayItem.secondaryActivate();
+                        if (trayItemRoot.trayItem.hasMenu && trayItemRoot.trayItem.menu) {
+                            if (root.currentMenu) {
+                                root.currentMenu.closeAll();
+                                root.currentMenu.destroy();
                             }
+
+                            var mappedPoint = { x: mouse.x, y: mouse.y };
+                            if (root.parentWindow && root.parentWindow.contentItem) {
+                                mappedPoint = trayItemRoot.mapToItem(root.parentWindow.contentItem, mouse.x, mouse.y);
+                            }
+
+                            var menu = trayMenuComponent.createObject(root, {
+                                menu: trayItemRoot.trayItem.menu,
+                                outputWidth: root.parentWindow ? root.parentWindow.width : 1920,
+                                outputHeight: root.parentWindow ? root.parentWindow.height : 1080
+                            });
+                            root.currentMenu = menu;
+                            menu.setPosition(Math.round(mappedPoint.x), Math.round(mappedPoint.y));
+                            menu.visible = true;
+                            menu.itemTriggered.connect(() => {
+                                menu.closeAll();
+                                root.currentMenu = null;
+                            });
                         } else {
                             trayItemRoot.trayItem.secondaryActivate();
                         }
                     }
                 }
             }
-
-            // ToolTip {
-            //     visible: trayMouseArea.containsMouse
-            //     text: trayItemRoot.trayItem.tooltipTitle || trayItemRoot.trayItem.title || trayItemRoot.trayItem.id
-            // }
         }
+    }
+
+    Component {
+        id: trayMenuComponent
+
+        TrayMenu {}
     }
 }
