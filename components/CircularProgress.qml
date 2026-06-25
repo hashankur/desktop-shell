@@ -27,7 +27,6 @@ Item {
         }
     }
 
-    // Background circle
     Canvas {
         id: canvas
         anchors.fill: parent
@@ -48,19 +47,19 @@ Item {
             ctx.stroke();
 
             // Progress arc
-            ctx.strokeStyle = progressColor;
-            ctx.lineWidth = strokeWidth;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.beginPath();
-            // Start from top (-π/2) and go clockwise
-            const endAngle = -Math.PI / 2 + (2 * Math.PI * circularProgress.value);
-            ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
-            ctx.stroke();
+            if (circularProgress.value > 0) {
+                ctx.strokeStyle = progressColor;
+                ctx.lineWidth = strokeWidth;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+                ctx.beginPath();
+                const endAngle = -Math.PI / 2 + (2 * Math.PI * circularProgress.value);
+                ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
+                ctx.stroke();
+            }
         }
     }
 
-    // Update canvas when value changes
     onValueChanged: canvas.requestPaint()
 
     // Center icon

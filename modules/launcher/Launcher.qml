@@ -31,13 +31,6 @@ PanelWindow {
     property int entryHeight: 64
     property int entrySpacing: 4
 
-    Timer {
-        id: focusTimer
-        interval: 0
-        repeat: false
-        onTriggered: searchField.forceActiveFocus()
-    }
-
     LauncherComponents.AppModeData {
         id: appData
     }
@@ -75,12 +68,11 @@ PanelWindow {
         root.activeData.reset();
         searchField.text = "";
         root.updateResults("");
-        focusTimer.attempts = 0;
-        focusTimer.start();
     }
 
     function closeLauncher() {
         root.visible = false;
+        clipData.cleanTempFiles();
     }
 
     function updateResults(text) {
@@ -136,16 +128,6 @@ PanelWindow {
 
         function close() {
             root.closeLauncher();
-        }
-    }
-
-    onVisibleChanged: {
-        if (visible) {
-            focusTimer.attempts = 0;
-            focusTimer.start();
-        } else {
-            focusTimer.stop();
-            clipData.cleanTempFiles();
         }
     }
 

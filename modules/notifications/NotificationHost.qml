@@ -37,7 +37,7 @@ PanelWindow {
     }
 
     function pushToast(notification) {
-        var obj = toastComponent.createObject(stack, {
+        const obj = toastComponent.createObject(stack, {
             notificationData: {
                 title: notification.summary || "",
                 body: notification.body || "",
@@ -56,8 +56,8 @@ PanelWindow {
     }
 
     Component.onCompleted: {
-        var pending = Notifications.takePendingToasts();
-        for (var i = 0; i < pending.length; i++) {
+        const pending = Notifications.takePendingToasts();
+        for (let i = 0; i < pending.length; i++) {
             pushToast(pending[i]);
         }
     }

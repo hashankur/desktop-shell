@@ -13,60 +13,60 @@ Singleton {
   function refresh() {
     if (root.loading) return;
     root.loading = true;
-    cliphistProc.exec(["sh", "-c", "cliphist list > /tmp/qs-cliphist-list.txt"]);
+    cliphistProc.exec(["cliphist", "list"]);
   }
 
   function copyEntry(id) {
-    Quickshell.execDetached(["sh", "-c", `cliphist decode ${id} | wl-copy`]);
+    if (!/^\d+$/.test(String(id))) return;
+    Quickshell.execDetached(["sh", "-c", "cliphist decode " + String(id) + " | wl-copy"]);
+  }
+
+  function _parseEntries(raw) {
+    if (raw === "") {
+      root.entries = [];
+      return;
+    }
+    const list = [];
+    const lines = raw.split("\n").filter(l => l.length > 0);
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const tabIdx = line.indexOf("\t");
+      if (tabIdx < 0) continue;
+      const id = line.substring(0, tabIdx);
+      const preview = line.substring(tabIdx + 1);
+      const entry = {
+        id: id,
+        preview: preview,
+        type: "text",
+        imageFormat: "",
+        imageWidth: 0,
+        imageHeight: 0
+      };
+      const imgMatch = preview.match(/^\[\[ binary data [\d.]+ (?:KiB|B) (\w+) (\d+)x(\d+) \]\]$/);
+      if (imgMatch) {
+        entry.type = "image";
+        entry.imageFormat = imgMatch[1];
+        entry.imageWidth = parseInt(imgMatch[2]);
+        entry.imageHeight = parseInt(imgMatch[3]);
+      }
+      list.push(entry);
+    }
+    root.entries = list;
   }
 
   Process {
     id: cliphistProc
+    stdout: StdioCollector {
+      id: listCollector
+      onStreamFinished: {
+        root._parseEntries(listCollector.text);
+        root.loading = false;
+      }
+    }
     onExited: function (exitCode, exitStatus) {
       if (exitCode !== 0) {
         root.loading = false;
-        return;
       }
-      historyFile.path = "/tmp/qs-cliphist-list.txt";
-      historyFile.reload();
-    }
-  }
-
-  FileView {
-    id: historyFile
-    onLoaded: {
-      root.loading = false;
-      var raw = historyFile.text();
-      if (raw === "") {
-        root.entries = [];
-        return;
-      }
-      var list = [];
-      var lines = raw.split("\n").filter(l => l.length > 0);
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        var tabIdx = line.indexOf("\t");
-        if (tabIdx < 0) continue;
-        var id = line.substring(0, tabIdx);
-        var preview = line.substring(tabIdx + 1);
-        var entry = {
-          id: id,
-          preview: preview,
-          type: "text",
-          imageFormat: "",
-          imageWidth: 0,
-          imageHeight: 0
-        };
-        var imgMatch = preview.match(/^\[\[ binary data [\d.]+ (?:KiB|B) (\w+) (\d+)x(\d+) \]\]$/);
-        if (imgMatch) {
-          entry.type = "image";
-          entry.imageFormat = imgMatch[1];
-          entry.imageWidth = parseInt(imgMatch[2]);
-          entry.imageHeight = parseInt(imgMatch[3]);
-        }
-        list.push(entry);
-      }
-      root.entries = list;
     }
   }
 }
