@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -100,7 +102,7 @@ Item {
         var path = `/tmp/qs-cliphist-${entry._rawId}.${entry._rawFormat}`;
         entry._tempPath = path;
         imageDecoder._pendingEntry = entry;
-        imageDecoder.exec(["sh", "-c", `cliphist decode ${entry._rawId} > ${path}`]);
+        imageDecoder.exec(["sh", "-c", "cliphist decode " + String(entry._rawId) + " > " + path]);
     }
 
     Process {
@@ -142,7 +144,7 @@ Item {
         for (var i = 0; i < root._allEntries.length; i++) {
             var raw = root._allEntries[i];
             if (raw.type === "image") {
-                Quickshell.execDetached(["sh", "-c", `rm -f /tmp/qs-cliphist-${raw.id}.${raw.imageFormat}`]);
+                Quickshell.execDetached(["rm", "-f", "/tmp/qs-cliphist-" + raw.id + "." + raw.imageFormat]);
             }
         }
     }

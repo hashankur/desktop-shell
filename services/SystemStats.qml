@@ -17,6 +17,10 @@ Singleton {
 
     property var prevCpuStats: null
 
+    // Discovered hardware paths
+    property string _gpuBusyPath: ""
+    property string _thermalTempPath: ""
+
     // Reference Counting: Only monitor when UI is visible
     function addRef() {
         refCount++;
@@ -24,6 +28,39 @@ Singleton {
 
     function removeRef() {
         refCount = Math.max(0, refCount - 1);
+    }
+
+    // Discover hardware paths at startup
+    Process {
+        id: discoverProc
+        command: ["sh", "-c", "for d in /sys/class/hwmon/hwmon*; do [ -f \"$d/device/gpu_busy_percent\" ] && echo \"$d/device/gpu_busy_percent\" && break; done"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const path = this.text.trim();
+                if (path.length > 0) {
+                    root._gpuBusyPath = path;
+                    gpuStat.reload();
+                }
+            }
+        }
+    }
+
+    Process {
+        id: discoverThermalProc
+        command: ["sh", "-c", "for d in /sys/class/thermal/thermal_zone*/temp; do [ -f \"$d\" ] && echo \"$d\" && break; done"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const path = this.text.trim();
+                if (path.length > 0) {
+                    root._thermalTempPath = path;
+                    tempStat.reload();
+                }
+            }
+        }
     }
 
     // CPU Monitoring
@@ -91,9 +128,10 @@ Singleton {
 
     FileView {
         id: gpuStat
-        path: "/sys/class/hwmon/hwmon6/device/gpu_busy_percent"
+        path: root._gpuBusyPath
 
         onLoaded: {
+            if (root._gpuBusyPath === "") return;
             const gpuRaw = parseInt(gpuStat.text().trim());
             root.gpuUsage = gpuRaw / 100;
         }
@@ -101,9 +139,10 @@ Singleton {
 
     FileView {
         id: tempStat
-        path: "/sys/class/thermal/thermal_zone0/temp"
+        path: root._thermalTempPath
 
         onLoaded: {
+            if (root._thermalTempPath === "") return;
             const tempRaw = parseInt(tempStat.text().trim());
             root.temperature = tempRaw / 1000 / 100;
         }
@@ -120,8 +159,8 @@ Singleton {
         onTriggered: {
             cpuStat.reload();
             memStat.reload();
-            gpuStat.reload();
-            tempStat.reload();
+            if (root._gpuBusyPath !== "") gpuStat.reload();
+            if (root._thermalTempPath !== "") tempStat.reload();
         }
     }
 }

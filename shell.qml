@@ -1,4 +1,3 @@
-//@ pragma UseQApplication
 //@ pragma IconTheme MoreWaita
 //@ pragma DropExpensiveFonts
 

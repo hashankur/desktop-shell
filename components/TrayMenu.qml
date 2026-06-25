@@ -63,8 +63,6 @@ PanelWindow {
             anchors.fill: parent
             radius: Appearance.rounding.normal
             color: Appearance.colors.surface_container_high
-            border.color: "red"
-            border.width: 10
 
             Column {
                 anchors.fill: parent

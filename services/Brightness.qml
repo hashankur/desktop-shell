@@ -16,10 +16,11 @@ Singleton {
     // This ensures OSD triggers even when brightness is already at max
     signal brightnessTriggered()
 
-    // Paths for brightness control (may vary by system)
-    readonly property string brightnessPath: "/sys/class/backlight/amdgpu_bl1/brightness"
-    readonly property string maxBrightnessPath: "/sys/class/backlight/amdgpu_bl1/max_brightness"
+    // Discovered paths (populated at startup)
+    readonly property string brightnessPath: _backlightDir !== "" ? _backlightDir + "/brightness" : ""
+    readonly property string maxBrightnessPath: _backlightDir !== "" ? _backlightDir + "/max_brightness" : ""
 
+    property string _backlightDir: ""
     property int maxBrightness: 255
     property int prevBrightness: -1
 
@@ -34,7 +35,33 @@ Singleton {
         brightnessFile.watchChanges = refCount > 0;
     }
 
-    // Read max brightness once at startup
+    // Discover backlight device at startup
+    Process {
+        id: discoverProc
+        command: ["ls", "/sys/class/backlight/"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const output = this.text.trim();
+                if (output.length > 0) {
+                    const firstDevice = output.split("\n")[0].trim();
+                    if (firstDevice.length > 0) {
+                        root._backlightDir = "/sys/class/backlight/" + firstDevice;
+                        maxBrightnessFile.reload();
+                    }
+                }
+            }
+        }
+
+        onExited: function (exitCode, exitStatus) {
+            if (exitCode !== 0 || root._backlightDir === "") {
+                console.warn("Brightness: No backlight device found in /sys/class/backlight/");
+            }
+        }
+    }
+
+    // Read max brightness once discovered
     FileView {
         id: maxBrightnessFile
         path: root.maxBrightnessPath
@@ -73,9 +100,5 @@ Singleton {
             // This ensures OSD shows even when brightness is already at max
             root.brightnessTriggered();
         }
-    }
-
-    Component.onCompleted: {
-        maxBrightnessFile.reload();
     }
 }

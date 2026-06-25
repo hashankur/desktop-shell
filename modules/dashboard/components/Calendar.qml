@@ -50,7 +50,7 @@ Item {
                 Layout.fillWidth: true
 
                 Text {
-                    text: new Date().toLocaleString(Qt.locale(), "MMMM yyyy")
+                    text: new Date(root.year, root.month, 1).toLocaleString(Qt.locale(), "MMMM yyyy")
                     color: Appearance.colors.primary
                     font.family: Appearance.font.sans
                     font.pixelSize: Appearance.fontSize.xxl
