@@ -90,6 +90,8 @@ Scope {
                         }
 
                         Battery {}
+
+                        PowerButton {}
                     }
                 }
             }

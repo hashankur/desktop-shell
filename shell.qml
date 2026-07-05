@@ -10,6 +10,7 @@ import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.osd
 import qs.modules.dashboard
+import qs.modules.powermenu
 import qs.services
 
 ShellRoot {
@@ -34,5 +35,10 @@ ShellRoot {
     LazyLoader {
         active: true
         component: DashboardWindow {}
+    }
+
+    LazyLoader {
+        active: true
+        component: PowerMenu {}
     }
 }
