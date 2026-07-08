@@ -28,12 +28,12 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 | [Niri](https://github.com/YaLTeR/niri) | Wayland compositor |
 | [cliphist](https://github.com/sentriz/cliphist) | Clipboard history |
 | [wl-clipboard](https://github.com/bugaevc/wl-clipboard) | `wl-copy` for clipboard writes |
-| [MoreWaita](https://github.com/varlesh/MoreWaita) | Icon theme |
+| [MoreWaita](https://github.com/somepaulo/MoreWaita) | Icon theme |
 
 ## Installation
 
 ```sh
-git clone https://github.com/youruser/neue.git ~/.config/quickshell/neue
+git clone https://github.com/hashankur/desktop-shell.git ~/.config/quickshell/neue
 ```
 
 Ensure the required dependencies are installed, then launch with the command below.
