@@ -1,2 +1,5 @@
-node_modules/
-@girs/
+.direnv
+/result
+/.qmlls.ini
+build/
+.cache/
