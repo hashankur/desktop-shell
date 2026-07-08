@@ -89,9 +89,13 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Battery {}
+                        Battery {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
 
-                        PowerButton {}
+                        PowerButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
             }
