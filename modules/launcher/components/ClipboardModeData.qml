@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 
 import qs.services
+import "FuzzyMatcher.js" as Fuzzy
 
 Item {
     id: root
@@ -43,17 +44,18 @@ Item {
                 return root._toDisplayEntry(e);
             });
         } else {
-            var filtered = [];
+            var scored = [];
             for (var i = 0; i < root._allEntries.length; i++) {
                 var e = root._allEntries[i];
-                if (e.preview.toLowerCase().includes(trimmed)) {
-                    filtered.push(e);
-                    if (filtered.length >= root.maxVisibleEntries)
-                        break;
+                var s = Fuzzy.fuzzyScore(trimmed, e.preview);
+                if (s >= 0) {
+                    scored.push({ entry: e, score: s });
                 }
             }
-            root.foundEntries = filtered.map(function (e) {
-                return root._toDisplayEntry(e);
+            scored.sort(function (a, b) { return b.score - a.score; });
+            var limited = scored.slice(0, root.maxVisibleEntries);
+            root.foundEntries = limited.map(function (item) {
+                return root._toDisplayEntry(item.entry);
             });
         }
 
