@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 
 import qs.config
+import "FuzzyMatcher.js" as Fuzzy
 
 QtObject {
   id: root
@@ -25,23 +26,26 @@ QtObject {
       return;
     }
     var all = DesktopEntries.applications.values;
-    var filtered = [];
+    var scored = [];
     for (var i = 0; i < all.length; i++) {
       var app = all[i];
-      if (app.name.toLowerCase().includes(trimmed) ||
-          ((app.comment?.toLowerCase().includes(trimmed)) ?? false)) {
-        filtered.push(app);
-        if (filtered.length >= root.maxVisibleEntries) break;
+      var nameScore = Fuzzy.fuzzyScore(trimmed, app.name);
+      var commentScore = Fuzzy.fuzzyScore(trimmed, app.comment ?? "");
+      var best = Math.max(nameScore, commentScore);
+      if (best >= 0) {
+        scored.push({ app: app, score: best });
       }
     }
-    root.foundEntries = filtered.map(function (app) {
+    scored.sort(function (a, b) { return b.score - a.score; });
+    var filtered = scored.slice(0, root.maxVisibleEntries);
+    root.foundEntries = filtered.map(function (item) {
       return {
-        primaryText: app.name,
-        secondaryText: app.comment ?? app.name,
-        iconSource: app.icon ?? "",
+        primaryText: item.app.name,
+        secondaryText: item.app.comment ?? item.app.name,
+        iconSource: item.app.icon ?? "",
         thumbnailSource: "",
         hintText: "",
-        _desktopEntry: app
+        _desktopEntry: item.app
       };
     });
   }
