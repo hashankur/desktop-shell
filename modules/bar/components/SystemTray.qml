@@ -61,7 +61,7 @@ Row {
                         if (trayItemRoot.trayItem.hasMenu && trayItemRoot.trayItem.menu) {
                             if (root.currentMenu) {
                                 root.currentMenu.closeAll();
-                                root.currentMenu.destroy();
+                                root.currentMenu = null;
                             }
 
                             var mappedPoint = { x: mouse.x, y: mouse.y };
@@ -69,11 +69,17 @@ Row {
                                 mappedPoint = trayItemRoot.mapToItem(root.parentWindow.contentItem, mouse.x, mouse.y);
                             }
 
-                            var menu = trayMenuComponent.createObject(root, {
+                            var props = {
                                 menu: trayItemRoot.trayItem.menu,
                                 outputWidth: root.parentWindow ? root.parentWindow.width : 1920,
                                 outputHeight: root.parentWindow ? root.parentWindow.height : 1080
-                            });
+                            };
+                            // Open on the output the bar lives on, not the
+                            // primary one.
+                            if (root.parentWindow && root.parentWindow.screen)
+                                props.screen = root.parentWindow.screen;
+
+                            var menu = trayMenuComponent.createObject(root, props);
                             root.currentMenu = menu;
                             menu.setPosition(Math.round(mappedPoint.x), Math.round(mappedPoint.y));
                             menu.visible = true;
