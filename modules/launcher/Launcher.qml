@@ -137,7 +137,7 @@ PanelWindow {
         anchors.bottom: parent.bottom
         width: Math.min(780, parent.width - Appearance.spacing.large * 2)
         height: Math.min(500, (Appearance.spacing.normal * 2) + 48 + (resultsList.hasItems ? (Appearance.spacing.normal + resultsList.listHeight) : 0))
-        radius: 22
+        radius: Appearance.rounding.large
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
 

@@ -7,14 +7,10 @@ Item {
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
 
-    // Reference counting: tell SystemStats we're using it
-    Component.onCompleted: SystemStats.addRef()
-    Component.onDestruction: SystemStats.removeRef()
-
     Row {
         id: row
         anchors.fill: parent
-        spacing: 5
+        spacing: 6
 
         // CPU
         CircularProgress {
@@ -38,6 +34,7 @@ Item {
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
             value: SystemStats.temperature
+            tooltipText: `${SystemStats.temperatureCelsius.toFixed(1)}°C`
         }
     }
 }

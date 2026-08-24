@@ -26,6 +26,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 |---|---|
 | [Quickshell](https://quickshell.outfoxxed.me/) >= 0.3.0 | Shell framework |
 | [Niri](https://github.com/YaLTeR/niri) | Wayland compositor |
+| [qml-niri](https://github.com/imiric/qml-niri) | QML plugin (`import Niri`) for workspaces / window state |
 | [cliphist](https://github.com/sentriz/cliphist) | Clipboard history |
 | [wl-clipboard](https://github.com/bugaevc/wl-clipboard) | `wl-copy` for clipboard writes |
 | [MoreWaita](https://github.com/somepaulo/MoreWaita) | Icon theme |
@@ -50,13 +51,13 @@ The shell auto-reloads on file changes.
 
 ```sh
 # Toggle app launcher
-qs -c neue ipc call launcher toggle
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call launcher toggle
 
 # Toggle clipboard history
-qs -c neue ipc call clipboard toggle
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call clipboard toggle
 
 # Toggle power menu
-qs -c neue ipc call powermenu toggle
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 ```
 
 Bind these to compositor keybindings for keyboard-driven access.

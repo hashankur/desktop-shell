@@ -105,7 +105,7 @@ Scope {
                                 visible: root.label !== ""
                                 text: root.label
                                 color: Appearance.colors.on_surface
-                                font.pixelSize: 12
+                                font.pixelSize: Appearance.fontSize.xs
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }

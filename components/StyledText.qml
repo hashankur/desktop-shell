@@ -7,6 +7,5 @@ Text {
     font {
         family: Appearance.font.sans
         pixelSize: Appearance.fontSize.base
-        // weight: Font.Medium
     }
 }

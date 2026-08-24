@@ -58,6 +58,7 @@ Item {
             required property var modelData
             required property int index
 
+            height: root.entryHeight
             primaryText: modelData.primaryText ?? ""
             secondaryText: modelData.secondaryText ?? ""
             iconSource: modelData.iconSource ?? ""

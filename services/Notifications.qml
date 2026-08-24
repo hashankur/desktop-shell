@@ -11,7 +11,7 @@ Singleton {
 
     property int maxHistory: 50
     property bool persistenceEnabled: true
-    property string persistencePath: "/home/han/.config/quickshell/notifications.json"
+    readonly property string persistencePath: Quickshell.env("HOME") + "/.config/quickshell/notifications.json"
     property var pendingToasts: []
 
     signal toastQueued(var notification)
@@ -75,6 +75,16 @@ Singleton {
 
     function clearHistory() {
         historyModelStore.clear();
+        if (root.persistenceEnabled) {
+            root.saveHistory();
+        }
+    }
+
+    function removeHistory(index) {
+        if (index < 0 || index >= historyModelStore.count) {
+            return;
+        }
+        historyModelStore.remove(index);
         if (root.persistenceEnabled) {
             root.saveHistory();
         }

@@ -54,68 +54,74 @@ PanelWindow {
         }
     }
 
-    Keys.onEscapePressed: Session.close()
-
-    // Click on transparent background to dismiss
-    MouseArea {
+    Item {
+        id: content
         anchors.fill: parent
-        onClicked: Session.close()
-    }
+        focus: true
 
-    Rectangle {
-        id: frame
-        anchors.centerIn: parent
-        width: Math.min(560, parent.width - Appearance.spacing.large * 2)
-        height: frameContent.implicitHeight + Appearance.spacing.large * 2
-        radius: 22
-        color: Appearance.colors.surface
-        border.color: Appearance.colors.surface_bright
+        Keys.onEscapePressed: Session.close()
 
-        // Prevent clicks inside the frame from closing the menu
+        // Click on transparent background to dismiss
         MouseArea {
             anchors.fill: parent
+            onClicked: Session.close()
         }
 
-        ColumnLayout {
-            id: frameContent
-            anchors {
-                fill: parent
-                margins: Appearance.spacing.large
+        Rectangle {
+            id: frame
+            anchors.centerIn: parent
+            width: Math.min(560, parent.width - Appearance.spacing.large * 2)
+            height: frameContent.implicitHeight + Appearance.spacing.large * 2
+            radius: Appearance.rounding.large
+            color: Appearance.colors.surface
+            border.color: Appearance.colors.surface_bright
+
+            // Prevent clicks inside the frame from closing the menu
+            MouseArea {
+                anchors.fill: parent
             }
-            spacing: Appearance.spacing.large
 
-            GridLayout {
-                columns: 4
-                columnSpacing: Appearance.spacing.normal
-                rowSpacing: Appearance.spacing.normal
-                Layout.alignment: Qt.AlignHCenter
-
-                PowerComponents.PowerActionButton {
-                    iconSource: Quickshell.iconPath("system-shutdown-symbolic")
-                    label: "Shutdown"
-                    iconColor: Appearance.colors.error
-                    onClicked: root.shutdown()
+            ColumnLayout {
+                id: frameContent
+                anchors {
+                    fill: parent
+                    margins: Appearance.spacing.large
                 }
+                spacing: Appearance.spacing.large
 
-                PowerComponents.PowerActionButton {
-                    iconSource: Quickshell.iconPath("system-reboot-symbolic")
-                    label: "Restart"
-                    iconColor: Appearance.colors.error
-                    onClicked: root.restart()
-                }
+                GridLayout {
+                    columns: 4
+                    columnSpacing: Appearance.spacing.normal
+                    rowSpacing: Appearance.spacing.normal
+                    Layout.alignment: Qt.AlignHCenter
 
-                PowerComponents.PowerActionButton {
-                    iconSource: Quickshell.iconPath("weather-clear-night-symbolic")
-                    label: "Suspend"
-                    iconColor: Appearance.colors.primary
-                    onClicked: root.suspend()
-                }
+                    PowerComponents.PowerActionButton {
+                        iconSource: Quickshell.iconPath("system-shutdown-symbolic")
+                        label: "Shutdown"
+                        iconColor: Appearance.colors.error
+                        onClicked: root.shutdown()
+                    }
 
-                PowerComponents.PowerActionButton {
-                    iconSource: Quickshell.iconPath("system-log-out-symbolic")
-                    label: "Logout"
-                    iconColor: Appearance.colors.primary
-                    onClicked: root.logout()
+                    PowerComponents.PowerActionButton {
+                        iconSource: Quickshell.iconPath("system-reboot-symbolic")
+                        label: "Restart"
+                        iconColor: Appearance.colors.error
+                        onClicked: root.restart()
+                    }
+
+                    PowerComponents.PowerActionButton {
+                        iconSource: Quickshell.iconPath("weather-clear-night-symbolic")
+                        label: "Suspend"
+                        iconColor: Appearance.colors.primary
+                        onClicked: root.suspend()
+                    }
+
+                    PowerComponents.PowerActionButton {
+                        iconSource: Quickshell.iconPath("system-log-out-symbolic")
+                        label: "Logout"
+                        iconColor: Appearance.colors.primary
+                        onClicked: root.logout()
+                    }
                 }
             }
         }

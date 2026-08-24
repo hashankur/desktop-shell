@@ -9,7 +9,7 @@ import qs.services
 
 TooltipArea {
     id: root
-    implicitWidth: 16
+    implicitWidth: 16 * 2
     implicitHeight: 16
 
     text: getTooltipText()
@@ -19,13 +19,12 @@ TooltipArea {
         if (Battery.isCharging) {
             return Appearance.colors.primary;
         }
-        if (Battery.percentage >= 0.5) {
-            return Appearance.colors.on_surface;
+        else if (Battery.percentage >= 0.3) {
+            return Appearance.colors.secondary;
         }
-        if (Battery.percentage >= 0.2) {
-            return Appearance.colors.tertiary;
+        else {
+            return Appearance.colors.error;
         }
-        return Appearance.colors.error; // Red when below 20%
     }
 
     // Format time in seconds to human readable format
@@ -59,7 +58,15 @@ TooltipArea {
         return text;
     }
 
-    Icon {
-        source: Quickshell.iconPath(UPower.displayDevice.iconName)
+    // Icon {
+    //     source: Quickshell.iconPath(UPower.displayDevice.iconName)
+    // }
+
+    ProgressBar {
+        anchors.fill: parent
+        progress: Battery.percentage
+        barColor: getBatteryColor()
+        backgroundColor: Appearance.colors.surface_container
+        animationDuration: 300
     }
 }

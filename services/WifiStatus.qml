@@ -49,47 +49,4 @@ Singleton {
 
         return fallback
     }
-
-    // Monitor WiFi device state changes
-    Connections {
-        target: root.wifiDevice
-        enabled: root.wifiDevice !== null
-
-        function onStateChanged() {
-            // Accessing readonly properties forces re-evaluation
-            root.wifiDevice
-            root.activeNetwork
-        }
-
-        function onConnectedChanged() {
-            root.wifiDevice
-            root.activeNetwork
-        }
-    }
-
-    // Monitor active network state changes
-    Connections {
-        target: root.activeNetwork
-        enabled: root.activeNetwork !== null
-
-        function onStateChanged() {
-            root.wifiDevice
-            root.activeNetwork
-        }
-
-        function onConnectedChanged() {
-            root.wifiDevice
-            root.activeNetwork
-        }
-
-        function onNameChanged() {
-            root.wifiDevice
-            root.activeNetwork
-        }
-
-        function onSignalStrengthChanged() {
-            root.wifiDevice
-            root.activeNetwork
-        }
-    }
 }

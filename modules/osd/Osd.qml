@@ -41,13 +41,5 @@ Scope {
                 brightnessOsd.shouldShow = true;
             }
         }
-
-        Component.onCompleted: {
-            Brightness.addRef();
-        }
-
-        Component.onDestruction: {
-            Brightness.removeRef();
-        }
     }
 }

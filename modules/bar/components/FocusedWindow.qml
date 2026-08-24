@@ -12,20 +12,10 @@ Row {
     readonly property var hasIcon: Quickshell.iconPath(Niri.focusedWindow?.appId, true)
 
     Icon {
-        anchors.verticalCenter: parent.verticalCenter
-        source: hasIcon ? Quickshell.iconPath(Niri.focusedWindow?.appId + "-symbolic") : Quickshell.iconPath(Niri.focusedWindow?.appId)
-        visible: hasIcon
+        source: (Niri.focusedWindow?.appId ?? "") !== "" ? Quickshell.iconPath(Niri.focusedWindow.appId) : ""
+        visible: hasIcon && (Niri.focusedWindow?.appId ?? "") !== ""
+        layer.enabled: false
     }
-
-    // // Fallback for missing icons
-    // Rectangle {
-    //     anchors.verticalCenter: parent.verticalCenter
-    //     width: 14
-    //     height: 14
-    //     color: Appearance.colors.on_surface
-    //     visible: !hasIcon
-    //     radius: 12
-    // }
 
     StyledText {
         width: 500

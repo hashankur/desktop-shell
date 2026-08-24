@@ -11,8 +11,11 @@ Item {
     required property real value // 0 to 1
     property string icon: ""  // System icon name
     property color progressColor: Appearance.colors.primary
-    property real size: 20
+    property real size: 16
     property real strokeWidth: 2
+
+    // Custom tooltip text; falls back to a percentage when empty
+    property string tooltipText: ""
 
     // Animation properties
     property real animationDuration: 600  // milliseconds
@@ -40,7 +43,7 @@ Item {
             ctx.clearRect(0, 0, width, height);
 
             // Background circle
-            ctx.strokeStyle = Appearance.colors.surface_container;
+            ctx.strokeStyle = Appearance.colors.secondary_container;
             ctx.lineWidth = strokeWidth;
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -61,6 +64,7 @@ Item {
     }
 
     onValueChanged: canvas.requestPaint()
+    onProgressColorChanged: canvas.requestPaint()
 
     // Center icon
     Text {
@@ -77,6 +81,6 @@ Item {
         id: rootTooltip
         anchors.fill: parent
         delay: 300
-        text: `${Math.round(circularProgress.value * 100)}%`
+        text: circularProgress.tooltipText !== "" ? circularProgress.tooltipText : `${Math.round(circularProgress.value * 100)}%`
     }
 }

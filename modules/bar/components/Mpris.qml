@@ -10,13 +10,14 @@ import qs.services
 Row {
     id: root
 
-    // Get spotify player is available
+    // Get spotify player if available
     readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] : null
+    readonly property bool isPlaying: root.activePlayer?.isPlaying ?? false
     spacing: 5
     visible: root.activePlayer !== null
 
     Icon {
-        source: root.activePlayer?.isPlaying != MprisPlaybackState.Playing ? Quickshell.iconPath("media-playback-start-symbolic") : Quickshell.iconPath("media-playback-pause-symbolic")
+        source: root.isPlaying ? Quickshell.iconPath("media-playback-pause-symbolic") : Quickshell.iconPath("media-playback-start-symbolic")
     }
 
     StyledText {
@@ -39,7 +40,7 @@ Row {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: mouse => {
                 if (mouse.button == Qt.LeftButton && root.activePlayer) {
-                    activePlayer.togglePlaying();
+                    root.activePlayer.togglePlaying();
                 }
                 if (mouse.button == Qt.RightButton) {
                     Dashboard.toggle("mpris");

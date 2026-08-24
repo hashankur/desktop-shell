@@ -19,13 +19,13 @@ Rectangle {
   property bool isCurrent: false
   property int entryIndex: 0
 
-  signal clicked()
-  signal entered()
+    signal clicked()
+    signal entered()
 
-  width: parent?.width ?? 0
-  height: 64
-  color: root.isCurrent ? Appearance.colors.surface_container : "transparent"
-  radius: 10
+    width: parent?.width ?? 0
+    height: 64
+    radius: Appearance.rounding.normal
+    color: root.isCurrent ? Appearance.colors.surface_container : "transparent"
 
   Behavior on color {
     ColorAnimation {

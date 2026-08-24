@@ -24,16 +24,16 @@ Item {
     property var _decoding: false
     property var _allEntries: []
 
+    property string searchQuery: ""
+
     function refresh() {
         Cliphist.refresh();
     }
 
     function onEntriesChanged() {
         root._allEntries = Cliphist.entries;
-        root.filter(searchQuery);
+        root.filter(root.searchQuery);
     }
-
-    property string searchQuery: ""
 
     function filter(query) {
         root.searchQuery = query;
@@ -49,10 +49,15 @@ Item {
                 var e = root._allEntries[i];
                 var s = Fuzzy.fuzzyScore(trimmed, e.preview);
                 if (s >= 0) {
-                    scored.push({ entry: e, score: s });
+                    scored.push({
+                        entry: e,
+                        score: s
+                    });
                 }
             }
-            scored.sort(function (a, b) { return b.score - a.score; });
+            scored.sort(function (a, b) {
+                return b.score - a.score;
+            });
             var limited = scored.slice(0, root.maxVisibleEntries);
             root.foundEntries = limited.map(function (item) {
                 return root._toDisplayEntry(item.entry);
@@ -87,6 +92,7 @@ Item {
 
         return {
             primaryText: raw.preview,
+            secondaryText: "",
             iconSource: "edit-paste-symbolic",
             thumbnailSource: "",
             hintText: "",
@@ -99,12 +105,20 @@ Item {
     function _processDecodeQueue() {
         if (root._decoding || root._decodeQueue.length === 0)
             return;
-        root._decoding = true;
         var entry = root._decodeQueue.shift();
-        var path = `/tmp/qs-cliphist-${entry._rawId}.${entry._rawFormat}`;
+        var id = String(entry._rawId);
+        var format = String(entry._rawFormat);
+        // Defense in depth: both values end up in a `sh -c` command line and
+        // in a temp file path, so reject anything not produced by our parser.
+        if (!/^\d+$/.test(id) || !/^[A-Za-z0-9]+$/.test(format)) {
+            root._processDecodeQueue();
+            return;
+        }
+        root._decoding = true;
+        var path = `/tmp/qs-cliphist-${id}.${format}`;
         entry._tempPath = path;
         imageDecoder._pendingEntry = entry;
-        imageDecoder.exec(["sh", "-c", "cliphist decode " + String(entry._rawId) + " > " + path]);
+        imageDecoder.exec(["sh", "-c", "cliphist decode " + id + " > " + path]);
     }
 
     Process {

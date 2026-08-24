@@ -52,14 +52,19 @@ Item {
                 model: Notifications.historyModel
 
                 delegate: Item {
+                    id: delegateRoot
+
                     required property var model
+                    required property int index
+
                     width: listView.width
                     implicitHeight: 100
 
                     NotificationToast {
                         anchors.fill: parent
-                        notificationData: parent.model
+                        notificationData: delegateRoot.model
                         autoHideEnabled: false
+                        onDismissed: Notifications.removeHistory(delegateRoot.index)
                     }
                 }
             }

@@ -1,13 +1,13 @@
 function fuzzyScore(query, text) {
     if (query.length === 0) return 0;
-    var q = query.toLowerCase();
-    var t = text.toLowerCase();
-    var qi = 0;
-    var score = 0;
-    var prevMatched = false;
-    var prevWasSeparator = true;
+    const q = query.toLowerCase();
+    const t = text.toLowerCase();
+    let qi = 0;
+    let score = 0;
+    let prevMatched = false;
+    let prevWasSeparator = true;
 
-    for (var ti = 0; ti < t.length && qi < q.length; ti++) {
+    for (let ti = 0; ti < t.length && qi < q.length; ti++) {
         if (t[ti] === q[qi]) {
             score += 10;
             if (prevMatched)
@@ -21,10 +21,7 @@ function fuzzyScore(query, text) {
             qi++;
         } else {
             prevMatched = false;
-            if (t[ti] === " " || t[ti] === "-" || t[ti] === "_")
-                prevWasSeparator = true;
-            else
-                prevWasSeparator = false;
+            prevWasSeparator = (t[ti] === " " || t[ti] === "-" || t[ti] === "_");
             score -= 5;
         }
     }

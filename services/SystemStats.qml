@@ -8,27 +8,19 @@ Singleton {
     id: root
 
     property int pollInterval: 3000  // milliseconds
-    property int refCount: 0  // Track active UI components for reference counting
 
     property real cpuUsage: 0
     property real memoryUsage: 0
     property real gpuUsage: 0
+    // normalized 0-1 assuming 100°C max, for progress display
     property real temperature: 0
+    readonly property real temperatureCelsius: temperature * 100
 
     property var prevCpuStats: null
 
     // Discovered hardware paths
     property string _gpuBusyPath: ""
     property string _thermalTempPath: ""
-
-    // Reference Counting: Only monitor when UI is visible
-    function addRef() {
-        refCount++;
-    }
-
-    function removeRef() {
-        refCount = Math.max(0, refCount - 1);
-    }
 
     // Discover hardware paths at startup
     Process {
@@ -148,10 +140,10 @@ Singleton {
         }
     }
 
-    // Polling Timer: Only active when UI components are present
+    // Polling Timer
     Timer {
         id: pollTimer
-        running: root.refCount > 0
+        running: true
         interval: root.pollInterval
         repeat: true
         triggeredOnStart: true

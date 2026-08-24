@@ -21,7 +21,7 @@ PanelWindow {
     margins.left: 18
     exclusiveZone: 0
 
-    visible: stack.children.length > 0
+    visible: stack.visibleChildren.length > 0
 
     Component {
         id: toastComponent
@@ -45,7 +45,7 @@ PanelWindow {
                 image: notification.image || "",
                 app: notification.appName || "",
                 timestamp: Date.now(),
-                timeout: notification.expireTimeout > 0 ? notification.expireTimeout * 1000 : 4000
+                timeout: notification.expireTimeout > 0 ? notification.expireTimeout : 4000
             },
             notificationObject: notification
         });

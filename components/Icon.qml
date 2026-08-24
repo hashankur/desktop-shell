@@ -1,16 +1,7 @@
-// import QtQuick.Controls.impl as Impl
 import QtQuick.Effects
 import Quickshell.Widgets
 
 import qs.config
-
-// Impl.ColorImage {
-//     sourceSize.width: 16
-//     sourceSize.height: 16
-//     anchors.verticalCenter: parent.verticalCenter
-//     color: Appearance.colors.on_surface
-//     mipmap: true
-// }
 
 IconImage {
     implicitSize: 16

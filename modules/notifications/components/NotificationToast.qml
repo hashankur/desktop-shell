@@ -12,6 +12,7 @@ Item {
     property var notificationObject: null
     property int autoHideTimeout: notificationData?.timeout > 0 ? notificationData.timeout : 4000
     property bool autoHideEnabled: true
+    property bool _dismissed: false
 
     signal dismissed
 
@@ -31,37 +32,6 @@ Item {
             anchors.fill: parent
             anchors.margins: 10
             spacing: 15
-
-            // Rectangle {
-            //     Layout.preferredWidth: 64
-            //     Layout.preferredHeight: 64
-            //     Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-            //     radius: 12
-            //     color: "transparent"
-            //     clip: true
-
-            //     Image {
-            //         id: iconImage
-            //         anchors.fill: parent
-            //         source: {
-            //             if (root.notificationData.image && root.notificationData.image !== "") {
-            //                 return String(root.notificationData.image);
-            //             }
-            //             if (root.notificationData.icon) {
-            //                 return Quickshell.iconPath(root.notificationData.icon, true);
-            //             }
-            //             return "";
-            //         }
-            //         fillMode: Image.PreserveAspectCrop
-            //         visible: source !== ""
-            //     }
-
-            //     Rectangle {
-            //         anchors.fill: parent
-            //         visible: !iconImage.visible
-            //         color: Appearance.colors.primary
-            //     }
-            // }
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -154,14 +124,16 @@ Item {
     }
 
     function dismiss() {
-        content.opacity = 0;
+        if (root._dismissed)
+            return;
+        root._dismissed = true;
         autoHideTimer.stop();
+        content.opacity = 0;
+        root.visible = false;
         if (root.notificationObject) {
             root.notificationObject.dismiss();
         }
-        Qt.callLater(() => {
-            root.dismissed();
-            root.destroy();
-        });
+        // The creator owns destruction; it reacts to `dismissed`.
+        Qt.callLater(() => root.dismissed());
     }
 }

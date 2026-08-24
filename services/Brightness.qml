@@ -7,8 +7,6 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property int refCount: 0  // Track active UI components for reference counting
-
     property real brightness: 0.0  // normalized 0.0 to 1.0
     property bool available: false
 
@@ -23,17 +21,6 @@ Singleton {
     property string _backlightDir: ""
     property int maxBrightness: 255
     property int prevBrightness: -1
-
-    // Reference Counting: Only monitor when UI is visible
-    function addRef() {
-        refCount++;
-        brightnessFile.watchChanges = refCount > 0;
-    }
-
-    function removeRef() {
-        refCount = Math.max(0, refCount - 1);
-        brightnessFile.watchChanges = refCount > 0;
-    }
 
     // Discover backlight device at startup
     Process {
@@ -83,7 +70,7 @@ Singleton {
     FileView {
         id: brightnessFile
         path: root.brightnessPath
-        watchChanges: root.refCount > 0
+        watchChanges: root.brightnessPath !== ""
 
         onLoaded: {
             const raw = parseInt(brightnessFile.text().trim());
