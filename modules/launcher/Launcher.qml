@@ -57,6 +57,12 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: searchDebounce
+        interval: 80
+        onTriggered: root.updateResults(searchField.text)
+    }
+
     function openLauncher(modeName) {
         root.mode = modeName;
 
@@ -93,6 +99,10 @@ PanelWindow {
     }
 
     function activateCurrent() {
+        if (searchDebounce.running) {
+            searchDebounce.stop();
+            root.updateResults(searchField.text);
+        }
         if (resultsList.currentIndex >= 0) {
             root.activeData.activate(resultsList.currentIndex);
             root.closeLauncher();
@@ -160,8 +170,8 @@ PanelWindow {
                 iconSource: root.activeData.iconSource
                 maxVisibleEntries: root.activeData.maxVisibleEntries
 
-                onSearchChanged: function (text) {
-                    root.updateResults(text);
+                onSearchChanged: {
+                    searchDebounce.restart();
                 }
 
                 onAccepted: root.activateCurrent()
