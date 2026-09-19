@@ -28,7 +28,6 @@ PanelWindow {
     color: "transparent"
 
     property string mode: "apps"
-    property int entryHeight: 64
     property int entrySpacing: 4
 
     LauncherComponents.AppModeData {
@@ -52,8 +51,9 @@ PanelWindow {
 
     Connections {
         target: clipData
-        function onThumbnailDecoded() {
-            updateListVisibility();
+        function onThumbnailsUpdated() {
+            // Refresh without resetting keyboard selection.
+            updateListVisibility(false);
         }
     }
 
@@ -72,7 +72,6 @@ PanelWindow {
 
     function closeLauncher() {
         root.visible = false;
-        clipData.cleanTempFiles();
     }
 
     function updateResults(text) {
@@ -80,11 +79,17 @@ PanelWindow {
         updateListVisibility();
     }
 
-    function updateListVisibility() {
+    function updateListVisibility(resetSelection = true) {
         var entries = root.activeData.foundEntries;
-        resultsList.model = entries;
+        // A fresh array reference forces the ListView to reload; assigning
+        // the same (mutated) array is deduped and thumbnails never appear.
+        resultsList.model = entries.slice();
         resultsList.hasItems = entries.length > 0 && (root.mode === "clipboard" || searchField.text.trim().length > 0);
-        resultsList.currentIndex = entries.length > 0 ? 0 : -1;
+        if (resetSelection) {
+            resultsList.currentIndex = entries.length > 0 ? 0 : -1;
+        } else if (resultsList.currentIndex >= entries.length) {
+            resultsList.currentIndex = entries.length > 0 ? entries.length - 1 : -1;
+        }
     }
 
     function activateCurrent() {
@@ -182,7 +187,7 @@ PanelWindow {
 
             LauncherComponents.ResultsList {
                 id: resultsList
-                entryHeight: root.entryHeight
+                entryHeight: root.activeData.entryHeight
                 entrySpacing: root.entrySpacing
                 maxVisibleEntries: root.activeData.maxVisibleEntries
 

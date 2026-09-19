@@ -15,19 +15,28 @@ Item {
     readonly property string iconSource: "edit-paste-symbolic"
     readonly property string placeholderText: "Search clipboard history..."
     readonly property int maxVisibleEntries: 8
+    // Taller rows so 48px image previews fit with normal padding.
+    readonly property int entryHeight: 76
 
     property var foundEntries: []
 
-    signal thumbnailDecoded
+    // Emitted once per decode batch (not per image) so the launcher can
+    // refresh the list without rebuilding delegates for every thumbnail.
+    signal thumbnailsUpdated
 
     property var _decodeQueue: []
-    property var _decoding: false
+    property bool _decoding: false
     property var _allEntries: []
+    property int _generation: 0
+    property int _appliedSinceFlush: 0
 
     property string searchQuery: ""
 
     function refresh() {
         Cliphist.refresh();
+        // Decoded images are cached indefinitely (cliphist ids are permanent);
+        // only prune week-old leftovers. Fire-and-forget.
+        Quickshell.execDetached(["sh", "-c", "find /tmp -maxdepth 1 -name 'qs-cliphist-*' -mtime +7 -delete"]);
     }
 
     function onEntriesChanged() {
@@ -37,6 +46,8 @@ Item {
 
     function filter(query) {
         root.searchQuery = query;
+        root._generation++;
+        root._appliedSinceFlush = 0;
         var trimmed = query.toLowerCase().trim();
 
         if (trimmed === "") {
@@ -64,16 +75,17 @@ Item {
             });
         }
 
+        // Rebuild the queue from the fresh results. A decode left in flight
+        // from the previous generation finishes harmlessly: its completion is
+        // discarded by generation check before the queue resumes.
         root._decodeQueue = [];
-        root._decoding = false;
-
         for (var j = 0; j < root.foundEntries.length; j++) {
             var entry = root.foundEntries[j];
             if (entry._rawType === "image") {
                 root._decodeQueue.push(entry);
             }
         }
-        root._processDecodeQueue();
+        root._pump();
     }
 
     function _toDisplayEntry(raw) {
@@ -102,43 +114,57 @@ Item {
         };
     }
 
-    function _processDecodeQueue() {
-        if (root._decoding || root._decodeQueue.length === 0)
+    function _pump() {
+        if (root._decoding)
             return;
+
+        if (root._decodeQueue.length === 0) {
+            if (root._appliedSinceFlush > 0) {
+                root._appliedSinceFlush = 0;
+                root.thumbnailsUpdated();
+            }
+            return;
+        }
+
         var entry = root._decodeQueue.shift();
         var id = String(entry._rawId);
         var format = String(entry._rawFormat);
         // Defense in depth: both values end up in a `sh -c` command line and
         // in a temp file path, so reject anything not produced by our parser.
         if (!/^\d+$/.test(id) || !/^[A-Za-z0-9]+$/.test(format)) {
-            root._processDecodeQueue();
+            root._pump();
             return;
         }
         root._decoding = true;
-        var path = `/tmp/qs-cliphist-${id}.${format}`;
-        entry._tempPath = path;
-        imageDecoder._pendingEntry = entry;
-        imageDecoder.exec(["sh", "-c", "cliphist decode " + id + " > " + path]);
+        entry._tempPath = `/tmp/qs-cliphist-${id}.${format}`;
+        imageDecoder._gen = root._generation;
+        imageDecoder._entry = entry;
+        // Self-caching: skip the (comparatively expensive) decode when a valid
+        // file from a previous session already exists.
+        imageDecoder.exec(["sh", "-c", `[ -s '${entry._tempPath}' ] || cliphist decode ${id} > '${entry._tempPath}'`]);
     }
 
     Process {
         id: imageDecoder
-        property var _pendingEntry: null
+        property int _gen: -1
+        property var _entry: null
 
         onExited: function (exitCode, exitStatus) {
-            if (exitCode === 0 && imageDecoder._pendingEntry) {
-                var entry = imageDecoder._pendingEntry;
+            var stale = imageDecoder._gen !== root._generation;
+            var entry = imageDecoder._entry;
+            imageDecoder._entry = null;
+            root._decoding = false;
+
+            if (!stale && exitCode === 0 && entry !== null) {
                 for (var i = 0; i < root.foundEntries.length; i++) {
                     if (root.foundEntries[i]._rawId === entry._rawId) {
                         root.foundEntries[i].thumbnailSource = `file://${entry._tempPath}`;
-                        root.thumbnailDecoded();
+                        root._appliedSinceFlush++;
                         break;
                     }
                 }
             }
-            imageDecoder._pendingEntry = null;
-            root._decoding = false;
-            root._processDecodeQueue();
+            root._pump();
         }
     }
 
@@ -152,16 +178,6 @@ Item {
     function reset() {
         root.foundEntries = [];
         root._decodeQueue = [];
-        root._decoding = false;
         root.searchQuery = "";
-    }
-
-    function cleanTempFiles() {
-        for (var i = 0; i < root._allEntries.length; i++) {
-            var raw = root._allEntries[i];
-            if (raw.type === "image") {
-                Quickshell.execDetached(["rm", "-f", "/tmp/qs-cliphist-" + raw.id + "." + raw.imageFormat]);
-            }
-        }
     }
 }

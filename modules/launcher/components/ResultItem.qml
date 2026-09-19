@@ -42,8 +42,9 @@ Rectangle {
 
     Item {
       id: iconArea
-      Layout.preferredWidth: 36
-      Layout.preferredHeight: 36
+      // Image previews get a larger window than plain icons.
+      Layout.preferredWidth: root.thumbnailSource !== "" ? 48 : 36
+      Layout.preferredHeight: root.thumbnailSource !== "" ? 48 : 36
       Layout.alignment: Qt.AlignVCenter
       visible: root.iconSource !== "" || root.thumbnailSource !== ""
 
