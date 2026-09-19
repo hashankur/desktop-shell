@@ -23,10 +23,11 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", "cliphist decode " + String(id) + " | wl-copy"]);
     }
 
+    property var _parsedList: null
+
     function _parseEntries(raw) {
         if (raw === "") {
-            root.entries = [];
-            return;
+            return [];
         }
         const list = [];
         const lines = raw.split("\n").filter(l => l.length > 0);
@@ -58,7 +59,7 @@ Singleton {
             }
             list.push(entry);
         }
-        root.entries = list;
+        return list;
     }
 
     Process {
@@ -66,14 +67,15 @@ Singleton {
         stdout: StdioCollector {
             id: listCollector
             onStreamFinished: {
-                root._parseEntries(listCollector.text);
-                root.loading = false;
+                root._parsedList = root._parseEntries(listCollector.text);
             }
         }
         onExited: function (exitCode, exitStatus) {
-            if (exitCode !== 0) {
-                root.loading = false;
+            if (exitCode === 0 && root._parsedList !== null) {
+                root.entries = root._parsedList;
             }
+            root._parsedList = null;
+            root.loading = false;
         }
     }
 }
