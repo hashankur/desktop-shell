@@ -13,7 +13,7 @@ import qs.config
 Item {
     id: root
 
-    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] : null
+    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] ?? null : null
     readonly property string artUrl: root.activePlayer && root.activePlayer.trackArtUrl ? root.activePlayer.trackArtUrl : ""
 
     implicitWidth: parent.width
@@ -37,6 +37,7 @@ Item {
                 source: root.artUrl
                 fillMode: Image.PreserveAspectCrop
                 retainWhileLoading: true
+                asynchronous: true
             }
 
             Rectangle {

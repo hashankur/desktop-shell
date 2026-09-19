@@ -11,7 +11,7 @@ Row {
     id: root
 
     // Get spotify player if available
-    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] : null
+    readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] ?? null : null
     readonly property bool isPlaying: root.activePlayer?.isPlaying ?? false
     spacing: 5
     visible: root.activePlayer !== null

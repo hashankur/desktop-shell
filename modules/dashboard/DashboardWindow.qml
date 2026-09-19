@@ -20,6 +20,7 @@ PanelWindow {
     visible: false
     color: "transparent"
     exclusiveZone: 0
+    focusable: true
     screen: Quickshell.screens[0]
 
     anchors.left: true
