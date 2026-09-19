@@ -68,7 +68,6 @@ Item {
             entryIndex: index
 
             onEntered: {
-                listView.currentIndex = index;
                 root.currentIndex = index;
             }
 
