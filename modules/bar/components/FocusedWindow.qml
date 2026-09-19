@@ -8,13 +8,39 @@ import qs.config
 import qs.services
 
 Row {
+    id: root
     spacing: 10
-    readonly property var hasIcon: Quickshell.iconPath(Niri.focusedWindow?.appId, true)
+    readonly property string appId: Niri.focusedWindow?.appId ?? ""
+    readonly property string iconName: root.desktopIconName(root.appId)
+    readonly property string symbolicSource: root.iconName !== "" ? Quickshell.iconPath(root.iconName + "-symbolic", true) : ""
+    readonly property string fullSource: root.iconName !== "" && root.symbolicSource === "" ? Quickshell.iconPath(root.iconName, true) : ""
+
+    function desktopIconName(appId) {
+        if (appId === "") {
+            return "user-desktop";
+        }
+        const apps = DesktopEntries.applications.values || [];
+        const lowerId = appId.toLowerCase();
+        for (let i = 0; i < apps.length; i++) {
+            const entryId = (apps[i].id || "").toLowerCase();
+            if ((entryId === lowerId || entryId === lowerId + ".desktop") && apps[i].icon) {
+                return apps[i].icon;
+            }
+        }
+        return appId;
+    }
 
     Icon {
-        source: (Niri.focusedWindow?.appId ?? "") !== "" ? Quickshell.iconPath(Niri.focusedWindow.appId) : ""
-        visible: hasIcon && (Niri.focusedWindow?.appId ?? "") !== ""
-        layer.enabled: false
+        source: root.symbolicSource
+        visible: root.symbolicSource !== ""
+    }
+
+    IconImage {
+        implicitSize: 16
+        anchors.verticalCenter: parent.verticalCenter
+        source: root.fullSource
+        visible: root.fullSource !== ""
+        smooth: true
     }
 
     StyledText {
