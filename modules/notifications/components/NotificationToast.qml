@@ -131,7 +131,10 @@ Item {
         content.opacity = 0;
         root.visible = false;
         if (root.notificationObject) {
-            root.notificationObject.dismiss();
+            try {
+                root.notificationObject.dismiss();
+            } catch (e) {
+            }
         }
         // The creator owns destruction; it reacts to `dismissed`.
         Qt.callLater(() => root.dismissed());

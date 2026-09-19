@@ -12,7 +12,6 @@ Singleton {
     property int maxHistory: 50
     property bool persistenceEnabled: true
     readonly property string persistencePath: Quickshell.env("HOME") + "/.config/quickshell/notifications.json"
-    property var pendingToasts: []
 
     signal toastQueued(var notification)
 
@@ -68,7 +67,6 @@ Singleton {
                 root.saveHistory();
             }
 
-            root.pendingToasts.push(notification);
             root.toastQueued(notification);
         }
     }
@@ -116,12 +114,6 @@ Singleton {
         } catch (e) {
             console.warn("No persisted notifications or failed to load:", e);
         }
-    }
-
-    function takePendingToasts() {
-        const queued = root.pendingToasts.slice();
-        root.pendingToasts = [];
-        return queued;
     }
 
     Component.onCompleted: {

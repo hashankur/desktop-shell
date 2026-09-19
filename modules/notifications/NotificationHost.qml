@@ -21,7 +21,9 @@ PanelWindow {
     margins.left: 18
     exclusiveZone: 0
 
-    visible: stack.visibleChildren.length > 0
+    visible: _toasts.length > 0
+
+    property var _toasts: []
 
     Component {
         id: toastComponent
@@ -51,15 +53,14 @@ PanelWindow {
         });
 
         if (obj) {
-            obj.dismissed.connect(() => obj.destroy());
+            _toasts = _toasts.concat(obj);
+            obj.dismissed.connect(() => removeToast(obj));
         }
     }
 
-    Component.onCompleted: {
-        const pending = Notifications.takePendingToasts();
-        for (let i = 0; i < pending.length; i++) {
-            pushToast(pending[i]);
-        }
+    function removeToast(obj) {
+        _toasts = _toasts.filter(toast => toast !== obj);
+        obj.destroy();
     }
 
     Connections {
