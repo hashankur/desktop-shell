@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 
 import qs.components
 import qs.config
@@ -32,6 +33,45 @@ Item {
             anchors.fill: parent
             anchors.margins: 10
             spacing: 15
+
+            ClippingRectangle {
+                id: iconArea
+                readonly property string imageSource: root.notificationData?.image ?? ""
+                readonly property string iconName: root.notificationData?.icon ?? ""
+                readonly property string resolvedImage: imageSource !== "" ? (imageSource.indexOf("://") >= 0 ? imageSource : "file://" + imageSource) : ""
+                readonly property bool showImage: imageSource !== "" && !imageLoadFailed
+                readonly property bool showIcon: !showImage && iconName !== ""
+
+                property bool imageLoadFailed: false
+
+                Layout.preferredWidth: 64
+                Layout.preferredHeight: 64
+                Layout.alignment: Qt.AlignVCenter
+                visible: showImage || showIcon
+                radius: Appearance.rounding.full
+                color: "transparent"
+
+                Image {
+                    anchors.fill: parent
+                    source: iconArea.resolvedImage
+                    visible: iconArea.showImage
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    asynchronous: true
+                    onStatusChanged: {
+                        if (status === Image.Error) {
+                            iconArea.imageLoadFailed = true;
+                        }
+                    }
+                }
+
+                IconImage {
+                    anchors.fill: parent
+                    source: iconArea.iconName !== "" ? Quickshell.iconPath(iconArea.iconName, true) : ""
+                    visible: iconArea.showIcon
+                    smooth: true
+                }
+            }
 
             ColumnLayout {
                 Layout.fillWidth: true

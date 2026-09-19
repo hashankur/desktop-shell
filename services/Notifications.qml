@@ -52,8 +52,8 @@ Singleton {
                 title: notification.summary || "",
                 body: notification.body || "",
                 app: notification.appName || "",
-                icon: notification.appIcon || "",
-                image: notification.image || "",
+                icon: root.resolveAppIcon(notification),
+                image: root.persistableImage(notification.image || ""),
                 timestamp: Date.now(),
                 id: notification.id
             };
@@ -100,6 +100,52 @@ Singleton {
         }
     }
 
+    function persistableImage(image) {
+        if (image.startsWith("image://qsimage/") || image.startsWith("image://qspixmap/")) {
+            return "";
+        }
+        return image;
+    }
+
+    function resolveAppIcon(notification) {
+        try {
+            if (notification.appIcon && notification.appIcon !== "") {
+                return notification.appIcon;
+            }
+            const entry = root.findDesktopEntry(notification);
+            if (entry && entry.icon) {
+                return entry.icon;
+            }
+        } catch (e) {
+            console.warn("Failed to resolve notification icon:", e);
+        }
+        return "";
+    }
+
+    function findDesktopEntry(notification) {
+        const apps = DesktopEntries.applications.values;
+        const hint = (notification.desktopEntry || "").toLowerCase();
+        if (hint !== "") {
+            for (let i = 0; i < apps.length; i++) {
+                if (apps[i].id && apps[i].id.toLowerCase() === hint) {
+                    return apps[i];
+                }
+            }
+        }
+        const appName = (notification.appName || "").toLowerCase().trim();
+        if (appName === "") {
+            return null;
+        }
+        for (let i = 0; i < apps.length; i++) {
+            const name = (apps[i].name || "").toLowerCase();
+            const id = (apps[i].id || "").toLowerCase();
+            if (name === appName || id === appName || id.startsWith(appName + "-") || id.startsWith(appName + ".") || name.split(" ")[0] === appName) {
+                return apps[i];
+            }
+        }
+        return null;
+    }
+
     function loadHistory() {
         try {
             if (historyFile.loaded) {
@@ -107,6 +153,14 @@ Singleton {
                 if (content && content.length > 0) {
                     const arr = JSON.parse(content);
                     for (let i = 0; i < arr.length; i++) {
+                        arr[i].image = root.persistableImage(arr[i].image || "");
+                        if (!arr[i].icon) {
+                            arr[i].icon = root.resolveAppIcon({
+                                appIcon: "",
+                                desktopEntry: "",
+                                appName: arr[i].app || ""
+                            });
+                        }
                         historyModelStore.append(arr[i]);
                     }
                 }

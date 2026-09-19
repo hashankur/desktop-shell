@@ -43,7 +43,7 @@ PanelWindow {
             notificationData: {
                 title: notification.summary || "",
                 body: notification.body || "",
-                icon: notification.appIcon || "",
+                icon: Notifications.resolveAppIcon(notification),
                 image: notification.image || "",
                 app: notification.appName || "",
                 timestamp: Date.now(),
