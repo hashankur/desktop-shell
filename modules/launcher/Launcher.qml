@@ -66,7 +66,7 @@ PanelWindow {
 
         root.activeData.refresh();
         root.activeData.reset();
-        searchField.text = "";
+        searchField.clear();
         root.updateResults("");
     }
 

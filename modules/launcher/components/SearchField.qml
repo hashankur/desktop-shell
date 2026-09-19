@@ -26,6 +26,10 @@ Item {
     implicitHeight: 48
     implicitWidth: 200
 
+    function clear() {
+        searchField.text = "";
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.full
@@ -55,7 +59,6 @@ Item {
             font.pixelSize: Appearance.fontSize.sm
             color: Appearance.colors.on_surface
             placeholderTextColor: Appearance.colors.on_surface_variant
-            text: root.text
             focus: true
             activeFocusOnTab: true
 
