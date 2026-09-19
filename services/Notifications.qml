@@ -4,7 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
-import qs.modules.notifications
 
 Singleton {
     id: root
@@ -71,10 +70,16 @@ Singleton {
         }
     }
 
+    Timer {
+        id: saveTimer
+        interval: 1000
+        onTriggered: root.writeHistory()
+    }
+
     function clearHistory() {
         historyModelStore.clear();
         if (root.persistenceEnabled) {
-            root.saveHistory();
+            root.writeHistory();
         }
     }
 
@@ -84,11 +89,15 @@ Singleton {
         }
         historyModelStore.remove(index);
         if (root.persistenceEnabled) {
-            root.saveHistory();
+            root.writeHistory();
         }
     }
 
     function saveHistory() {
+        saveTimer.restart();
+    }
+
+    function writeHistory() {
         try {
             const arr = [];
             for (let i = 0; i < historyModelStore.count; i++) {
@@ -122,28 +131,39 @@ Singleton {
         return "";
     }
 
+    property var _desktopEntryCache: ({})
+
     function findDesktopEntry(notification) {
-        const apps = DesktopEntries.applications.values;
         const hint = (notification.desktopEntry || "").toLowerCase();
-        if (hint !== "") {
-            for (let i = 0; i < apps.length; i++) {
-                if (apps[i].id && apps[i].id.toLowerCase() === hint) {
-                    return apps[i];
+        const appName = (notification.appName || "").toLowerCase().trim();
+        const key = hint + "\n" + appName;
+        if (key in root._desktopEntryCache) {
+            return root._desktopEntryCache[key];
+        }
+        const apps = DesktopEntries.applications.values || [];
+        let found = null;
+        if (apps.length > 0) {
+            if (hint !== "") {
+                for (let i = 0; i < apps.length; i++) {
+                    if (apps[i].id && apps[i].id.toLowerCase() === hint) {
+                        found = apps[i];
+                        break;
+                    }
                 }
             }
-        }
-        const appName = (notification.appName || "").toLowerCase().trim();
-        if (appName === "") {
-            return null;
-        }
-        for (let i = 0; i < apps.length; i++) {
-            const name = (apps[i].name || "").toLowerCase();
-            const id = (apps[i].id || "").toLowerCase();
-            if (name === appName || id === appName || id.startsWith(appName + "-") || id.startsWith(appName + ".") || name.split(" ")[0] === appName) {
-                return apps[i];
+            if (found === null && appName !== "") {
+                for (let i = 0; i < apps.length; i++) {
+                    const name = (apps[i].name || "").toLowerCase();
+                    const id = (apps[i].id || "").toLowerCase();
+                    if (name === appName || id === appName || id.startsWith(appName + "-") || id.startsWith(appName + ".") || name.split(" ")[0] === appName) {
+                        found = apps[i];
+                        break;
+                    }
+                }
             }
+            root._desktopEntryCache[key] = found;
         }
-        return null;
+        return found;
     }
 
     function loadHistory() {
