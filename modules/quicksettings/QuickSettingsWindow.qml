@@ -167,7 +167,7 @@ PanelWindow {
 
                 QSComponents.ToggleTile {
                     Layout.fillWidth: true
-                    iconSource: Notifications.dnd ? Quickshell.iconPath("notifications-disabled-symbolic", true) : Quickshell.iconPath("notifications-symbolic", true)
+                    iconSource: Notifications.dnd ? Quickshell.iconPath("notifications-disabled-symbolic", true) : Quickshell.iconPath("preferences-system-notifications-symbolic", true)
                     label: "DND"
                     checked: Notifications.dnd
                     onClicked: Notifications.dnd = !Notifications.dnd
