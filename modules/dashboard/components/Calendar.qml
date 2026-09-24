@@ -15,9 +15,6 @@ Item {
     property int month: (new Date()).getMonth()
     property int year: (new Date()).getFullYear()
 
-    implicitWidth: 400
-    implicitHeight: 500
-
     function previousMonth() {
         if (root.month === 0) {
             root.month = 11;
@@ -36,102 +33,105 @@ Item {
         }
     }
 
-    Rectangle {
+    function goToToday() {
+        const now = new Date();
+        root.month = now.getMonth();
+        root.year = now.getFullYear();
+    }
+
+    ColumnLayout {
         anchors.fill: parent
-        radius: Appearance.rounding.large
-        color: "transparent"
+        anchors.margins: Appearance.padding.large
+        spacing: Appearance.spacing.normal
+
+        RowLayout {
+            Layout.fillWidth: true
+
+            StyledText {
+                text: new Date(root.year, root.month, 1).toLocaleString(Qt.locale(), "MMMM yyyy")
+                color: Appearance.colors.primary
+                font.pixelSize: Appearance.fontSize.xxl
+                font.weight: Font.Bold
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            StyledButton {
+                ghost: true
+                text: "Today"
+                padding: Appearance.padding.smaller
+                verticalPadding: Appearance.padding.smaller
+                onClicked: root.goToToday()
+            }
+
+            StyledButton {
+                ghost: true
+                padding: Appearance.padding.smaller
+                verticalPadding: Appearance.padding.smaller
+                contentItem: Icon {
+                    source: Quickshell.iconPath("go-previous-symbolic")
+                    opacity: enabled ? 1 : 0.3
+                }
+                onClicked: root.previousMonth()
+            }
+
+            StyledButton {
+                ghost: true
+                padding: Appearance.padding.smaller
+                verticalPadding: Appearance.padding.smaller
+                contentItem: Icon {
+                    source: Quickshell.iconPath("go-next-symbolic")
+                    opacity: enabled ? 1 : 0.3
+                }
+                onClicked: root.nextMonth()
+            }
+        }
 
         ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Appearance.padding.large
-            spacing: Appearance.spacing.normal
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            RowLayout {
+            DayOfWeekRow {
+                locale: Qt.locale()
                 Layout.fillWidth: true
 
-                Text {
-                    text: new Date(root.year, root.month, 1).toLocaleString(Qt.locale(), "MMMM yyyy")
-                    color: Appearance.colors.primary
-                    font.family: Appearance.font.sans
-                    font.pixelSize: Appearance.fontSize.xxl
-                    font.weight: Font.Bold
-                }
+                delegate: StyledText {
+                    required property string shortName
 
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Button {
-                    contentItem: Icon {
-                        source: Quickshell.iconPath("go-previous-symbolic")
-                    }
-                    background: Rectangle {
-                        implicitWidth: 30
-                        implicitHeight: 30
-                        radius: 100
-                        color: "transparent"
-                    }
-                    onClicked: root.previousMonth()
-                }
-
-                Button {
-                    contentItem: Icon {
-                        source: Quickshell.iconPath("go-next-symbolic")
-                    }
-                    background: Rectangle {
-                        implicitWidth: 30
-                        implicitHeight: 30
-                        radius: 100
-                        color: "transparent"
-                    }
-                    onClicked: root.nextMonth()
+                    text: shortName
+                    color: Appearance.colors.on_surface
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    padding: 10
                 }
             }
 
-            ColumnLayout {
+            MonthGrid {
+                id: monthGrid
+                month: root.month
+                year: root.year
+                locale: Qt.locale()
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                DayOfWeekRow {
-                    locale: Qt.locale()
-                    Layout.fillWidth: true
+                delegate: Rectangle {
+                    id: dayCard
+                    required property var model
+                    readonly property var dayData: model
+                    readonly property string dayLabel: monthGrid.locale.toString(dayData.date, "d")
+                    readonly property color dayTextColor: dayData.month === monthGrid.month ? Appearance.colors.on_surface : Appearance.colors.on_surface_variant
+                    readonly property color dayBackgroundColor: dayData.today ? Appearance.colors.surface_container_high : "transparent"
 
-                    delegate: StyledText {
-                        required property string shortName
+                    radius: Appearance.rounding.full
+                    color: dayBackgroundColor
 
-                        text: shortName
-                        color: Appearance.colors.on_surface
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        padding: 10
-                    }
-                }
-
-                MonthGrid {
-                    id: monthGrid
-                    month: root.month
-                    year: root.year
-                    locale: Qt.locale()
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-
-                    delegate: Rectangle {
-                        id: dayCard
-                        required property var model
-                        readonly property var dayData: model
-                        readonly property string dayLabel: monthGrid.locale.toString(dayData.date, "d")
-                        readonly property color dayTextColor: dayData.month === monthGrid.month ? Appearance.colors.on_surface : Appearance.colors.on_surface_variant
-                        readonly property color dayBackgroundColor: dayData.today ? Appearance.colors.surface_container_high : "transparent"
-
-                        radius: Appearance.rounding.full
-                        color: dayBackgroundColor
-
-                        StyledText {
-                            anchors.centerIn: parent
-                            text: dayCard.dayLabel
-                            color: dayCard.dayTextColor
-                            font.pixelSize: Appearance.fontSize.sm
-                        }
+                    StyledText {
+                        anchors.centerIn: parent
+                        text: dayCard.dayLabel
+                        color: dayCard.dayTextColor
+                        font.pixelSize: Appearance.fontSize.sm
                     }
                 }
             }

@@ -31,15 +31,19 @@ PanelWindow {
     IpcHandler {
         target: "dashboard"
 
-        function toggle() {
+        function toggle(): void {
             Dashboard.toggle();
         }
 
-        function open() {
+        function open(): void {
             Dashboard.open();
         }
 
-        function close() {
+        function openView(view: string): void {
+            Dashboard.open(view);
+        }
+
+        function close(): void {
             Dashboard.close();
         }
     }
@@ -97,6 +101,11 @@ PanelWindow {
                     }
 
                     StyledTabButton {
+                        text: "System"
+                        onClicked: root.openView("system")
+                    }
+
+                    StyledTabButton {
                         text: "Media"
                         onClicked: root.openView("mpris")
                     }
@@ -128,9 +137,14 @@ PanelWindow {
                     }
 
                     Item {
+                        DashboardComponents.SystemOverview {
+                            anchors.fill: parent
+                        }
+                    }
+
+                    Item {
                         DashboardComponents.Mpris {
-                            anchors.centerIn: parent
-                            width: parent.width
+                            anchors.fill: parent
                         }
                     }
                 }
@@ -139,14 +153,20 @@ PanelWindow {
     }
 
     function viewIndexFor(viewName) {
-        return viewName === "mpris" ? 1 : 0;
+        if (viewName === "system")
+            return 1;
+        if (viewName === "mpris")
+            return 2;
+        return 0;
     }
 
     function applyView(viewName) {
-        var normalizedView = viewName === "mpris" ? "mpris" : "overview";
+        var normalizedView = Dashboard.normalizeView(viewName);
         // tabBar.currentIndex is the single source of truth; viewStack
-        // and tab highlighting derive from it via bindings.
+        // and tab highlighting derive from it via bindings. Keep the
+        // service's requestedView in sync so view-aware toggle works.
         tabBar.currentIndex = viewIndexFor(normalizedView);
+        Dashboard.syncView(normalizedView);
     }
 
     function openView(viewName) {

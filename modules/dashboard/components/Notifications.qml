@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 import qs.components
@@ -11,44 +12,68 @@ import "../../notifications/components"
 Item {
     id: root
 
-    implicitWidth: 470
-    implicitHeight: 520
-
-    Rectangle {
+    ColumnLayout {
         anchors.fill: parent
-        radius: Appearance.rounding.large
-        color: "transparent"
+        anchors.margins: Appearance.padding.large
+        spacing: Appearance.spacing.normal
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Appearance.padding.large
-            spacing: Appearance.spacing.normal
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Appearance.spacing.small
 
-            RowLayout {
-                Layout.fillWidth: true
+            StyledText {
+                text: "Notifications"
+                font.pixelSize: Appearance.fontSize.lg
+            }
+
+            StyledText {
+                visible: Notifications.historyModel.count > 0
+                text: `(${Notifications.historyModel.count})`
+                color: Appearance.colors.on_surface_variant
+                font.pixelSize: Appearance.fontSize.sm
+            }
+
+            Rectangle {
+                visible: Notifications.dnd
+                radius: Appearance.rounding.full
+                color: Appearance.colors.primary_container
+                implicitHeight: 22
+                implicitWidth: dndLabel.implicitWidth + Appearance.padding.small * 2
 
                 StyledText {
-                    text: "Notifications"
-                    font.pixelSize: Appearance.fontSize.lg
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                StyledButton {
-                    text: "Clear all"
-                    onClicked: Notifications.clearHistory()
+                    id: dndLabel
+                    anchors.centerIn: parent
+                    text: "DND"
+                    color: Appearance.colors.on_primary_container
+                    font.pixelSize: Appearance.fontSize.xs
+                    font.weight: Font.DemiBold
                 }
             }
 
+            Item {
+                Layout.fillWidth: true
+            }
+
+            StyledButton {
+                visible: Notifications.historyModel.count > 0
+                text: "Clear all"
+                onClicked: Notifications.clearHistory()
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
             ListView {
                 id: listView
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                anchors.fill: parent
                 clip: true
                 spacing: Appearance.spacing.small
                 model: Notifications.historyModel
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
 
                 delegate: Item {
                     id: delegateRoot
@@ -63,9 +88,18 @@ Item {
                         anchors.fill: parent
                         notificationData: delegateRoot.model
                         autoHideEnabled: false
+                        allowMultilineBody: true
                         onDismissed: Notifications.removeHistory(delegateRoot.index)
                     }
                 }
+            }
+
+            StyledText {
+                anchors.centerIn: parent
+                visible: Notifications.historyModel.count === 0
+                text: "No notifications yet"
+                color: Appearance.colors.on_surface_variant
+                font.pixelSize: Appearance.fontSize.sm
             }
         }
     }

@@ -15,7 +15,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **Top bar**: per-screen, with Niri workspace strip, CPU/RAM/GPU/temp rings, focused window, clock, media, system tray, WiFi, battery, power button
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
-- **Dashboard**: tabbed overlay with calendar, notification history
+- **Dashboard**: tabbed overlay with calendar, notification history, system stats + battery, and media controls
 - **Notifications**: dismiss, click-to-invoke actions
 - **OSD**: volume and brightness (pill-shaped overlays)
 - **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup — destructive actions ask for confirmation
@@ -59,7 +59,7 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call clipboard toggle
 # Toggle power menu (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 
-# Toggle dashboard (also: open, close)
+# Toggle dashboard (also: open, close); jump to a tab with: openView overview|system|mpris
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
 ```
 

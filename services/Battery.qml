@@ -11,6 +11,7 @@ Singleton {
     property bool available: device?.isLaptopBattery ?? false
     property var chargeState: device?.state ?? UPowerDeviceState.Unknown
     property bool isCharging: chargeState == UPowerDeviceState.Charging
+    property bool isFullyCharged: chargeState == UPowerDeviceState.FullyCharged
     property bool isPluggedIn: isCharging || chargeState == UPowerDeviceState.PendingCharge
     property real percentage: device?.percentage ?? 1
 

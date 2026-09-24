@@ -15,12 +15,19 @@ Singleton {
         case "mpris":
         case "music":
             return "mpris";
+        case "system":
+        case "stats":
+            return "system";
         case "calendar":
         case "notifications":
         case "overview":
         default:
             return "overview";
         }
+    }
+
+    function syncView(viewName) {
+        requestedView = normalizeView(viewName);
     }
 
     function setWindow(window) {
@@ -43,10 +50,21 @@ Singleton {
     }
 
     function toggle(viewName) {
-        if (requestedVisible) {
+        if (!viewName) {
+            // No view requested (IPC toggle): plain open/close.
+            if (requestedVisible)
+                close();
+            else
+                open("overview");
+            return;
+        }
+        // View-aware: switching to the already-open view closes; requesting
+        // another view switches tabs instead of dismissing the overlay.
+        const target = normalizeView(viewName);
+        if (requestedVisible && target === requestedView) {
             close();
         } else {
-            open(viewName);
+            open(target);
         }
     }
 

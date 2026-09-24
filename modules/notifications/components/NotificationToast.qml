@@ -12,6 +12,8 @@ Item {
     property var notificationObject: null
     property int autoHideTimeout: notificationData?.timeout > 0 ? notificationData.timeout : 4000
     property bool autoHideEnabled: true
+    // History rows in the dashboard allow a second body line; live toasts stay single-line.
+    property bool allowMultilineBody: false
     property bool _dismissed: false
 
     signal dismissed
@@ -107,7 +109,7 @@ Item {
                     }
 
                     StyledText {
-                        text: Qt.formatDateTime(new Date(root.notificationData?.timestamp || Date.now()), "MMM d")
+                        text: Qt.formatDateTime(new Date(root.notificationData?.timestamp || Date.now()), "MMM d · h:mm AP")
                         color: Appearance.colors.on_surface_variant
                         font.pixelSize: Appearance.fontSize.xs
                         Layout.alignment: Qt.AlignRight
@@ -144,7 +146,7 @@ Item {
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    maximumLineCount: 1
+                    maximumLineCount: root.allowMultilineBody ? 2 : 1
                 }
             }
         }
