@@ -91,7 +91,7 @@ PanelWindow {
         // A fresh array reference forces the ListView to reload; assigning
         // the same (mutated) array is deduped and thumbnails never appear.
         resultsList.model = entries.slice();
-        resultsList.hasItems = entries.length > 0 && (root.mode === "clipboard" || searchField.text.trim().length > 0);
+        resultsList.hasItems = entries.length > 0;
         if (resetSelection) {
             resultsList.currentIndex = entries.length > 0 ? 0 : -1;
         } else if (resultsList.currentIndex >= entries.length) {
@@ -220,9 +220,22 @@ PanelWindow {
                 entryHeight: root.activeData.entryHeight
                 entrySpacing: root.entrySpacing
                 maxVisibleEntries: root.activeData.maxVisibleEntries
+                pinsEnabled: root.mode === "apps"
 
                 onItemClicked: function (index) {
                     root.activateAtIndex(index);
+                }
+
+                onPinToggled: function (desktopId) {
+                    AppLibrary.togglePin(desktopId);
+                    root.updateResults(searchField.text);
+                    // Pinning reorders the list; keep selection on the same app.
+                    for (var i = 0; i < root.activeData.foundEntries.length; i++) {
+                        if (root.activeData.foundEntries[i]._desktopId === desktopId) {
+                            resultsList.currentIndex = i;
+                            break;
+                        }
+                    }
                 }
             }
         }

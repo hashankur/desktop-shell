@@ -17,10 +17,13 @@ Rectangle {
   property string thumbnailSource: ""
   property string hintText: ""
   property bool isCurrent: false
+  property bool pinned: false
+  property bool pinEnabled: false
   property int entryIndex: 0
 
-    signal clicked()
-    signal entered()
+  signal clicked()
+  signal entered()
+  signal pinClicked()
 
     width: parent?.width ?? 0
     height: 64
@@ -31,6 +34,16 @@ Rectangle {
     ColorAnimation {
       duration: 120
     }
+  }
+
+  // Declared before the row layout: text/icon pass clicks through to it,
+  // while the pin button (inside the layout) sits above and wins hit-testing.
+  MouseArea {
+    id: rowMouse
+    anchors.fill: parent
+    hoverEnabled: true
+    onEntered: root.entered()
+    onClicked: root.clicked()
   }
 
   RowLayout {
@@ -103,12 +116,24 @@ Rectangle {
       horizontalAlignment: Text.AlignRight
       visible: text.length > 0
     }
-  }
 
-  MouseArea {
-    anchors.fill: parent
-    hoverEnabled: true
-    onEntered: root.entered()
-    onClicked: root.clicked()
+    Item {
+      id: pinArea
+      Layout.preferredWidth: 20
+      Layout.preferredHeight: 20
+      Layout.alignment: Qt.AlignVCenter
+      visible: root.pinEnabled && (root.pinned || rowMouse.containsMouse)
+
+      IconImage {
+        anchors.fill: parent
+        source: root.pinned ? Qt.resolvedUrl("../../../assets/pin-filled.svg") : Qt.resolvedUrl("../../../assets/pin.svg")
+        smooth: true
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: root.pinClicked()
+      }
+    }
   }
 }

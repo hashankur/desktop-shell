@@ -16,9 +16,11 @@ Item {
     property int entrySpacing: 4
     property int maxVisibleEntries: 5
     property bool hasItems: false
+    property bool pinsEnabled: false
     property int maxHeight: 480
 
     signal itemClicked(int index)
+    signal pinToggled(var desktopId)
 
     readonly property int entriesCount: root.model.length
     readonly property int listHeight: entriesCount > 0 ? (entriesCount * entryHeight + (entriesCount - 1) * entrySpacing) : 0
@@ -66,6 +68,8 @@ Item {
             hintText: (index < root.maxVisibleEntries) ? ("Alt + " + (index + 1)) : ""
             isCurrent: index === root.currentIndex
             entryIndex: index
+            pinned: modelData._pinned ?? false
+            pinEnabled: root.pinsEnabled
 
             onEntered: {
                 root.currentIndex = index;
@@ -73,6 +77,10 @@ Item {
 
             onClicked: {
                 root.itemClicked(index);
+            }
+
+            onPinClicked: {
+                root.pinToggled(modelData._desktopId);
             }
         }
     }

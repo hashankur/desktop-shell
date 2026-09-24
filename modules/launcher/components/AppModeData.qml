@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 
 import qs.config
+import qs.services
 import "FuzzyMatcher.js" as Fuzzy
 
 QtObject {
@@ -20,10 +21,26 @@ QtObject {
     function refresh() {
     }
 
+    function _toDisplayEntry(app) {
+        return {
+            primaryText: app.name,
+            secondaryText: app.comment ?? app.name,
+            iconSource: app.icon ?? "",
+            thumbnailSource: "",
+            hintText: "",
+            _desktopEntry: app,
+            _desktopId: app.id ?? "",
+            _pinned: AppLibrary.isPinned(app.id ?? "")
+        };
+    }
+
     function filter(query) {
         var trimmed = query.toLowerCase().trim();
         if (trimmed === "") {
-            root.foundEntries = [];
+            // Empty query: pinned apps first, then recents.
+            root.foundEntries = AppLibrary.pinnedEntries().concat(AppLibrary.recentEntries()).map(function (app) {
+                return root._toDisplayEntry(app);
+            });
             return;
         }
         var all = DesktopEntries.applications.values;
@@ -45,21 +62,16 @@ QtObject {
         });
         var filtered = scored.slice(0, root.maxVisibleEntries);
         root.foundEntries = filtered.map(function (item) {
-            return {
-                primaryText: item.app.name,
-                secondaryText: item.app.comment ?? item.app.name,
-                iconSource: item.app.icon ?? "",
-                thumbnailSource: "",
-                hintText: "",
-                _desktopEntry: item.app
-            };
+            return root._toDisplayEntry(item.app);
         });
     }
 
     function activate(index) {
         if (index < 0 || index >= root.foundEntries.length)
             return;
-        root.foundEntries[index]._desktopEntry.execute();
+        const entry = root.foundEntries[index];
+        AppLibrary.recordLaunch(entry._desktopId);
+        entry._desktopEntry.execute();
     }
 
     function reset() {
