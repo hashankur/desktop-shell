@@ -23,6 +23,17 @@ Singleton {
     property int maxBrightness: 255
     property int prevBrightness: -1
 
+    // Write via brightnessctl (sysfs is not writable as the session user);
+    // the FileView watcher above picks the change up and updates `brightness`
+    // plus the brightness OSD automatically.
+    function setBrightness(value) {
+        if (!root.available || root._backlightDir === "")
+            return;
+        const v = Math.max(0, Math.min(1, value));
+        const device = root._backlightDir.split("/").pop();
+        Quickshell.execDetached(["brightnessctl", "--device", device, "set", Math.round(v * 100) + "%"]);
+    }
+
     // Discover backlight device at startup
     Process {
         id: discoverProc

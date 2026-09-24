@@ -12,6 +12,15 @@ Singleton {
     readonly property int signal: root.activeNetwork ? Math.round((root.activeNetwork.signalStrength || 0) * 100) : 0
     readonly property string ssid: root.activeNetwork ? (root.activeNetwork.name || "") : ""
 
+    // Control (native NetworkManager backend via Quickshell.Networking —
+    // never shell out to nmcli).
+    readonly property bool wifiEnabled: Networking.wifiEnabled
+    readonly property bool wifiHardwareEnabled: Networking.wifiHardwareEnabled
+
+    function toggleWifi() {
+        Networking.wifiEnabled = !Networking.wifiEnabled;
+    }
+
     // Computed properties that always reflect current system state
     readonly property var wifiDevice: {
         var devices = Networking.devices.values || []

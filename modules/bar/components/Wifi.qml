@@ -44,4 +44,10 @@ TooltipArea {
     Icon {
         source: Quickshell.iconPath(iconName(), true)
     }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: QuickSettings.toggle()
+    }
 }

@@ -11,6 +11,7 @@ import qs.modules.notifications
 import qs.modules.osd
 import qs.modules.dashboard
 import qs.modules.powermenu
+import qs.modules.quicksettings
 import qs.services
 
 ShellRoot {
@@ -29,4 +30,6 @@ ShellRoot {
     DashboardWindow {}
 
     PowerMenu {}
+
+    QuickSettingsWindow {}
 }

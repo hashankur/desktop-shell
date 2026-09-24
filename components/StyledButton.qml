@@ -20,6 +20,7 @@ Button {
 
     contentItem: StyledText {
         text: control.text
+        color: control.checked ? Appearance.colors.on_primary_container : Appearance.colors.on_surface
         font.pixelSize: Appearance.fontSize.sm
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -29,8 +30,14 @@ Button {
     background: Rectangle {
         visible: !control.ghost
         radius: Appearance.rounding.normal
-        color: (control.hovered || control.down) ? Appearance.colors.surface_container_high : Appearance.colors.surface_container
-        border.color: control.hovered ? Appearance.colors.outline_variant : "transparent"
+        color: {
+            if (control.checked)
+                return Appearance.colors.primary_container;
+            if (control.hovered || control.down)
+                return Appearance.colors.surface_container_high;
+            return Appearance.colors.surface_container;
+        }
+        border.color: control.checked ? Appearance.colors.primary : (control.hovered ? Appearance.colors.outline_variant : "transparent")
         border.width: 1
 
         Behavior on color {
