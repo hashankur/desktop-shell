@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Widgets
 
@@ -114,18 +113,19 @@ Item {
                         Layout.alignment: Qt.AlignRight
                     }
 
-                    Button {
+                    StyledButton {
+                        ghost: true
                         text: "×"
-                        onClicked: root.dismiss()
-                        background: Rectangle {
-                            color: "transparent"
-                        }
-                        contentItem: Text {
+                        padding: Appearance.padding.smaller
+                        verticalPadding: Appearance.padding.smaller
+                        contentItem: StyledText {
                             text: "×"
                             color: Appearance.colors.on_surface_variant
-                            font.pixelSize: 14
+                            font.pixelSize: Appearance.fontSize.sm
                             horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
+                        onClicked: root.dismiss()
                     }
                 }
 

@@ -9,6 +9,7 @@ import qs.services
 
 TooltipArea {
     id: root
+    visible: Battery.available
     implicitWidth: 16 * 2
     implicitHeight: 16
 

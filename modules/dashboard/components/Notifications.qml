@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
 import qs.components
@@ -37,7 +36,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                Button {
+                StyledButton {
                     text: "Clear all"
                     onClicked: Notifications.clearHistory()
                 }

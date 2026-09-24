@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Mpris
@@ -91,7 +90,7 @@ Item {
                 Layout.fillHeight: true
             }
 
-            Button {
+            StyledButton {
                 text: root.activePlayer && root.activePlayer.isPlaying ? "Pause" : "Play"
                 enabled: root.activePlayer !== null
                 onClicked: {

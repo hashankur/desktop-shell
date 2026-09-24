@@ -24,6 +24,23 @@ PanelWindow {
     focusable: true
     color: "transparent"
 
+    // Pending destructive action awaiting confirmation ("" = idle).
+    property string pendingAction: ""
+    readonly property string pendingActionLabel: {
+        switch (pendingAction) {
+        case "shutdown": return "shut down";
+        case "restart": return "restart";
+        case "suspend": return "suspend";
+        case "firmware": return "reboot into firmware setup";
+        default: return pendingAction;
+        }
+    }
+
+    onVisibleChanged: {
+        if (visible)
+            root.pendingAction = "";
+    }
+
     Component.onCompleted: Session.setWindow(root)
 
     function shutdown() {
@@ -41,9 +58,53 @@ PanelWindow {
         Quickshell.execDetached(["systemctl", "suspend"]);
     }
 
+    function lock() {
+        Session.close();
+        Quickshell.execDetached(["sh", "-c", "pidof hyprlock || hyprlock"]);
+    }
+
     function logout() {
         Session.close();
         Quickshell.execDetached(["niri", "msg", "action", "quit"]);
+    }
+
+    function firmwareSetup() {
+        Session.close();
+        Quickshell.execDetached(["systemctl", "reboot", "--firmware-setup"]);
+    }
+
+    // Destructive / system-state actions ask first; reversible ones
+    // (lock, logout) run immediately.
+    function requestAction(name) {
+        switch (name) {
+        case "shutdown":
+        case "restart":
+        case "suspend":
+        case "firmware":
+            root.pendingAction = name;
+            break;
+        case "lock":
+            lock();
+            break;
+        case "logout":
+            logout();
+            break;
+        }
+    }
+
+    function confirmAction() {
+        const action = root.pendingAction;
+        root.pendingAction = "";
+        switch (action) {
+        case "shutdown": shutdown(); break;
+        case "restart": restart(); break;
+        case "suspend": suspend(); break;
+        case "firmware": firmwareSetup(); break;
+        }
+    }
+
+    function cancelAction() {
+        root.pendingAction = "";
     }
 
     IpcHandler {
@@ -67,7 +128,13 @@ PanelWindow {
         anchors.fill: parent
         focus: true
 
-        Keys.onEscapePressed: Session.close()
+        Keys.onEscapePressed: {
+            if (root.pendingAction !== "") {
+                root.cancelAction();
+            } else {
+                Session.close();
+            }
+        }
 
         // Click on transparent background to dismiss
         MouseArea {
@@ -98,37 +165,81 @@ PanelWindow {
                 spacing: Appearance.spacing.large
 
                 GridLayout {
-                    columns: 4
+                    columns: 3
                     columnSpacing: Appearance.spacing.normal
                     rowSpacing: Appearance.spacing.normal
+                    Layout.fillWidth: true
                     Layout.alignment: Qt.AlignHCenter
+                    visible: root.pendingAction === ""
 
                     PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
                         iconSource: Quickshell.iconPath("system-shutdown-symbolic")
                         label: "Shutdown"
-                        iconColor: Appearance.colors.error
-                        onClicked: root.shutdown()
+                        onClicked: root.requestAction("shutdown")
                     }
 
                     PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
                         iconSource: Quickshell.iconPath("system-reboot-symbolic")
                         label: "Restart"
-                        iconColor: Appearance.colors.error
-                        onClicked: root.restart()
+                        onClicked: root.requestAction("restart")
                     }
 
                     PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
                         iconSource: Quickshell.iconPath("weather-clear-night-symbolic")
                         label: "Suspend"
-                        iconColor: Appearance.colors.primary
-                        onClicked: root.suspend()
+                        onClicked: root.requestAction("suspend")
                     }
 
                     PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
+                        iconSource: Quickshell.iconPath("system-lock-screen-symbolic")
+                        label: "Lock"
+                        onClicked: root.requestAction("lock")
+                    }
+
+                    PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
                         iconSource: Quickshell.iconPath("system-log-out-symbolic")
                         label: "Logout"
-                        iconColor: Appearance.colors.primary
-                        onClicked: root.logout()
+                        onClicked: root.requestAction("logout")
+                    }
+
+                    PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
+                        iconSource: Quickshell.iconPath("preferences-system-symbolic")
+                        label: "Firmware"
+                        onClicked: root.requestAction("firmware")
+                    }
+                }
+
+                // Confirmation state for destructive actions
+                ColumnLayout {
+                    visible: root.pendingAction !== ""
+                    spacing: Appearance.spacing.normal
+                    Layout.alignment: Qt.AlignHCenter
+
+                    StyledText {
+                        text: "Are you sure you want to " + root.pendingActionLabel + "?"
+                        font.pixelSize: Appearance.fontSize.lg
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    RowLayout {
+                        spacing: Appearance.spacing.normal
+                        Layout.alignment: Qt.AlignHCenter
+
+                        StyledButton {
+                            text: "Yes"
+                            onClicked: root.confirmAction()
+                        }
+
+                        StyledButton {
+                            text: "Cancel"
+                            onClicked: root.cancelAction()
+                        }
                     }
                 }
             }

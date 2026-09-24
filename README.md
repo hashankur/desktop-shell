@@ -18,7 +18,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **Dashboard**: tabbed overlay with calendar, notification history
 - **Notifications**: dismiss, click-to-invoke actions
 - **OSD**: volume and brightness (pill-shaped overlays)
-- **Power menu**: shutdown, restart, suspend, logout with fullscreen overlay
+- **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup — destructive actions ask for confirmation
 
 ## Requirements
 
