@@ -6,6 +6,7 @@ import Quickshell.Widgets
 
 import qs.components
 import qs.config
+import qs.services
 
 /**
  * Generic OSD component that displays a progress indicator with an icon
@@ -57,6 +58,7 @@ Scope {
 
         PanelWindow {
             anchors.bottom: true
+            screen: Niri.focusedScreen
             margins.bottom: screen.height / 10
             exclusiveZone: 0
 

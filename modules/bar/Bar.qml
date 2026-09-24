@@ -29,6 +29,7 @@ Scope {
 
             Workspaces {
                 id: rectanglesRow
+                outputName: barWindow.modelData.name
             }
 
             RowLayout {
@@ -86,6 +87,8 @@ Scope {
                         SystemTray {
                             anchors.verticalCenter: parent.verticalCenter
                             parentWindow: barWindow
+                            // Tray lives on the primary output only.
+                            activeOnScreen: barWindow.modelData.name === (Quickshell.screens[0]?.name ?? "")
                         }
 
                         Wifi {

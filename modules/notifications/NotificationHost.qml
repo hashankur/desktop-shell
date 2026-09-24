@@ -12,7 +12,7 @@ PanelWindow {
     implicitWidth: 400
     implicitHeight: stack.implicitHeight
     focusable: false
-    screen: Quickshell.screens[0]
+    screen: Niri.focusedScreen
     anchors.top: true
     anchors.right: true
     margins.top: 18

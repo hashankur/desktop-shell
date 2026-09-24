@@ -21,7 +21,7 @@ PanelWindow {
     exclusiveZone: 0
     focusable: true
     aboveWindows: true
-    screen: Quickshell.screens[0]
+    screen: Niri.focusedScreen
 
     anchors.left: true
     anchors.right: true

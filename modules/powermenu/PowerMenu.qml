@@ -14,6 +14,7 @@ PanelWindow {
     id: root
 
     visible: false
+    screen: Niri.focusedScreen
     anchors {
         left: true
         right: true

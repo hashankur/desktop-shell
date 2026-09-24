@@ -15,11 +15,13 @@ Row {
 
     property var parentWindow
     property var currentMenu: null
+    // Controlled by the bar: false hides the tray on non-primary outputs.
+    property bool activeOnScreen: true
 
     readonly property int trayCount: SystemTray.items.values ? SystemTray.items.values.length : 0
 
     spacing: 20
-    visible: root.trayCount > 0
+    visible: root.trayCount > 0 && root.activeOnScreen
 
     Repeater {
         model: SystemTray.items.values
