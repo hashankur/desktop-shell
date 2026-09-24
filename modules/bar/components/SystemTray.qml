@@ -80,12 +80,24 @@ Row {
                                 props.screen = root.parentWindow.screen;
 
                             var menu = trayMenuComponent.createObject(root, props);
+                            if (!menu) {
+                                console.warn("SystemTray: failed to create tray menu");
+                                return;
+                            }
                             root.currentMenu = menu;
                             menu.setPosition(Math.round(mappedPoint.x), Math.round(mappedPoint.y));
                             menu.visible = true;
                             menu.itemTriggered.connect(() => {
                                 menu.closeAll();
                                 root.currentMenu = null;
+                            });
+                            // The menu destroys itself when hidden; clear the
+                            // reference so the next open doesn't touch a
+                            // destroyed object. (`destroyed` isn't visible to
+                            // QML JS, so the menu announces it itself.)
+                            menu.willDestroy.connect(() => {
+                                if (root.currentMenu === menu)
+                                    root.currentMenu = null;
                             });
                         } else {
                             trayItemRoot.trayItem.secondaryActivate();

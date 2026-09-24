@@ -24,6 +24,7 @@ PanelWindow {
     visible: _toasts.length > 0
 
     property var _toasts: []
+    readonly property int maxToasts: 5
 
     Component {
         id: toastComponent
@@ -52,9 +53,19 @@ PanelWindow {
             notificationObject: notification
         });
 
-        if (obj) {
-            _toasts = _toasts.concat(obj);
-            obj.dismissed.connect(() => removeToast(obj));
+        if (!obj) {
+            // Creation failed — release the notification so it isn't
+            // retained forever with tracked = true.
+            console.warn("Failed to create notification toast");
+            notification.dismiss();
+            return;
+        }
+
+        _toasts = _toasts.concat(obj);
+        obj.dismissed.connect(() => removeToast(obj));
+
+        while (_toasts.length > maxToasts) {
+            removeToast(_toasts[0]);
         }
     }
 

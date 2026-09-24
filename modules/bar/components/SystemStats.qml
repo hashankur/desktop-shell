@@ -27,12 +27,14 @@ Item {
         // GPU
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            visible: SystemStats.gpuAvailable
             value: SystemStats.gpuUsage
         }
 
         // Temperature
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            visible: SystemStats.temperatureAvailable
             value: SystemStats.temperature
             tooltipText: `${SystemStats.temperatureCelsius.toFixed(1)}°C`
         }

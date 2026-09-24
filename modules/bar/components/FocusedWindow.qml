@@ -15,19 +15,28 @@ Row {
     readonly property string symbolicSource: root.iconName !== "" ? Quickshell.iconPath(root.iconName + "-symbolic", true) : ""
     readonly property string fullSource: root.iconName !== "" && root.symbolicSource === "" ? Quickshell.iconPath(root.iconName, true) : ""
 
+    // Focus changes fire often; the desktop-entry scan is O(n) so memoize.
+    property var _iconCache: ({})
+
     function desktopIconName(appId) {
         if (appId === "") {
             return "user-desktop";
         }
+        if (appId in root._iconCache) {
+            return root._iconCache[appId];
+        }
         const apps = DesktopEntries.applications.values || [];
         const lowerId = appId.toLowerCase();
+        let result = appId;
         for (let i = 0; i < apps.length; i++) {
             const entryId = (apps[i].id || "").toLowerCase();
             if ((entryId === lowerId || entryId === lowerId + ".desktop") && apps[i].icon) {
-                return apps[i].icon;
+                result = apps[i].icon;
+                break;
             }
         }
-        return appId;
+        root._iconCache[appId] = result;
+        return result;
     }
 
     Icon {

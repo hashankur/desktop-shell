@@ -29,6 +29,24 @@ Item {
         radius: 12
         opacity: 0
 
+        // First child = bottom of the stack: receives body clicks (layout
+        // items above don't accept mouse events) but never covers the close
+        // button, which sits higher and takes precedence.
+        MouseArea {
+            anchors.fill: parent
+            onClicked: (mouse) => {
+                if (root.notificationObject) {
+                    if (root.notificationObject.actions?.length > 0) {
+                        root.notificationObject.actions[0].invoke();
+                    }
+                    root.dismiss();
+                } else if (mouse.button === Qt.MiddleButton) {
+                    // History rows: middle-click removes, plain click does nothing.
+                    root.dismiss();
+                }
+            }
+        }
+
         RowLayout {
             anchors.fill: parent
             anchors.margins: 10
@@ -136,16 +154,6 @@ Item {
                 duration: 200
             }
         }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                if (root.notificationObject?.actions?.length > 0) {
-                    root.notificationObject.actions[0].invoke();
-                }
-                root.dismiss();
-            }
-        }
     }
 
     Timer {
@@ -174,6 +182,7 @@ Item {
             try {
                 root.notificationObject.dismiss();
             } catch (e) {
+                console.warn("Failed to dismiss notification:", e);
             }
         }
         // The creator owns destruction; it reacts to `dismissed`.

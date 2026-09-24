@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 
 import qs.components
 import qs.config
@@ -15,18 +16,33 @@ PanelWindow {
 
     signal closeRequested
 
-    property int currentViewIndex: 0
-
     visible: false
     color: "transparent"
     exclusiveZone: 0
     focusable: true
+    aboveWindows: true
     screen: Quickshell.screens[0]
 
     anchors.left: true
     anchors.right: true
     anchors.top: true
     anchors.bottom: true
+
+    IpcHandler {
+        target: "dashboard"
+
+        function toggle() {
+            Dashboard.toggle();
+        }
+
+        function open() {
+            Dashboard.open();
+        }
+
+        function close() {
+            Dashboard.close();
+        }
+    }
 
     Item {
         id: content
@@ -38,6 +54,12 @@ PanelWindow {
                 root.closeRequested();
                 event.accepted = true;
             }
+        }
+
+        // Click on transparent background to dismiss
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.closeRequested()
         }
 
         Rectangle {
@@ -52,6 +74,11 @@ PanelWindow {
             border.color: Appearance.colors.surface_bright
             border.width: 1
 
+            // Prevent clicks inside the frame from closing the dashboard
+            MouseArea {
+                anchors.fill: parent
+            }
+
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: Appearance.padding.large
@@ -59,7 +86,6 @@ PanelWindow {
                 TabBar {
                     id: tabBar
                     Layout.fillWidth: true
-                    currentIndex: root.currentViewIndex
                     background: Rectangle {
                         color: "transparent"
                     }
@@ -118,11 +144,9 @@ PanelWindow {
 
     function applyView(viewName) {
         var normalizedView = viewName === "mpris" ? "mpris" : "overview";
-        var newIndex = viewIndexFor(normalizedView);
-
-        currentViewIndex = newIndex;
-        tabBar.currentIndex = newIndex;
-        viewStack.currentIndex = newIndex;
+        // tabBar.currentIndex is the single source of truth; viewStack
+        // and tab highlighting derive from it via bindings.
+        tabBar.currentIndex = viewIndexFor(normalizedView);
     }
 
     function openView(viewName) {

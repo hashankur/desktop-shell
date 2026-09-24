@@ -30,6 +30,10 @@ PanelWindow {
     visible: false
 
     signal itemTriggered
+    // Emitted synchronously just before this menu self-destructs; QML JS
+    // cannot observe the C++ `destroyed` signal, so owners use this to
+    // drop their references safely.
+    signal willDestroy
 
     QtObject {
         id: d
@@ -219,8 +223,10 @@ PanelWindow {
             d.subComp = Qt.createComponent("TrayMenu.qml");
         }
 
-        if (d.subComp.status !== Component.Ready)
+        if (d.subComp.status !== Component.Ready) {
+            console.warn("TrayMenu: submenu component failed to load:", d.subComp.errorString());
             return;
+        }
 
         var globalPos = delegateItem.mapToItem(root.contentItem, delegateItem.width, 0);
         var sub = d.subComp.createObject(root, {
@@ -229,6 +235,10 @@ PanelWindow {
             outputHeight: root.outputHeight,
             screen: root.screen
         });
+        if (!sub) {
+            console.warn("TrayMenu: failed to instantiate submenu");
+            return;
+        }
         sub.setPosition(Math.round(globalPos.x), Math.round(globalPos.y));
         sub.visible = true;
 
@@ -238,6 +248,10 @@ PanelWindow {
         });
 
         d.submenu = sub;
+        sub.willDestroy.connect(() => {
+            if (d.submenu === sub)
+                d.submenu = null;
+        });
     }
 
     function setPosition(x, y) {
@@ -274,6 +288,7 @@ PanelWindow {
             // Fullscreen overlay windows are expensive; owners drop their
             // reference on close, so free ourselves instead of leaking until
             // the next open.
+            root.willDestroy();
             Qt.callLater(() => root.destroy());
         }
     }

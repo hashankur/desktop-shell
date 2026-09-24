@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
@@ -73,6 +74,8 @@ Singleton {
         onExited: function (exitCode, exitStatus) {
             if (exitCode === 0 && root._parsedList !== null) {
                 root.entries = root._parsedList;
+            } else if (exitCode !== 0) {
+                console.error("Cliphist: `cliphist list` failed with exit code", exitCode);
             }
             root._parsedList = null;
             root.loading = false;

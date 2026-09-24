@@ -167,11 +167,16 @@ Singleton {
     }
 
     function loadHistory() {
+        if (_historyLoaded) {
+            return;
+        }
         try {
             if (historyFile.loaded) {
+                _historyLoaded = true;
                 const content = historyFile.text();
                 if (content && content.length > 0) {
                     const arr = JSON.parse(content);
+                    historyModelStore.clear();
                     for (let i = 0; i < arr.length; i++) {
                         arr[i].image = root.persistableImage(arr[i].image || "");
                         if (!arr[i].icon) {
@@ -190,13 +195,13 @@ Singleton {
         }
     }
 
+    property bool _historyLoaded: false
+
     Component.onCompleted: {
         if (root.persistenceEnabled) {
-            // If file is already loaded, load history immediately
-            if (historyFile.loaded) {
-                root.loadHistory();
-            }
-            // Otherwise, the onLoadedChanged signal will trigger the load
+            // If file is already loaded, load history immediately;
+            // otherwise the onLoadedChanged signal will trigger the load.
+            root.loadHistory();
         }
     }
 }

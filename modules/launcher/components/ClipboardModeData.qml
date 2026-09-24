@@ -39,7 +39,7 @@ Item {
         Quickshell.execDetached(["sh", "-c", "find /tmp -maxdepth 1 -name 'qs-cliphist-*' -mtime +7 -delete"]);
     }
 
-    function onEntriesChanged() {
+    function handleEntriesChanged() {
         root._allEntries = Cliphist.entries;
         root.filter(root.searchQuery);
     }

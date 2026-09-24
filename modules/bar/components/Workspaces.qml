@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 
@@ -14,6 +16,8 @@ RowLayout {
         model: Niri.workspaces
 
         Rectangle {
+            required property var model
+
             Layout.fillWidth: true
             height: parent.height
             color: model.isActive ? Appearance.colors.primary : (model.activeWindowId > 0 ? Appearance.colors.primary_container : Appearance.colors.surface_container)
@@ -22,7 +26,7 @@ RowLayout {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Niri.focusWorkspaceById(model.id)
+                onClicked: Niri.focusWorkspaceById(parent.model.id)
             }
 
             Behavior on opacity {

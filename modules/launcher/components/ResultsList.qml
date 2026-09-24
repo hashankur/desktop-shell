@@ -63,8 +63,8 @@ Item {
             secondaryText: modelData.secondaryText ?? ""
             iconSource: modelData.iconSource ?? ""
             thumbnailSource: modelData.thumbnailSource ?? ""
-            hintText: (index < 5) ? ("Alt + " + (index + 1)) : ""
-            isCurrent: index === listView.currentIndex
+            hintText: (index < root.maxVisibleEntries) ? ("Alt + " + (index + 1)) : ""
+            isCurrent: index === root.currentIndex
             entryIndex: index
 
             onEntered: {

@@ -43,7 +43,7 @@ PanelWindow {
         target: Cliphist
         function onEntriesChanged() {
             if (root.mode === "clipboard") {
-                clipData.onEntriesChanged();
+                clipData.handleEntriesChanged();
                 updateListVisibility();
             }
         }
@@ -125,6 +125,14 @@ PanelWindow {
             else
                 root.openLauncher("apps");
         }
+
+        function open() {
+            root.openLauncher("apps");
+        }
+
+        function close() {
+            root.closeLauncher();
+        }
     }
 
     IpcHandler {
@@ -146,6 +154,12 @@ PanelWindow {
         }
     }
 
+    // Click on transparent background to dismiss
+    MouseArea {
+        anchors.fill: parent
+        onClicked: root.closeLauncher()
+    }
+
     Rectangle {
         id: frame
         anchors.horizontalCenter: parent.horizontalCenter
@@ -155,6 +169,11 @@ PanelWindow {
         radius: Appearance.rounding.large
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
+
+        // Prevent clicks inside the frame from closing the launcher
+        MouseArea {
+            anchors.fill: parent
+        }
 
         ColumnLayout {
             anchors {

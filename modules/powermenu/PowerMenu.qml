@@ -52,6 +52,14 @@ PanelWindow {
         function toggle() {
             Session.toggle();
         }
+
+        function open() {
+            Session.open();
+        }
+
+        function close() {
+            Session.close();
+        }
     }
 
     Item {

@@ -66,7 +66,9 @@ Item {
                 root.text = text;
                 root.searchChanged(text);
             }
-            onAccepted: root.accepted()
+
+            // Enter is handled exclusively in Keys.onPressed below so
+            // `accepted` can never fire twice for one keypress.
 
             Keys.onPressed: function (event) {
                 if ((event.modifiers & Qt.AltModifier) && event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {

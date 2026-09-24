@@ -50,14 +50,17 @@ The shell auto-reloads on file changes.
 ### IPC
 
 ```sh
-# Toggle app launcher
+# Toggle app launcher (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call launcher toggle
 
-# Toggle clipboard history
+# Toggle clipboard history (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call clipboard toggle
 
-# Toggle power menu
+# Toggle power menu (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
+
+# Toggle dashboard (also: open, close)
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
 ```
 
 Bind these to compositor keybindings for keyboard-driven access.

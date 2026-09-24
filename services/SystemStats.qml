@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
@@ -21,12 +22,20 @@ Singleton {
     // Discovered hardware paths
     property string _gpuBusyPath: ""
     property string _thermalTempPath: ""
+    readonly property bool gpuAvailable: _gpuBusyPath !== ""
+    readonly property bool temperatureAvailable: _thermalTempPath !== ""
 
     // Discover hardware paths at startup
     Process {
         id: discoverProc
         command: ["sh", "-c", "for d in /sys/class/hwmon/hwmon*; do [ -f \"$d/device/gpu_busy_percent\" ] && echo \"$d/device/gpu_busy_percent\" && break; done"]
         running: true
+
+        onExited: (exitCode) => {
+            if (exitCode !== 0) {
+                console.warn("GPU busy-percent discovery failed with exit code", exitCode);
+            }
+        }
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -43,6 +52,12 @@ Singleton {
         id: discoverThermalProc
         command: ["sh", "-c", "for d in /sys/class/thermal/thermal_zone*/temp; do [ -f \"$d\" ] && echo \"$d\" && break; done"]
         running: true
+
+        onExited: (exitCode) => {
+            if (exitCode !== 0) {
+                console.warn("Thermal zone discovery failed with exit code", exitCode);
+            }
+        }
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -125,7 +140,9 @@ Singleton {
         onLoaded: {
             if (root._gpuBusyPath === "") return;
             const gpuRaw = parseInt(gpuStat.text().trim());
-            root.gpuUsage = gpuRaw / 100;
+            if (!isNaN(gpuRaw)) {
+                root.gpuUsage = Math.max(0, Math.min(1, gpuRaw / 100));
+            }
         }
     }
 
@@ -136,7 +153,9 @@ Singleton {
         onLoaded: {
             if (root._thermalTempPath === "") return;
             const tempRaw = parseInt(tempStat.text().trim());
-            root.temperature = tempRaw / 1000 / 100;
+            if (!isNaN(tempRaw)) {
+                root.temperature = Math.max(0, Math.min(1, tempRaw / 1000 / 100));
+            }
         }
     }
 

@@ -20,25 +20,13 @@ ShellRoot {
 
     Bar {}
 
-    LazyLoader {
-        active: true
-        component: Launcher {}
-    }
+    Launcher {}
 
     Osd {}
 
-    LazyLoader {
-        active: true
-        component: NotificationHost {}
-    }
+    NotificationHost {}
 
-    LazyLoader {
-        active: true
-        component: DashboardWindow {}
-    }
+    DashboardWindow {}
 
-    LazyLoader {
-        active: true
-        component: PowerMenu {}
-    }
+    PowerMenu {}
 }

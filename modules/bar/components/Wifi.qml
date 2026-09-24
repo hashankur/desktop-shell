@@ -12,8 +12,6 @@ TooltipArea {
     property int signal: WifiStatus.signal // 0-100
     property string ssid: WifiStatus.ssid
 
-    signal clicked
-
     text: {
         if (!root.connected) {
             return qsTr("Wi‑Fi: disconnected");
@@ -45,11 +43,5 @@ TooltipArea {
 
     Icon {
         source: Quickshell.iconPath(iconName(), true)
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
     }
 }
