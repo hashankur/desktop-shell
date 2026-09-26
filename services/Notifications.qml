@@ -56,6 +56,7 @@ Singleton {
                 icon: root.resolveAppIcon(notification),
                 image: root.persistableImage(notification.image || ""),
                 timestamp: Date.now(),
+                urgency: notification.urgency,
                 id: notification.id
             };
 
@@ -68,7 +69,8 @@ Singleton {
                 root.saveHistory();
             }
 
-            if (!root.dnd) {
+            // Critical notifications cut through do-not-disturb.
+            if (!root.dnd || notification.urgency === NotificationUrgency.Critical) {
                 root.toastQueued(notification);
             }
         }

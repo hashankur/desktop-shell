@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Services.Notifications
 
 import qs.services
 import "components"
@@ -43,6 +44,7 @@ PanelWindow {
     }
 
     function pushToast(notification) {
+        const critical = notification.urgency === NotificationUrgency.Critical;
         const obj = toastComponent.createObject(stack, {
             notificationData: {
                 title: notification.summary || "",
@@ -51,9 +53,12 @@ PanelWindow {
                 image: notification.image || "",
                 app: notification.appName || "",
                 timestamp: Date.now(),
+                urgency: notification.urgency,
                 timeout: notification.expireTimeout > 0 ? notification.expireTimeout : 4000
             },
-            notificationObject: notification
+            notificationObject: notification,
+            // Critical toasts stay until dismissed.
+            autoHideEnabled: !critical
         });
 
         if (!obj) {

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import Quickshell.Services.Notifications
 
 import qs.components
 import qs.config
@@ -19,6 +20,11 @@ Item {
     // the horizontal slide) so both happen before destruction.
     property bool _shown: false
     property bool slideIn: false
+    // Critical rows/toasts get a dark red (error_container) background
+    // instead of the default surface. History rows read this from the
+    // persisted model; entries saved before urgency existed fall back to
+    // Normal.
+    readonly property bool critical: (root.notificationData?.urgency ?? NotificationUrgency.Normal) === NotificationUrgency.Critical
 
     signal dismissed
 
@@ -28,8 +34,8 @@ Item {
     Rectangle {
         id: content
         anchors.fill: parent
-        color: Appearance.colors.surface_container_low
-        border.width: 2
+        color: root.critical ? Appearance.colors.error_container : Appearance.colors.surface_container_low
+        border.width: root.critical ? 0 : 2
         border.color: Appearance.colors.surface_container
         radius: 12
         opacity: root._shown ? 1 : 0
@@ -64,8 +70,8 @@ Item {
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 10
-            spacing: 15
+            anchors.margins: Appearance.padding.normal
+            spacing: Appearance.spacing.larger
 
             ClippingRectangle {
                 id: iconArea
@@ -109,11 +115,11 @@ Item {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                spacing: 4
+                spacing: Appearance.padding.small
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
+                    spacing: Appearance.spacing.small
 
                     StyledText {
                         text: root.notificationData?.app || "Notification"
@@ -131,16 +137,16 @@ Item {
 
                     StyledButton {
                         ghost: true
+                        circle: true
+                        // Normal: the critical red as hover chip; critical
+                        // (red background): inverted near-white chip.
+                        hoverColor: root.critical ? Appearance.colors.on_error_container : Appearance.colors.error_container
+                        hoverContentColor: root.critical ? Appearance.colors.error_container : Appearance.colors.on_error_container
                         text: "×"
-                        padding: Appearance.padding.smaller
-                        verticalPadding: Appearance.padding.smaller
-                        contentItem: StyledText {
-                            text: "×"
-                            color: Appearance.colors.on_surface_variant
-                            font.pixelSize: Appearance.fontSize.sm
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
+                        contentFontSize: Appearance.fontSize.xs
+                        padding: Appearance.padding.small
+                        verticalPadding: Appearance.padding.small
+                        Layout.preferredWidth: implicitHeight
                         onClicked: root.dismiss()
                     }
                 }
