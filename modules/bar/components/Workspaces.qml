@@ -37,7 +37,8 @@ RowLayout {
 
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 150
+                    duration: Appearance.anim.durations.small
+                    easing.bezierCurve: Appearance.anim.curves.standard
                 }
             }
         }

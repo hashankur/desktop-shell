@@ -136,8 +136,8 @@ Scope {
 
                             Behavior on implicitWidth {
                                 NumberAnimation {
-                                    duration: 300
-                                    easing.type: Easing.InOutQuad
+                                    duration: Appearance.anim.durations.medium
+                                    easing.bezierCurve: Appearance.anim.curves.standardDecel
                                 }
                             }
                         }

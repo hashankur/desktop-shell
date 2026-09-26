@@ -127,6 +127,7 @@ JsonObject {
     component AnimDurations: JsonObject {
         property real scale: 1
         property int small: 200 * scale
+        property int medium: 300 * scale
         property int normal: 400 * scale
         property int large: 600 * scale
         property int extraLarge: 1000 * scale

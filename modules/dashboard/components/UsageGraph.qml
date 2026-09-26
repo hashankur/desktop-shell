@@ -138,8 +138,8 @@ ColumnLayout {
 
     Behavior on value {
         NumberAnimation {
-            duration: 600
-            easing.type: Easing.OutCubic
+            duration: Appearance.anim.durations.large
+            easing.bezierCurve: Appearance.anim.curves.standardDecel
         }
     }
 

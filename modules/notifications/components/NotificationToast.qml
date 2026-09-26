@@ -153,7 +153,8 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 200
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
     }

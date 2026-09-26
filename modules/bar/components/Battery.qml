@@ -68,6 +68,6 @@ TooltipArea {
         progress: Battery.percentage
         barColor: getBatteryColor()
         backgroundColor: Appearance.colors.surface_container
-        animationDuration: 300
+        animationDuration: Appearance.anim.durations.medium
     }
 }

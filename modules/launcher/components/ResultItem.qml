@@ -32,7 +32,8 @@ Rectangle {
 
   Behavior on color {
     ColorAnimation {
-      duration: 120
+      duration: Appearance.anim.durations.small
+      easing.bezierCurve: Appearance.anim.curves.standard
     }
   }
 

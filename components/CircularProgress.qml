@@ -18,7 +18,7 @@ Item {
     property string tooltipText: ""
 
     // Animation properties
-    property real animationDuration: 600  // milliseconds
+    property real animationDuration: Appearance.anim.durations.large
 
     implicitWidth: size
     implicitHeight: size
@@ -26,7 +26,7 @@ Item {
     Behavior on value {
         NumberAnimation {
             duration: circularProgress.animationDuration
-            easing.type: Easing.OutCubic
+            easing.bezierCurve: Appearance.anim.curves.standardDecel
         }
     }
 

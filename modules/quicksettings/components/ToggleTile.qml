@@ -32,14 +32,14 @@ Item {
         Behavior on color {
             ColorAnimation {
                 duration: Appearance.anim.durations.small
-                easing.type: Easing.InOutCubic
+                easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
 
         Behavior on border.color {
             ColorAnimation {
                 duration: Appearance.anim.durations.small
-                easing.type: Easing.InOutCubic
+                easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
 

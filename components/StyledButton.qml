@@ -25,6 +25,13 @@ Button {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
+            }
+        }
     }
 
     background: Rectangle {
@@ -43,6 +50,7 @@ Button {
         Behavior on color {
             ColorAnimation {
                 duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
     }

@@ -10,7 +10,7 @@ ClippingRectangle {
     property color backgroundColor: Appearance.colors.surface_container
     property color borderColor: Appearance.colors.surface_container
     property int borderWidth: 0
-    property int animationDuration: 300
+    property int animationDuration: Appearance.anim.durations.medium
 
     radius: height / 2
     color: backgroundColor
@@ -33,7 +33,7 @@ ClippingRectangle {
         Behavior on width {
             NumberAnimation {
                 duration: root.animationDuration
-                easing.type: Easing.InOutQuad
+                easing.bezierCurve: Appearance.anim.curves.standardDecel
             }
         }
     }
