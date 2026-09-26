@@ -47,12 +47,15 @@ Scope {
         }
     }
 
-    onValueChanged: {
-        // Reset the hide timer whenever the value changes
-        // This keeps the OSD visible during rapid successive changes
-        if (root.shouldShow) {
+    // Show the pill (or extend it when already showing). Callers set
+    // iconPath/value first, then bump via trigger() — assigning
+    // `shouldShow = true` while already visible would be a no-op and
+    // leave the hide timer untouched (mute toggles at constant volume).
+    function trigger() {
+        if (root.shouldShow)
             hideTimer.restart();
-        }
+        else
+            root.shouldShow = true;
     }
 
     // The OSD window will be created and destroyed based on shouldShow.
