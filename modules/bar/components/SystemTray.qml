@@ -19,6 +19,7 @@ Row {
     property bool activeOnScreen: true
 
     readonly property int trayCount: SystemTray.items.values ? SystemTray.items.values.length : 0
+    readonly property var trayScreen: parentWindow && parentWindow.screen ? parentWindow.screen : null
 
     spacing: 20
     visible: root.trayCount > 0 && root.activeOnScreen
@@ -31,15 +32,12 @@ Row {
             required property var modelData
 
             readonly property var trayItem: modelData
-            readonly property bool isPassive: trayItemRoot.trayItem.status === Status.Passive
-            readonly property bool isAttention: trayItemRoot.trayItem.status === Status.NeedsAttention
             readonly property string iconSource: trayItemRoot.trayItem && trayItemRoot.trayItem.icon ? trayItemRoot.trayItem.icon.toString() : ""
 
-            text: trayItemRoot.trayItem.tooltipTitle || trayItemRoot.trayItem.title || trayItemRoot.trayItem.id || ""
+            text: trayItemRoot.trayItem ? (trayItemRoot.trayItem.tooltipTitle || trayItemRoot.trayItem.title || trayItemRoot.trayItem.id || "") : ""
 
             width: 16
             height: 16
-            // visible: !isPassive || isAttention
 
             IconImage {
                 anchors.fill: parent
@@ -48,7 +46,6 @@ Row {
             }
 
             MouseArea {
-                id: trayMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -61,10 +58,10 @@ Row {
                         trayItemRoot.trayItem.secondaryActivate();
                     } else if (mouse.button === Qt.RightButton) {
                         if (trayItemRoot.trayItem.hasMenu && trayItemRoot.trayItem.menu) {
-                            if (root.currentMenu) {
+                            // closeAll() fires willDestroy synchronously, which
+                            // clears currentMenu — no manual null-out needed.
+                            if (root.currentMenu)
                                 root.currentMenu.closeAll();
-                                root.currentMenu = null;
-                            }
 
                             var mappedPoint = { x: mouse.x, y: mouse.y };
                             if (root.parentWindow && root.parentWindow.contentItem) {
@@ -73,13 +70,16 @@ Row {
 
                             var props = {
                                 menu: trayItemRoot.trayItem.menu,
-                                outputWidth: root.parentWindow ? root.parentWindow.width : 1920,
-                                outputHeight: root.parentWindow ? root.parentWindow.height : 1080
+                                // Screen dims, not window dims: the bar window
+                                // is ~40px tall, which broke the menu's
+                                // flip-up/clamp math and cut off long menus.
+                                outputWidth: root.trayScreen ? root.trayScreen.width : 1920,
+                                outputHeight: root.trayScreen ? root.trayScreen.height : 1080
                             };
                             // Open on the output the bar lives on, not the
                             // primary one.
-                            if (root.parentWindow && root.parentWindow.screen)
-                                props.screen = root.parentWindow.screen;
+                            if (root.trayScreen)
+                                props.screen = root.trayScreen;
 
                             var menu = trayMenuComponent.createObject(root, props);
                             if (!menu) {
@@ -89,10 +89,7 @@ Row {
                             root.currentMenu = menu;
                             menu.setPosition(Math.round(mappedPoint.x), Math.round(mappedPoint.y));
                             menu.visible = true;
-                            menu.itemTriggered.connect(() => {
-                                menu.closeAll();
-                                root.currentMenu = null;
-                            });
+                            menu.itemTriggered.connect(() => menu.closeAll());
                             // The menu destroys itself when hidden; clear the
                             // reference so the next open doesn't touch a
                             // destroyed object. (`destroyed` isn't visible to
