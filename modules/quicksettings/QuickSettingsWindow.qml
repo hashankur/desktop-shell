@@ -12,12 +12,13 @@ import qs.config
 import qs.services
 import "./components" as QSComponents
 
-PanelWindow {
+OverlayWindow {
     id: root
 
     signal closeRequested
 
-    visible: false
+    // Content slides down from above on enter, back up on exit.
+    enterOffsetY: -40
     color: "transparent"
     exclusiveZone: 0
     focusable: true
@@ -126,6 +127,10 @@ PanelWindow {
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
         border.width: 1
+        opacity: root.animOpacity
+        transform: Translate {
+            y: root.animY
+        }
 
         // Prevent clicks inside the frame from closing the panel
         MouseArea {
@@ -251,6 +256,13 @@ PanelWindow {
                             anchors.fill: parent
                             radius: Appearance.rounding.small
                             color: netMouse.containsMouse ? Appearance.colors.surface_container_high : (netRow.modelData.connected ? Appearance.colors.primary_container : "transparent")
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Appearance.anim.durations.small
+                                    easing.bezierCurve: Appearance.anim.curves.standard
+                                }
+                            }
                         }
 
                         RowLayout {
@@ -316,6 +328,13 @@ PanelWindow {
                             anchors.fill: parent
                             radius: Appearance.rounding.small
                             color: btMouse.containsMouse ? Appearance.colors.surface_container_high : "transparent"
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Appearance.anim.durations.small
+                                    easing.bezierCurve: Appearance.anim.curves.standard
+                                }
+                            }
                         }
 
                         RowLayout {

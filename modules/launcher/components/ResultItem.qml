@@ -107,23 +107,21 @@ Rectangle {
       }
     }
 
-    Text {
-      text: root.hintText
-      color: Appearance.colors.on_surface_variant
-      font.pixelSize: Appearance.fontSize.xs
-      font.family: Appearance.font.sans
-      Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-      Layout.preferredWidth: 56
-      horizontalAlignment: Text.AlignRight
-      visible: text.length > 0
-    }
-
     Item {
       id: pinArea
       Layout.preferredWidth: 20
       Layout.preferredHeight: 20
       Layout.alignment: Qt.AlignVCenter
-      visible: root.pinEnabled && (root.pinned || rowMouse.containsMouse)
+      visible: root.pinEnabled
+      opacity: (root.pinned || rowMouse.containsMouse) ? 1 : 0
+      enabled: opacity > 0
+
+      Behavior on opacity {
+        NumberAnimation {
+          duration: Appearance.anim.durations.small
+          easing.bezierCurve: Appearance.anim.curves.standard
+        }
+      }
 
       IconImage {
         anchors.fill: parent
@@ -135,6 +133,17 @@ Rectangle {
         anchors.fill: parent
         onClicked: root.pinClicked()
       }
+    }
+
+    Text {
+      text: root.hintText
+      color: Appearance.colors.on_surface_variant
+      font.pixelSize: Appearance.fontSize.xs
+      font.family: Appearance.font.sans
+      Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+      Layout.preferredWidth: 56
+      horizontalAlignment: Text.AlignRight
+      visible: text.length > 0
     }
   }
 }

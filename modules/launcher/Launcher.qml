@@ -10,10 +10,11 @@ import qs.config
 import qs.services
 import "./components" as LauncherComponents
 
-PanelWindow {
+OverlayWindow {
     id: root
 
-    visible: false
+    // Content slides up from below on enter, back down on exit.
+    enterOffsetY: 40
     screen: Niri.focusedScreen
     anchors {
         left: true
@@ -67,8 +68,8 @@ PanelWindow {
     function openLauncher(modeName) {
         root.mode = modeName;
 
-        if (!root.visible) {
-            root.visible = true;
+        if (!root.shown) {
+            root.openAnimated();
         }
 
         root.activeData.refresh();
@@ -78,7 +79,7 @@ PanelWindow {
     }
 
     function closeLauncher() {
-        root.visible = false;
+        root.closeAnimated();
     }
 
     function updateResults(text) {
@@ -121,7 +122,7 @@ PanelWindow {
         target: "launcher"
 
         function toggle() {
-            if (root.visible)
+            if (root.shown)
                 root.closeLauncher();
             else
                 root.openLauncher("apps");
@@ -140,7 +141,7 @@ PanelWindow {
         target: "clipboard"
 
         function toggle() {
-            if (root.visible)
+            if (root.shown)
                 root.closeLauncher();
             else
                 root.openLauncher("clipboard");
@@ -170,6 +171,21 @@ PanelWindow {
         radius: Appearance.rounding.large
         color: Appearance.colors.surface
         border.color: Appearance.colors.surface_bright
+        opacity: root.animOpacity
+        transform: Translate {
+            y: root.animY
+        }
+
+        // Must animate in lockstep with ResultsList's Layout.preferredHeight
+        // Behavior (identical trigger, duration, curve): otherwise the
+        // background snaps to the new size while the list still animates,
+        // which reads as jank when the result count shrinks.
+        Behavior on height {
+            NumberAnimation {
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standardDecel
+            }
+        }
 
         // Prevent clicks inside the frame from closing the launcher
         MouseArea {

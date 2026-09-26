@@ -16,14 +16,14 @@ Singleton {
     function open() {
         requestedVisible = true;
         if (powerMenuWindow) {
-            powerMenuWindow.visible = true;
+            powerMenuWindow.openAnimated();
         }
     }
 
     function close() {
         requestedVisible = false;
         if (powerMenuWindow) {
-            powerMenuWindow.visible = false;
+            powerMenuWindow.closeAnimated();
         }
     }
 

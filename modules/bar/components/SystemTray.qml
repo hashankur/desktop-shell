@@ -88,7 +88,7 @@ Row {
                             }
                             root.currentMenu = menu;
                             menu.setPosition(Math.round(mappedPoint.x), Math.round(mappedPoint.y));
-                            menu.visible = true;
+                            menu.openAnimated();
                             menu.itemTriggered.connect(() => menu.closeAll());
                             // The menu destroys itself when hidden; clear the
                             // reference so the next open doesn't touch a

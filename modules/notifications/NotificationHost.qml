@@ -28,7 +28,10 @@ PanelWindow {
 
     Component {
         id: toastComponent
-        NotificationToast {}
+        // Live toasts slide in from the right edge of the stack.
+        NotificationToast {
+            slideIn: true
+        }
     }
 
     Column {

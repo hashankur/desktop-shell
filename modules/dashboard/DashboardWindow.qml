@@ -11,12 +11,13 @@ import qs.config
 import qs.services
 import "./components" as DashboardComponents
 
-PanelWindow {
+OverlayWindow {
     id: root
 
     signal closeRequested
 
-    visible: false
+    // Content slides down from above on enter, back up on exit.
+    enterOffsetY: -40
     color: "transparent"
     exclusiveZone: 0
     focusable: true
@@ -77,6 +78,10 @@ PanelWindow {
             color: Appearance.colors.surface
             border.color: Appearance.colors.surface_bright
             border.width: 1
+            opacity: root.animOpacity
+            transform: Translate {
+                y: root.animY
+            }
 
             // Prevent clicks inside the frame from closing the dashboard
             MouseArea {
@@ -111,13 +116,32 @@ PanelWindow {
                     }
                 }
 
-                StackLayout {
+                Item {
                     id: viewStack
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    currentIndex: tabBar.currentIndex
+                    // Horizontal pager (caelestia pattern): pages sit side
+                    // by side and slide to the current one. tabBar.currentIndex
+                    // stays the single source of truth (see syncView); pages
+                    // derive their position from it, so direction-aware travel
+                    // comes for free. clip hides the neighbours.
+                    property int currentIndex: tabBar.currentIndex
+                    clip: true
 
                     Item {
+                        id: pageOverview
+                        width: viewStack.width
+                        height: viewStack.height
+                        x: -viewStack.currentIndex * viewStack.width
+                        enabled: viewStack.currentIndex === 0
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: Appearance.anim.durations.expressiveFastSpatial
+                                easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+                            }
+                        }
+
                         RowLayout {
                             anchors.fill: parent
                             spacing: Appearance.spacing.normal
@@ -137,12 +161,38 @@ PanelWindow {
                     }
 
                     Item {
+                        id: pageSystem
+                        width: viewStack.width
+                        height: viewStack.height
+                        x: (1 - viewStack.currentIndex) * viewStack.width
+                        enabled: viewStack.currentIndex === 1
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: Appearance.anim.durations.expressiveFastSpatial
+                                easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+                            }
+                        }
+
                         DashboardComponents.SystemOverview {
                             anchors.fill: parent
                         }
                     }
 
                     Item {
+                        id: pageMedia
+                        width: viewStack.width
+                        height: viewStack.height
+                        x: (2 - viewStack.currentIndex) * viewStack.width
+                        enabled: viewStack.currentIndex === 2
+
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: Appearance.anim.durations.expressiveFastSpatial
+                                easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+                            }
+                        }
+
                         DashboardComponents.Mpris {
                             anchors.fill: parent
                         }

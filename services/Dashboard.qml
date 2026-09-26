@@ -45,7 +45,7 @@ Singleton {
 
         if (dashboardWindow) {
             dashboardWindow.openView(requestedView);
-            dashboardWindow.visible = true;
+            dashboardWindow.openAnimated();
         }
     }
 
@@ -71,7 +71,7 @@ Singleton {
     function close() {
         requestedVisible = false;
         if (dashboardWindow) {
-            dashboardWindow.visible = false;
+            dashboardWindow.closeAnimated();
         }
     }
 }

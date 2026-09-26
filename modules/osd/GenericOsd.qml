@@ -29,6 +29,9 @@ Scope {
     property real value: 0.0
     property bool shouldShow: false
     property int hideDelay: 2000
+    // Unloads only after the exit fade finishes (see pill.onOpacityChanged),
+    // so the window outlives `shouldShow` by the fade duration.
+    property bool loaderActive: false
 
     Timer {
         id: hideTimer
@@ -39,6 +42,7 @@ Scope {
 
     onShouldShowChanged: {
         if (root.shouldShow) {
+            root.loaderActive = true;
             hideTimer.restart();
         }
     }
@@ -54,7 +58,7 @@ Scope {
     // The OSD window will be created and destroyed based on shouldShow.
     // Using a LazyLoader reduces memory overhead when the window isn't open.
     LazyLoader {
-        active: root.shouldShow
+        active: root.loaderActive
 
         PanelWindow {
             anchors.bottom: true
@@ -72,9 +76,40 @@ Scope {
             mask: Region {}
 
             Rectangle {
+                id: pill
                 anchors.fill: parent
                 radius: height / 2
                 color: Appearance.colors.surface_container_lowest
+                // Content state; deferred so the entrance animates from 0.
+                property bool _in: false
+                opacity: root.shouldShow && pill._in ? 1 : 0
+                transform: Translate {
+                    y: root.shouldShow && pill._in ? 0 : 12
+
+                    Behavior on y {
+                        NumberAnimation {
+                            duration: Appearance.anim.durations.expressiveFastSpatial
+                            easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+                        }
+                    }
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Appearance.anim.durations.expressiveFastSpatial
+                        easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+                    }
+                }
+
+                Component.onCompleted: Qt.callLater(() => pill._in = true)
+
+                onOpacityChanged: {
+                    // Exit fade done: drop the window (LazyLoader unloads it).
+                    // `<= 0` because the expressive curve overshoots past the target.
+                    if (opacity <= 0 && !root.shouldShow)
+                        root.loaderActive = false;
+                }
+
                 border {
                     color: Appearance.colors.surface_container
                 }

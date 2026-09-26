@@ -9,7 +9,7 @@ import Quickshell.Widgets
 import qs.config
 import qs.components
 
-PanelWindow {
+OverlayWindow {
     id: root
 
     property var menu: null
@@ -35,7 +35,6 @@ PanelWindow {
     color: "transparent"
     aboveWindows: true
     focusable: false
-    visible: false
 
     signal itemTriggered
     // Emitted synchronously just before this menu self-destructs; QML JS
@@ -105,6 +104,7 @@ PanelWindow {
         // Capped to the output with a 8px margin so long menus scroll
         // instead of running off the screen.
         height: Math.min(contentCol.implicitHeight + 8, root.outputHeight - 16)
+        opacity: root.animOpacity
         radius: Appearance.rounding.normal
         color: Appearance.colors.surface_container
         clip: true
@@ -150,6 +150,13 @@ PanelWindow {
                             anchors.fill: parent
                             radius: Appearance.rounding.small
                             color: backMouse.containsMouse ? Appearance.colors.surface_container_high : "transparent"
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Appearance.anim.durations.small
+                                    easing.bezierCurve: Appearance.anim.curves.standard
+                                }
+                            }
                         }
 
                         RowLayout {
@@ -217,6 +224,13 @@ PanelWindow {
                                     return "transparent";
                                 }
                                 opacity: delegateRoot.entry.enabled ? 1.0 : 0.4
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: Appearance.anim.durations.small
+                                        easing.bezierCurve: Appearance.anim.curves.standard
+                                    }
+                                }
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -413,7 +427,7 @@ PanelWindow {
     }
 
     function closeAll() {
-        root.visible = false;
+        root.closeAnimated();
     }
 
     onVisibleChanged: {

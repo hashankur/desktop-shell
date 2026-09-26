@@ -6,6 +6,7 @@ import qs.config
 TabButton {
     id: control
     text: qsTr("Button")
+    hoverEnabled: true
 
     contentItem: Text {
         text: control.text
@@ -15,6 +16,13 @@ TabButton {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
+            }
+        }
     }
 
     background: Rectangle {
@@ -22,6 +30,13 @@ TabButton {
         implicitHeight: 40
         opacity: enabled ? 1 : 0.3
         radius: Appearance.rounding.large
-        color: control.checked ? Appearance.colors.secondary : Appearance.colors.surface
+        color: control.checked ? Appearance.colors.secondary : (control.hovered ? Appearance.colors.surface_container_high : Appearance.colors.surface)
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
+            }
+        }
     }
 }

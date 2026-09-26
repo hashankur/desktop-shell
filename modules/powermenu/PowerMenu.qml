@@ -10,10 +10,11 @@ import qs.config
 import qs.services
 import "./components" as PowerComponents
 
-PanelWindow {
+OverlayWindow {
     id: root
 
-    visible: false
+    // Content slides down from above on enter, back up on exit.
+    enterOffsetY: -40
     screen: Niri.focusedScreen
     anchors {
         left: true
@@ -151,6 +152,10 @@ PanelWindow {
             radius: Appearance.rounding.large
             color: Appearance.colors.surface
             border.color: Appearance.colors.surface_bright
+            opacity: root.animOpacity
+            transform: Translate {
+                y: root.animY
+            }
 
             // Prevent clicks inside the frame from closing the menu
             MouseArea {

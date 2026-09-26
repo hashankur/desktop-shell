@@ -21,13 +21,13 @@ Singleton {
     function open() {
         requestedVisible = true;
         if (window)
-            window.visible = true;
+            window.openAnimated();
     }
 
     function close() {
         requestedVisible = false;
         if (window)
-            window.visible = false;
+            window.closeAnimated();
     }
 
     function toggle() {
