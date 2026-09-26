@@ -16,8 +16,15 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
-- **Notifications**: dismiss, click-to-invoke actions
-- **OSD**: volume and brightness (pill-shaped overlays)
+- **Notifications**: dismiss, click-to-invoke actions; critical urgency gets sticky toasts, error accent, and DND bypass
+- **OSD**: volume, microphone, and brightness (single shared pill)
+
+## Roadmap
+
+- Calendar event integration in the dashboard
+- Built-in lock screen (Quickshell libraries instead of an external locker)
+- Wallpaper manager
+- Theme/scheme manager (light/dark and accent switching)
 - **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup — destructive actions ask for confirmation
 
 ## Requirements
