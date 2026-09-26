@@ -8,61 +8,37 @@ import Quickshell.Widgets
 
 import qs.components
 import qs.config
+import qs.services
 
 Item {
     id: root
 
     readonly property var activePlayer: Mpris.players.values.length > 0 ? Mpris.players?.values.filter(player => player.identity === "Spotify")[0] ?? null : null
     readonly property string artUrl: root.activePlayer && root.activePlayer.trackArtUrl ? root.activePlayer.trackArtUrl : ""
+
+    Component.onCompleted: ArtCache.resolve(root.artUrl)
+    onArtUrlChanged: ArtCache.resolve(root.artUrl)
     readonly property real trackLength: root.activePlayer?.length ?? 0
     readonly property bool showProgress: root.activePlayer !== null && root.trackLength > 0
 
-    // The player's position property may not tick continuously; resync on
-    // player notifications and advance locally while playing so the bar moves.
-    property real _basePosition: 0
-    property real _baseStamp: 0
-    property int _tick: 0
-
-    function _syncPosition() {
-        root._basePosition = root.activePlayer ? root.activePlayer.position : 0;
-        root._baseStamp = Date.now();
-    }
-
-    readonly property real position: {
-        var p = root._basePosition;
-        if (root.activePlayer && root.activePlayer.isPlaying)
-            p += (Date.now() - root._baseStamp) / 1000;
-        void root._tick;
-        return Math.min(p, root.trackLength);
-    }
-
-    onActivePlayerChanged: root._syncPosition()
-
-    Connections {
-        target: root.activePlayer
-
-        function onPositionChanged() {
-            root._syncPosition();
-        }
-
-        function onTrackChanged() {
-            root._syncPosition();
-        }
-
-        function onIsPlayingChanged() {
-            root._syncPosition();
-        }
-
-        function onLengthChanged() {
-            root._syncPosition();
-        }
-    }
-
+    // position does not emit change notifications continuously by design
+    // (see MprisPlayer.position docs); reading it is always current and
+    // cheap, so drive the bindings by emitting positionChanged() manually
+    // while playing. The extra emit on state change keeps the displayed
+    // position exact at the pause/resume moment.
     Timer {
         interval: 1000
         running: root.activePlayer?.isPlaying ?? false
         repeat: true
-        onTriggered: root._tick++
+        onTriggered: root.activePlayer?.positionChanged()
+    }
+
+    Connections {
+        target: root.activePlayer
+
+        function onIsPlayingChanged() {
+            root.activePlayer?.positionChanged();
+        }
     }
 
     function formatTime(seconds) {
@@ -86,24 +62,71 @@ Item {
             radius: Appearance.rounding.small
             color: Appearance.colors.surface_container
 
-            Image {
-                anchors.fill: parent
-                visible: root.artUrl !== ""
-                source: root.artUrl
-                fillMode: Image.PreserveAspectCrop
-                retainWhileLoading: true
-                asynchronous: true
-            }
-
             Rectangle {
                 anchors.fill: parent
-                visible: root.artUrl === ""
+                visible: artImage.status !== Image.Ready
                 color: Appearance.colors.surface_container_high
+
+                Item {
+                    anchors.centerIn: parent
+                    width: 40
+                    height: 40
+                    visible: artImage.status === Image.Loading
+
+                    Canvas {
+                        id: spinner
+                        anchors.fill: parent
+
+                        onPaint: {
+                            const ctx = getContext("2d");
+                            ctx.clearRect(0, 0, width, height);
+                            ctx.lineWidth = 3;
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = Appearance.colors.primary;
+                            ctx.beginPath();
+                            ctx.arc(width / 2, height / 2, width / 2 - 6, 0, Math.PI * 1.5);
+                            ctx.stroke();
+                        }
+                        Component.onCompleted: requestPaint()
+
+                        RotationAnimation on rotation {
+                            running: artImage.status === Image.Loading
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 900
+                        }
+                    }
+                }
 
                 IconImage {
                     anchors.centerIn: parent
                     implicitSize: 64
+                    visible: artImage.status !== Image.Loading
                     source: Quickshell.iconPath("audio-x-generic-symbolic")
+                }
+            }
+
+            Image {
+                id: artImage
+                anchors.fill: parent
+                source: ArtCache.resolvedUrl
+                fillMode: Image.PreserveAspectCrop
+                retainWhileLoading: true
+                asynchronous: true
+                sourceSize: Qt.size(Math.round(width * Screen.devicePixelRatio), Math.round(height * Screen.devicePixelRatio))
+                opacity: status === Image.Ready ? 1 : 0
+
+                onStatusChanged: {
+                    if (status === Image.Error)
+                        ArtCache.notifyImageError(source.toString());
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Appearance.anim.durations.normal
+                        easing.bezierCurve: Appearance.anim.curves.standard
+                    }
                 }
             }
         }
@@ -153,14 +176,14 @@ Item {
                 ProgressBar {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
-                    progress: root.trackLength > 0 ? Math.min(1, root.position / root.trackLength) : 0
+                    progress: root.trackLength > 0 ? Math.min(1, (root.activePlayer?.position ?? 0) / root.trackLength) : 0
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
 
                     StyledText {
-                        text: root.formatTime(root.position)
+                        text: root.formatTime(root.activePlayer?.position ?? 0)
                         color: Appearance.colors.on_surface_variant
                         font.pixelSize: Appearance.fontSize.xs
                     }
@@ -194,8 +217,13 @@ Item {
                 }
 
                 StyledButton {
-                    text: root.activePlayer && root.activePlayer.isPlaying ? "Pause" : "Play"
+                    padding: Appearance.padding.smaller
+                    verticalPadding: Appearance.padding.smaller
                     enabled: root.activePlayer !== null
+                    contentItem: Icon {
+                        source: Quickshell.iconPath(root.activePlayer?.isPlaying ? "media-playback-pause-symbolic" : "media-playback-start-symbolic")
+                        opacity: enabled ? 1 : 0.3
+                    }
                     onClicked: root.activePlayer?.togglePlaying()
                 }
 
