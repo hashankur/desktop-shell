@@ -29,6 +29,11 @@ OverlayWindow {
     anchors.top: true
     anchors.bottom: true
 
+    onShownChanged: {
+        if (shown)
+            CalendarEvents.refreshIfStale();
+    }
+
     IpcHandler {
         target: "dashboard"
 

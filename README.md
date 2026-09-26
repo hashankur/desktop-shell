@@ -16,16 +16,16 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
+- **Calendar**: ICS feeds (Google Calendar secret address or any ICS URL), event dots on the month grid, click a day for its events
 - **Notifications**: dismiss, click-to-invoke actions; critical urgency gets sticky toasts, error accent, and DND bypass
 - **OSD**: volume, microphone, and brightness (single shared pill)
+- **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup
 
 ## Roadmap
 
-- Calendar event integration in the dashboard
 - Built-in lock screen (Quickshell libraries instead of an external locker)
 - Wallpaper manager
 - Theme/scheme manager (light/dark and accent switching)
-- **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup — destructive actions ask for confirmation
 
 ## Requirements
 
@@ -54,6 +54,20 @@ qs -c neue -d
 
 The shell auto-reloads on file changes.
 
+### Calendar events
+
+Create `~/.config/quickshell/calendar.json` with your ICS feed URLs (Google Calendar: *Settings → your calendar → Integrate with third-party apps*, use the secret address in iCal format):
+
+```json
+{
+  "feeds": [
+    "https://calendar.google.com/calendar/ical/your.address%40gmail.com/private-abc123/basic.ics"
+  ]
+}
+```
+
+`webcal://` and `file://` URLs work as well. Feeds refresh every 15 minutes, and when the dashboard opens if the last fetch is over 5 minutes old.
+
 ### IPC
 
 ```sh
@@ -68,6 +82,9 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 
 # Toggle dashboard (also: open, close); jump to a tab with: openView overview|system|mpris
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
+
+# Toggle quick settings (also: open, close)
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call quicksettings toggle
 ```
 
 Bind these to compositor keybindings for keyboard-driven access.
