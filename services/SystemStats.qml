@@ -19,6 +19,17 @@ Singleton {
 
     property var prevCpuStats: null
 
+    // Rolling history for dashboard graphs (0-1 samples, oldest first).
+    readonly property int _historyMax: 120
+    property var cpuHistory: []
+    property var memoryHistory: []
+    property var gpuHistory: []
+    property var temperatureHistory: []
+
+    function _push(history, value) {
+        return history.concat(Math.max(0, Math.min(1, value))).slice(-root._historyMax);
+    }
+
     // Discovered hardware paths
     property string _gpuBusyPath: ""
     property string _thermalTempPath: ""
@@ -97,6 +108,7 @@ Singleton {
 
                         if (totalDelta > 0) {
                             root.cpuUsage = Math.max(0, Math.min(1, activeDelta / totalDelta));
+                            root.cpuHistory = root._push(root.cpuHistory, root.cpuUsage);
                         }
                     }
 
@@ -129,6 +141,7 @@ Singleton {
 
             if (memTotal > 0 && memAvailable >= 0) {
                 root.memoryUsage = Math.max(0, Math.min(1, (memTotal - memAvailable) / memTotal));
+                root.memoryHistory = root._push(root.memoryHistory, root.memoryUsage);
             }
         }
     }
@@ -142,6 +155,7 @@ Singleton {
             const gpuRaw = parseInt(gpuStat.text().trim());
             if (!isNaN(gpuRaw)) {
                 root.gpuUsage = Math.max(0, Math.min(1, gpuRaw / 100));
+                root.gpuHistory = root._push(root.gpuHistory, root.gpuUsage);
             }
         }
     }
@@ -155,6 +169,7 @@ Singleton {
             const tempRaw = parseInt(tempStat.text().trim());
             if (!isNaN(tempRaw)) {
                 root.temperature = Math.max(0, Math.min(1, tempRaw / 1000 / 100));
+                root.temperatureHistory = root._push(root.temperatureHistory, root.temperature);
             }
         }
     }

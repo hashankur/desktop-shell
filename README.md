@@ -15,7 +15,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **Top bar**: per-screen, with Niri workspace strip, CPU/RAM/GPU/temp rings, focused window, clock, media, system tray, WiFi, battery, power button
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
-- **Dashboard**: tabbed overlay with calendar, notification history, system stats + battery, and media controls
+- **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
 - **Notifications**: dismiss, click-to-invoke actions
 - **OSD**: volume and brightness (pill-shaped overlays)
 - **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup — destructive actions ask for confirmation
