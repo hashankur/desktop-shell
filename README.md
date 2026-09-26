@@ -16,7 +16,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
-- **Calendar**: ICS feeds (Google Calendar secret address or any ICS URL), event dots on the month grid, click a day for its events
+- **Calendar**: ICS feeds (Google Calendar secret address or any ICS URL) with per-feed event colors, dots on the month grid, click a day to drill into its events
 - **Notifications**: dismiss, click-to-invoke actions; critical urgency gets sticky toasts, error accent, and DND bypass
 - **OSD**: volume, microphone, and brightness (single shared pill)
 - **Power menu**: lock, logout, suspend, shutdown, restart, firmware setup
@@ -61,12 +61,23 @@ Create `~/.config/quickshell/calendar.json` with your ICS feed URLs (Google Cale
 ```json
 {
   "feeds": [
-    "https://calendar.google.com/calendar/ical/your.address%40gmail.com/private-abc123/basic.ics"
+    { "url": "https://calendar.google.com/calendar/ical/your.address%40gmail.com/private-abc123/basic.ics", "color": "#039BE5" }
   ]
 }
 ```
 
-`webcal://` and `file://` URLs work as well. Feeds refresh every 15 minutes, and when the dashboard opens if the last fetch is over 5 minutes old.
+Plain URL strings are still accepted (the theme's primary color is used). Google's ICS export carries no color data, so set `color` to your calendar's hex from Google Calendar settings — the built-in palette:
+
+| Name | Hex | Name | Hex |
+|---|---|---|---|
+| Tomato | `#D50000` | Flamingo | `#E67C73` |
+| Tangerine | `#F4511E` | Banana | `#F6BF26` |
+| Sage | `#33B679` | Basil | `#0B8043` |
+| Peacock | `#039BE5` | Blueberry | `#3F51B5` |
+| Lavender | `#7986CB` | Grape | `#8E24AA` |
+| Graphite | `#616161` | | |
+
+Non-Google feeds that ship RFC 7986 `COLOR` / `X-WR-CALCOLOR` get that color automatically — the config `color` wins if both are present. `webcal://` and `file://` URLs work as well. Feeds refresh every 15 minutes, and when the dashboard opens if the last fetch is over 5 minutes old.
 
 ### IPC
 

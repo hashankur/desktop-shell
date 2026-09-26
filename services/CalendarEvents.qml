@@ -18,7 +18,7 @@ Singleton {
     property int refreshMinutes: 15
     property double lastRefresh: 0
 
-    // "y-m-d" (local date) -> array of {title, allDay, start, end, uid}
+    // "y-m-d" (local date) -> array of {title, allDay, start, end, uid, color}
     property var dayMap: ({})
 
     // file:// feeds go through FileView — XHR blocks local file reads
@@ -32,22 +32,25 @@ Singleton {
         id: configFile
         path: root.configPath
 
-        onLoadedChanged: {
-            if (loaded)
-                root.loadConfig();
-        }
+        // The `loaded` signal fires on every successful load — the
+        // `loaded` *property* stays true across path swaps, so an
+        // onLoadedChanged handler would never re-fire.
+        onLoaded: root.loadConfig()
     }
 
     FileView {
         id: fileReader
         printErrors: false
 
-        onLoadedChanged: {
-            if (loaded && root._curIdx >= 0) {
+        onLoaded: {
+            if (root._curIdx >= 0) {
                 const idx = root._curIdx;
                 root._curIdx = -1;
                 root._complete(idx, fileReader.text());
-                root._nextFile();
+                // Deferred: assigning `path` synchronously from inside the
+                // `loaded` handler disowns the still-releasing read job and
+                // the next feed's load silently never completes.
+                Qt.callLater(root._nextFile);
             }
         }
 
@@ -57,7 +60,7 @@ Singleton {
                 const idx = root._curIdx;
                 root._curIdx = -1;
                 root._complete(idx, null);
-                root._nextFile();
+                Qt.callLater(root._nextFile);
             }
         }
     }
@@ -75,7 +78,18 @@ Singleton {
             const content = configFile.text();
             if (content && content.trim().length > 0) {
                 const cfg = JSON.parse(content);
-                list = cfg.feeds || [];
+                // Accepts {"feeds": [url, …]} (legacy) and
+                // {"feeds": [{"url": …, "color": …}, …]}.
+                list = (cfg.feeds || []).map(function (f) {
+                    if (typeof f === "string")
+                        return { url: f, color: "" };
+                    return {
+                        url: (f && f.url) || "",
+                        color: root._normColor(f && f.color)
+                    };
+                }).filter(function (f) {
+                    return f.url.length > 0;
+                });
             }
         } catch (e) {
             console.warn("CalendarEvents: invalid calendar.json:", e);
@@ -83,6 +97,20 @@ Singleton {
         feeds = list;
         if (feeds.length > 0)
             refresh();
+    }
+
+    // Validates a user-supplied color (hex or CSS3 name); invalid input
+    // comes back as an invalid fully-transparent color from Qt.color().
+    function _normColor(v) {
+        if (typeof v !== "string" || v.trim().length === 0)
+            return "";
+        try {
+            if (Qt.color(v.trim()).a === 0)
+                return "";
+            return v.trim();
+        } catch (e) {
+            return "";
+        }
     }
 
     function refresh() {
@@ -94,9 +122,12 @@ Singleton {
         _texts = new Array(feeds.length).fill(null);
         _pending = feeds.length;
         _fileQueue = [];
+        // Ignore the completion of a read left over from a previous
+        // refresh cycle; the new queue advances itself.
+        _curIdx = -1;
         for (let i = 0; i < feeds.length; i++) {
             const idx = i;
-            let url = feeds[idx].trim();
+            let url = feeds[idx].url;
             if (url.startsWith("webcal://"))
                 url = "https://" + url.slice(8);
             if (url.startsWith("file://")) {
@@ -130,7 +161,7 @@ Singleton {
             };
             xhr.send();
         }
-        _nextFile();
+        Qt.callLater(root._nextFile);
     }
 
     // One local file at a time; every feed (http or file) decrements
@@ -188,9 +219,15 @@ Singleton {
         for (let i = 0; i < texts.length; i++) {
             if (!texts[i])
                 continue;
-            const parsed = _parseVEvents(texts[i]);
-            for (let j = 0; j < parsed.length; j++)
+            const cal = _parseVEvents(texts[i]);
+            const cfgColor = feeds[i] ? feeds[i].color : "";
+            const calColor = _normColor(cal.color);
+            const parsed = cal.events;
+            for (let j = 0; j < parsed.length; j++) {
+                // Precedence: config color > VEVENT COLOR > VCALENDAR COLOR.
+                parsed[j].color = cfgColor || _normColor(parsed[j].color) || calColor;
                 vevents.push(parsed[j]);
+            }
         }
 
         // First base per UID wins (dedupes the same calendar in >1 feed);
@@ -248,7 +285,7 @@ Singleton {
         }
         for (let i = 0; i < overrides.length; i++) {
             const ov = overrides[i];
-            add({ title: ov.title, allDay: ov.allDay, start: ov.start, end: ov.end, uid: ov.uid });
+            add({ title: ov.title, allDay: ov.allDay, start: ov.start, end: ov.end, uid: ov.uid, color: ov.color });
         }
 
         dayMap = index;
@@ -259,7 +296,7 @@ Singleton {
     // -------------------------------------------------------------------
 
     function _occ(ev, startMs) {
-        return { title: ev.title, allDay: ev.allDay, start: startMs, end: startMs + (ev.end - ev.start), uid: ev.uid };
+        return { title: ev.title, allDay: ev.allDay, start: startMs, end: startMs + (ev.end - ev.start), uid: ev.uid, color: ev.color };
     }
 
     // Expands one base event into occurrences within [DTSTART, hardEnd].
@@ -455,12 +492,13 @@ Singleton {
         }
 
         const events = [];
+        let calColor = "";
         let cur = null;
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const upper = line.toUpperCase();
             if (upper === "BEGIN:VEVENT") {
-                cur = { uid: "", title: "", status: "", start: null, end: null, duration: null, rrule: null, recurrenceId: null, exdates: [] };
+                cur = { uid: "", title: "", status: "", color: "", start: null, end: null, duration: null, rrule: null, recurrenceId: null, exdates: [] };
                 continue;
             }
             if (upper === "END:VEVENT") {
@@ -469,8 +507,17 @@ Singleton {
                 cur = null;
                 continue;
             }
-            if (!cur)
+            if (!cur) {
+                // VCALENDAR-level RFC 7986 COLOR (Google doesn't emit it;
+                // some CalDAV servers do; X-WR-CALCOLOR is the de-facto one).
+                const cc = line.indexOf(":");
+                if (cc >= 0) {
+                    const cn = line.slice(0, cc).split(";")[0].toUpperCase();
+                    if (cn === "COLOR" || cn === "X-WR-CALCOLOR")
+                        calColor = line.slice(cc + 1).trim();
+                }
                 continue;
+            }
             const colon = line.indexOf(":");
             if (colon < 0)
                 continue;
@@ -504,6 +551,9 @@ Singleton {
             case "RECURRENCE-ID":
                 cur.recurrenceId = _parseDt(value, params);
                 break;
+            case "COLOR":
+                cur.color = value.trim();
+                break;
             case "EXDATE": {
                 const parts = value.split(",");
                 for (let j = 0; j < parts.length; j++) {
@@ -515,7 +565,7 @@ Singleton {
             }
             }
         }
-        return events;
+        return { color: calColor, events: events };
     }
 
     function _finishEvent(cur) {
@@ -529,6 +579,7 @@ Singleton {
             uid: cur.uid,
             title: cur.title.length > 0 ? cur.title : "(untitled)",
             status: cur.status,
+            color: cur.color,
             allDay: cur.start.allDay,
             start: startMs,
             end: endMs,

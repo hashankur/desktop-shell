@@ -237,7 +237,8 @@ Item {
                             font.pixelSize: Appearance.fontSize.sm
                         }
 
-                        // Up to 3 event dots along the bottom edge.
+                        // Up to 3 event dots along the bottom edge, each
+                        // in its feed's calendar color.
                         Row {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.bottom: parent.bottom
@@ -246,13 +247,15 @@ Item {
                             visible: CalendarEvents.hasEvents(dayCard.dayData.date)
 
                             Repeater {
-                                model: Math.min(3, CalendarEvents.eventsForDay(dayCard.dayData.date).length)
+                                model: CalendarEvents.eventsForDay(dayCard.dayData.date).slice(0, 3)
 
                                 Rectangle {
+                                    required property var modelData
+
                                     width: Appearance.padding.small
                                     height: Appearance.padding.small
                                     radius: Appearance.rounding.full
-                                    color: Appearance.colors.primary
+                                    color: modelData.color || Appearance.colors.primary
                                 }
                             }
                         }
@@ -308,6 +311,14 @@ Item {
                                 Layout.preferredWidth: Appearance.spacing.large * 4
                             }
 
+                            Rectangle {
+                                Layout.alignment: Qt.AlignVCenter
+                                width: Appearance.padding.small
+                                height: Appearance.padding.small
+                                radius: Appearance.rounding.full
+                                color: eventRow.modelData.color || Appearance.colors.primary
+                            }
+
                             StyledText {
                                 text: eventRow.modelData.title
                                 font.pixelSize: Appearance.fontSize.sm
@@ -324,7 +335,8 @@ Item {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            anchors.leftMargin: Appearance.spacing.large * 4 + Appearance.spacing.normal
+                            // Starts at the title column: time + gap + dot + gap.
+                            anchors.leftMargin: Appearance.spacing.large * 4 + Appearance.spacing.normal * 2 + Appearance.padding.small
                         }
                     }
                 }
