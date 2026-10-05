@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Services.Notifications
 
 import qs.services
@@ -21,6 +22,9 @@ PanelWindow {
     margins.bottom: 18
     margins.left: 18
     exclusiveZone: 0
+
+    readonly property bool _criticalActive: _toasts.some(t => t.critical)
+    WlrLayershell.layer: _criticalActive ? WlrLayer.Overlay : WlrLayer.Top
 
     visible: _toasts.length > 0
 
@@ -46,19 +50,19 @@ PanelWindow {
     function pushToast(notification) {
         const critical = notification.urgency === NotificationUrgency.Critical;
         const obj = toastComponent.createObject(stack, {
-            notificationData: {
-                title: notification.summary || "",
-                body: notification.body || "",
-                icon: Notifications.resolveAppIcon(notification),
-                image: notification.image || "",
-                app: notification.appName || "",
-                timestamp: Date.now(),
-                urgency: notification.urgency,
-                timeout: notification.expireTimeout > 0 ? notification.expireTimeout : 4000
-            },
-            notificationObject: notification,
-            // Critical toasts stay until dismissed.
-            autoHideEnabled: !critical
+                notificationData: {
+                    title: notification.summary || "",
+                    body: notification.body || "",
+                    icon: Notifications.resolveAppIcon(notification),
+                    image: notification.image || "",
+                    app: notification.appName || "",
+                    timestamp: Date.now(),
+                    urgency: notification.urgency,
+                    timeout: notification.expireTimeout > 0 ? notification.expireTimeout : 4000
+                },
+                notificationObject: notification,
+                // Critical toasts stay until dismissed.
+                autoHideEnabled: !critical
         });
 
         if (!obj) {
