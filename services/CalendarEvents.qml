@@ -6,16 +6,23 @@ import QtQml
 import Quickshell
 import Quickshell.Io
 
+import "calendar/Ics.js" as Ics
+import "calendar/Recurrence.js" as Rec
+
 // ICS event feeds. Reads ~/.config/quickshell/calendar.json
 // ({"feeds": [{"url": "https://…", "color": "#rrggbb"}, …]}),
-// fetches each feed with curl via Process (one per feed, in parallel),
-// parses the RFC 5545 subset those feeds need, and answers day queries.
+// fetches each feed with curl via Process (one per feed, in parallel), and
+// answers day queries.
+//
+// The parsing, timezone and recurrence work lives in calendar/*.js, which
+// are pure JS with no Qt dependency. This file owns the fetch pipeline,
+// the month cache and the query surface.
 //
 // Recurrences are expanded lazily: only the months a view actually asks
 // for are materialized into the day index, so a big calendar costs one
 // month of work instead of two years of work per refresh.
 //
-// A failed fetch keeps the slot's previous text — stale beats empty.
+// A failed fetch keeps the slot's previous text, so stale beats empty.
 Singleton {
     id: root
 
@@ -54,7 +61,7 @@ Singleton {
         id: configFile
         path: root.configPath
 
-        // The `loaded` signal fires on every successful load — the
+        // The `loaded` signal fires on every successful load. The
         // `loaded` *property* stays true across path swaps, so an
         // onLoadedChanged handler would never re-fire.
         onLoaded: root.refresh()
@@ -73,8 +80,8 @@ Singleton {
             required property int index
             required property var modelData
 
-            // Captured before the process starts; a completion whose
-            // generation no longer matches belongs to a wave we replaced.
+            // A completion whose generation no longer matches belongs to a
+            // wave we have already replaced.
             property int _gen: root._generation
             property int _code: -1
             property bool _ended: false
@@ -136,10 +143,6 @@ Singleton {
         running: root.feeds.length > 0
         onTriggered: root._sweep()
     }
-
-    // -------------------------------------------------------------------
-    // Config
-    // -------------------------------------------------------------------
 
     // Re-reads calendar.json and applies it only when the feed list actually
     // changed. Returns true when `feeds` was replaced, which means the
@@ -308,10 +311,6 @@ Singleton {
         return _fmtTime;
     }
 
-    // -------------------------------------------------------------------
-    // Queries
-    // -------------------------------------------------------------------
-
     function hasEvents(date) {
         _ensureRange(date, date);
         const arr = dayMap[_key(date)];
@@ -379,10 +378,6 @@ Singleton {
         return ongoingTimed || ongoingAllDay || todayUpcoming || soonUpcoming || null;
     }
 
-    // -------------------------------------------------------------------
-    // Lazy expansion
-    // -------------------------------------------------------------------
-
     function _cmpOcc(a, b) {
         if (a.allDay !== b.allDay)
             return a.allDay ? -1 : 1;
@@ -413,7 +408,7 @@ Singleton {
             const rewind = Math.min(366, Math.ceil((ev.end - ev.start) / 86400000) + 1);
             const winFrom = fromMs - rewind * 86400000;
 
-            const occs = _expand(ev, s.skip, winFrom, toMs);
+            const occs = Rec.expand(ev, s.skip, winFrom, toMs);
             for (let j = 0; j < occs.length; j++)
                 _addOcc(added, occs[j]);
 
@@ -493,8 +488,7 @@ Singleton {
         dayMap = next;
     }
 
-    // Places one occurrence on every local day it covers. All-day DTEND is
-    // exclusive per RFC 5545, hence the -1.
+    // All-day DTEND is exclusive per RFC 5545, hence the -1.
     function _addOcc(index, occ) {
         const startD = new Date(occ.start);
         const endD = new Date(occ.end - 1);
@@ -511,10 +505,6 @@ Singleton {
         }
     }
 
-    // -------------------------------------------------------------------
-    // Index construction
-    // -------------------------------------------------------------------
-
     function _rebuild(texts) {
         // Nothing to do if the feeds said exactly what they said last time;
         // rebuilding would hand every view fresh arrays for no reason.
@@ -527,13 +517,15 @@ Singleton {
         for (let i = 0; i < texts.length; i++) {
             if (!texts[i])
                 continue;
-            const cal = _parseVEvents(texts[i]);
+            const cal = Ics.parse(texts[i]);
             const cfgColor = feeds[i] ? feeds[i].color : "";
             const calColor = _normColor(cal.color);
             for (let j = 0; j < cal.events.length; j++) {
                 const ev = cal.events[j];
                 // Precedence: config color > VEVENT COLOR > VCALENDAR COLOR.
-                ev.color = cfgColor || ev.color || calColor;
+                // The parser hands the VEVENT color back raw, since
+                // validating it needs Qt.color.
+                ev.color = cfgColor || _normColor(ev.color) || calColor;
                 // A feed is free to omit UID; without a unique key every such
                 // event would collapse onto the first one.
                 if (!ev.uid)
@@ -589,582 +581,6 @@ Singleton {
         dayMap = ({});
     }
 
-    // -------------------------------------------------------------------
-    // Recurrence expansion
-    // -------------------------------------------------------------------
 
-    function _occ(ev, startMs) {
-        return {
-            title: ev.title,
-            allDay: ev.allDay,
-            start: startMs,
-            end: startMs + (ev.end - ev.start),
-            uid: ev.uid,
-            color: ev.color,
-            tentative: ev.tentative
-        };
-    }
 
-    // Occurrences of one event overlapping [from, to).
-    // `skipTimes` are overridden or cancelled instances: they are still
-    // counted so COUNT stays exact, they are just not emitted.
-    function _expand(ev, skipTimes, from, to) {
-        const out = [];
-        if (!ev.rrule) {
-            if (ev.start < to && ev.end > from && skipTimes.indexOf(ev.start) < 0)
-                out.push(_occ(ev, ev.start));
-            return out;
-        }
-
-        const rule = ev.rrule;
-        const interval = Math.max(1, rule.INTERVAL || 1);
-        const maxCount = rule.COUNT !== undefined ? rule.COUNT : null;
-        const startD = new Date(ev.start);
-        const utc = ev.utc === true;
-        const tz = !utc && ev.tz ? ev.tz : "";
-        // UTC and TZID events walk on a Date whose UTC fields hold the event's
-        // own wall clock, so a DST change in that zone cannot slide the time
-        // of day. Floating events keep using the host's local fields.
-        const useUtc = utc || !!tz;
-        const wall = tz ? _zonedParts(ev.start, tz) : null;
-
-        const getY = d => useUtc ? d.getUTCFullYear() : d.getFullYear();
-        const getM = d => useUtc ? d.getUTCMonth() : d.getMonth();
-        const getD = d => useUtc ? d.getUTCDate() : d.getDate();
-        const getDow = d => useUtc ? d.getUTCDay() : d.getDay();
-        const getH = d => useUtc ? d.getUTCHours() : d.getHours();
-        const getMin = d => useUtc ? d.getUTCMinutes() : d.getMinutes();
-        const getS = d => useUtc ? d.getUTCSeconds() : d.getSeconds();
-
-        // Preserve the original time of day while stepping the date.
-        const h0 = wall ? wall.h : getH(startD);
-        const m0 = wall ? wall.mi : getMin(startD);
-        const s0 = wall ? wall.s : getS(startD);
-        const dow0 = wall ? wall.dow : getDow(startD);
-        const mk = (y, m, day) => useUtc
-            ? new Date(Date.UTC(y, m, day, h0, m0, s0))
-            : new Date(y, m, day, h0, m0, s0);
-        const addDays = (d, n) => mk(getY(d), getM(d), getD(d) + n);
-        // Walking happens in wall-clock terms; only the emitted instant is
-        // resolved through the event's zone.
-        const toMs = d => tz
-            ? _zonedMs(getY(d), getM(d), getD(d), getH(d), getMin(d), getS(d), tz)
-            : d.getTime();
-
-        // The window is half-open and UNTIL is inclusive, so the two bounds
-        // cannot share one comparison.
-        const until = rule.UNTIL !== undefined ? rule.UNTIL : Infinity;
-        const exset = ({});
-        for (let i = 0; i < ev.exdates.length; i++)
-            exset[ev.exdates[i]] = true;
-
-        // A COUNT-limited rule is walked from DTSTART so the count stays
-        // exact; an open-ended one seeks to the window instead. Every seek
-        // lands one step early — a DST shift can put the estimate a step
-        // late — and push() drops whatever falls before the window.
-        const counted = maxCount !== null;
-        const budget = counted ? maxCount + 8 : 4000;
-        let generated = 0;
-        let stop = false;
-
-        const push = function (d) {
-            if (stop)
-                return;
-            const ms = toMs(d);
-            if (ms > until || ms >= to) {
-                stop = true;
-                return;
-            }
-            if (ms < ev.start)
-                return;
-            generated++;
-            if (maxCount !== null && generated > maxCount) {
-                stop = true;
-                return;
-            }
-            if (ms < from)
-                return;
-            if (skipTimes.indexOf(ms) >= 0)
-                return;
-            if (ms in exset)
-                return;
-            out.push(_occ(ev, ms));
-        };
-
-        const dowMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
-        const byday = (rule.BYDAY || []).map(s => ({ ord: parseInt(s, 10) || null, dow: dowMap[s.replace(/^[+-]?\d+/, "")] }));
-        const bymonthday = rule.BYMONTHDAY || [];
-
-        if (rule.FREQ === "DAILY") {
-            let cur = startD;
-            let it = 0;
-            if (!counted && from > startD.getTime()) {
-                const steps = Math.floor((from - startD.getTime()) / (interval * 86400000)) - 1;
-                cur = addDays(startD, Math.max(0, steps) * interval);
-            }
-            while (!stop && it++ < budget) {
-                push(cur);
-                cur = addDays(cur, interval);
-            }
-        } else if (rule.FREQ === "WEEKLY") {
-            const wkst = rule.WKST !== undefined ? rule.WKST : 1;
-            const targetDows = byday.length > 0 ? byday.map(b => b.dow) : [dow0];
-            const offToWkst = d => (getDow(d) - wkst + 7) % 7;
-            // Anchor the interval stepping to the start date's own week so
-            // BYDAY days earlier in that week aren't generated twice.
-            const anchorWeekStart = addDays(startD, -offToWkst(startD));
-            let weekNo = 0;
-            if (!counted && from > anchorWeekStart.getTime()) {
-                weekNo = Math.floor((from - anchorWeekStart.getTime()) / (interval * 7 * 86400000)) - 1;
-                if (weekNo < 0)
-                    weekNo = 0;
-            }
-            while (!stop && weekNo < budget) {
-                const weekStart = addDays(anchorWeekStart, weekNo * interval * 7);
-                for (let d = 0; d < 7; d++) {
-                    if (stop)
-                        break;
-                    const cand = addDays(weekStart, d);
-                    if (targetDows.indexOf(getDow(cand)) >= 0)
-                        push(cand);
-                }
-                weekNo++;
-            }
-        } else if (rule.FREQ === "MONTHLY") {
-            const startDay = getD(startD);
-            const startY = getY(startD);
-            const startM = getM(startD);
-            const monthIndex = (y, m) => y * 12 + m;
-            let mIdx = 0;
-            let it = 0;
-            if (!counted && from > startD.getTime()) {
-                const f = new Date(from);
-                const est = Math.floor((monthIndex(getY(f), getM(f)) - monthIndex(startY, startM)) / interval) - 1;
-                mIdx = est < 0 ? 0 : est;
-            }
-            while (!stop && it++ < budget) {
-                const total = startM + mIdx * interval;
-                const y = startY + Math.floor(total / 12);
-                const m = total % 12;
-                const days = _monthDayCandidates(y, m, startDay, byday, bymonthday);
-                for (let i = 0; i < days.length && !stop; i++) {
-                    const cand = mk(y, m, days[i]);
-                    // mk overflow (e.g. Feb 29) rolls the month — drop those.
-                    if (getY(cand) === y && getM(cand) === m)
-                        push(cand);
-                }
-                mIdx++;
-            }
-        } else if (rule.FREQ === "YEARLY") {
-            const startY = getY(startD);
-            const startM = getM(startD);
-            const startDay = getD(startD);
-            const months = (rule.BYMONTH && rule.BYMONTH.length > 0) ? rule.BYMONTH : [startM];
-            let yIdx = 0;
-            let it = 0;
-            if (!counted && from > startD.getTime()) {
-                const est = Math.floor((getY(new Date(from)) - startY) / interval) - 1;
-                yIdx = est < 0 ? 0 : est;
-            }
-            while (!stop && it++ < budget) {
-                const y = startY + yIdx * interval;
-                for (let mi = 0; mi < months.length && !stop; mi++) {
-                    const m = months[mi];
-                    const days = _monthDayCandidates(y, m, startDay, byday, bymonthday);
-                    for (let i = 0; i < days.length && !stop; i++) {
-                        const cand = mk(y, m, days[i]);
-                        if (getY(cand) === y && getM(cand) === m)
-                            push(cand);
-                    }
-                }
-                yIdx++;
-            }
-        } else {
-            // Unsupported FREQ (HOURLY…): single occurrence.
-            push(startD);
-        }
-        return out;
-    }
-
-    // Candidate days-of-month for MONTHLY/YEARLY occurrences. These are
-    // properties of the calendar date itself, so the host's local Date is
-    // the right tool whatever frame the event is expressed in.
-    function _monthDayCandidates(y, m, defaultDay, byday, bymonthday) {
-        const days = [];
-        if (bymonthday.length > 0) {
-            for (let i = 0; i < bymonthday.length; i++) {
-                const d = bymonthday[i];
-                days.push(d > 0 ? d : new Date(y, m + 1, 0).getDate() + d + 1);
-            }
-        } else if (byday.length > 0) {
-            const first = new Date(y, m, 1);
-            const lastDay = new Date(y, m + 1, 0).getDate();
-            const plainDows = [];
-            for (let i = 0; i < byday.length; i++) {
-                if (byday[i].ord === null) {
-                    plainDows.push(byday[i].dow);
-                    continue;
-                }
-                // Ordinal weekday: 1FR = first Friday, -1MO = last Monday.
-                const ord = byday[i].ord;
-                const firstMatch = 1 + ((byday[i].dow - first.getDay() + 7) % 7);
-                const count = Math.floor((lastDay - firstMatch) / 7) + 1;
-                let day;
-                if (ord > 0)
-                    day = firstMatch + (ord - 1) * 7;
-                else
-                    day = firstMatch + (count + ord) * 7;
-                if (day >= 1 && day <= lastDay)
-                    days.push(day);
-            }
-            if (plainDows.length > 0) {
-                for (let d = 1; d <= lastDay; d++) {
-                    if (plainDows.indexOf(new Date(y, m, d).getDay()) >= 0)
-                        days.push(d);
-                }
-            }
-        } else {
-            days.push(defaultDay);
-        }
-        days.sort((a, b) => a - b);
-        return days;
-    }
-
-    // -------------------------------------------------------------------
-    // Time zones
-    // -------------------------------------------------------------------
-
-    readonly property var _tzFormatters: ({})
-
-    // Resolved once; the locale cannot change under a running shell.
-    property string _fmtTime: ""
-
-    // Formatter for an IANA zone, or null when the name is unusable. Some
-    // servers publish TZID as a URL path, so successively shorter suffixes
-    // are tried — but only as a fallback, since "Europe/Berlin" is already a
-    // perfectly good zone name.
-    function _tzFormatter(tz) {
-        if (tz in _tzFormatters)
-            return _tzFormatters[tz];
-        let f = null;
-        const parts = tz.split("/");
-        for (let i = 0; i < parts.length && !f; i++) {
-            const candidate = parts.slice(i).join("/");
-            if (candidate.length === 0)
-                continue;
-            try {
-                f = new Intl.DateTimeFormat("en-US", {
-                    timeZone: candidate,
-                    hourCycle: "h23",
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                });
-            } catch (e) {
-                f = null;
-            }
-        }
-        _tzFormatters[tz] = f;
-        return f;
-    }
-
-    function _tzKnown(tz) {
-        return _tzFormatter(tz) !== null;
-    }
-
-    // Offset of `tz` from UTC at `utcMs`, in milliseconds. 0 for an
-    // unusable zone, which the caller avoids by checking _tzKnown first.
-    function _tzOffset(tz, utcMs) {
-        const f = _tzFormatter(tz);
-        if (!f)
-            return 0;
-        const parts = f.formatToParts(new Date(utcMs));
-        let y = 1970, mo = 1, d = 1, h = 0, mi = 0, s = 0;
-        for (let i = 0; i < parts.length; i++) {
-            const p = parts[i];
-            const n = parseInt(p.value, 10);
-            if (p.type === "year")
-                y = n;
-            else if (p.type === "month")
-                mo = n;
-            else if (p.type === "day")
-                d = n;
-            else if (p.type === "hour")
-                h = n;
-            else if (p.type === "minute")
-                mi = n;
-            else if (p.type === "second")
-                s = n;
-        }
-        return Date.UTC(y, mo - 1, d, h, mi, s) - utcMs;
-    }
-
-    // Wall-clock time in `tz` to a UTC instant. The first guess reads as if
-    // the wall clock were UTC; the offset taken at that instant is right
-    // unless it crosses a DST change, so the result is refined only when the
-    // offset it lands on actually differs.
-    function _zonedMs(y, mo, d, h, mi, s, tz) {
-        const guess = Date.UTC(y, mo, d, h, mi, s);
-        const off = _tzOffset(tz, guess);
-        const ms = guess - off;
-        const off2 = _tzOffset(tz, ms);
-        return off2 === off ? ms : guess - off2;
-    }
-
-    // Wall-clock fields of an instant as seen in `tz`.
-    function _zonedParts(ms, tz) {
-        const shifted = new Date(ms + _tzOffset(tz, ms));
-        return {
-            y: shifted.getUTCFullYear(),
-            m: shifted.getUTCMonth(),
-            d: shifted.getUTCDate(),
-            dow: shifted.getUTCDay(),
-            h: shifted.getUTCHours(),
-            mi: shifted.getUTCMinutes(),
-            s: shifted.getUTCSeconds()
-        };
-    }
-
-    // -------------------------------------------------------------------
-    // ICS parsing
-    // -------------------------------------------------------------------
-
-    function _parseVEvents(text) {
-        const rawLines = text.split(/\r\n|\r|\n/);
-        const lines = [];
-        for (let i = 0; i < rawLines.length; i++) {
-            const line = rawLines[i];
-            if ((line.startsWith(" ") || line.startsWith("\t")) && lines.length > 0)
-                lines[lines.length - 1] += line.slice(1);
-            else
-                lines.push(line);
-        }
-
-        const events = [];
-        let calColor = "";
-        let cur = null;
-        let depth = 0;
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const upper = line.toUpperCase();
-            if (upper === "BEGIN:VEVENT") {
-                cur = { uid: "", title: "", status: "", color: "", start: null, end: null, duration: null, rrule: null, recurrenceId: null, exdates: [] };
-                depth = 0;
-                continue;
-            }
-            if (upper === "END:VEVENT") {
-                if (cur && depth === 0 && cur.start)
-                    events.push(_finishEvent(cur));
-                cur = null;
-                depth = 0;
-                continue;
-            }
-            // A VALARM may carry SUMMARY, UID and DESCRIPTION of its own;
-            // without this they would land on the parent event.
-            if (upper === "BEGIN:VALARM") {
-                depth++;
-                continue;
-            }
-            if (upper === "END:VALARM") {
-                if (depth > 0)
-                    depth--;
-                continue;
-            }
-            if (depth > 0)
-                continue;
-            if (!cur) {
-                // VCALENDAR-level RFC 7986 COLOR (Google doesn't emit it;
-                // some CalDAV servers do; X-WR-CALCOLOR is the de-facto one).
-                const cc = line.indexOf(":");
-                if (cc >= 0) {
-                    const cn = line.slice(0, cc).split(";")[0].toUpperCase();
-                    if (cn === "COLOR" || cn === "X-WR-CALCOLOR")
-                        calColor = line.slice(cc + 1).trim();
-                }
-                continue;
-            }
-            const colon = line.indexOf(":");
-            if (colon < 0)
-                continue;
-            const head = line.slice(0, colon);
-            const value = line.slice(colon + 1);
-            const semi = head.indexOf(";");
-            const name = (semi >= 0 ? head.slice(0, semi) : head).toUpperCase();
-            const params = semi >= 0 ? head.slice(semi + 1) : "";
-            switch (name) {
-            case "SUMMARY":
-                cur.title = _unescape(value);
-                break;
-            case "UID":
-                cur.uid = value.trim();
-                break;
-            case "STATUS":
-                cur.status = value.trim().toUpperCase();
-                break;
-            case "DTSTART":
-                cur.start = _parseDt(value, params);
-                break;
-            case "DTEND":
-                cur.end = _parseDt(value, params);
-                break;
-            case "DURATION":
-                cur.duration = value.trim();
-                break;
-            case "RRULE":
-                cur.rrule = _parseRrule(value);
-                break;
-            case "RECURRENCE-ID":
-                cur.recurrenceId = _parseDt(value, params);
-                break;
-            case "COLOR":
-                cur.color = _normColor(value);
-                break;
-            case "EXDATE": {
-                const parts = value.split(",");
-                for (let j = 0; j < parts.length; j++) {
-                    const dt = _parseDt(parts[j], params);
-                    if (dt)
-                        cur.exdates.push(dt.ms);
-                }
-                break;
-            }
-            }
-        }
-        return { color: calColor, events: events };
-    }
-
-    function _finishEvent(cur) {
-        const startMs = cur.start.ms;
-        let endMs = cur.end ? cur.end.ms : null;
-        if (endMs === null && cur.duration)
-            endMs = startMs + _durationMs(cur.duration);
-        if (endMs === null)
-            endMs = cur.start.allDay ? startMs + 24 * 3600 * 1000 : startMs;
-        if (endMs <= startMs)
-            endMs = startMs;
-        return {
-            uid: cur.uid,
-            title: cur.title.length > 0 ? cur.title : "(untitled)",
-            status: cur.status,
-            tentative: cur.status === "TENTATIVE",
-            color: cur.color,
-            allDay: cur.start.allDay,
-            start: startMs,
-            end: endMs,
-            utc: cur.start.utc === true,
-            tz: cur.start.tz || "",
-            rrule: cur.rrule,
-            recurrenceId: cur.recurrenceId ? cur.recurrenceId.ms : null,
-            exdates: cur.exdates
-        };
-    }
-
-    // Returns null for anything that is not a usable date, so a broken
-    // property drops the event instead of poisoning the index with NaN.
-    function _parseDt(value, params) {
-        const v = value.trim();
-        if (v.length === 0)
-            return null;
-
-        if (params.indexOf("VALUE=DATE") >= 0 || v.length === 8) {
-            if (v.length < 8)
-                return null;
-            const y = parseInt(v.slice(0, 4), 10);
-            const mo = parseInt(v.slice(4, 6), 10) - 1;
-            const d = parseInt(v.slice(6, 8), 10);
-            if (mo < 0 || mo > 11 || d < 1 || d > 31)
-                return null;
-            const ms = new Date(y, mo, d).getTime();
-            return isFinite(ms) ? { ms: ms, allDay: true, utc: false, tz: "" } : null;
-        }
-
-        const tIdx = v.indexOf("T");
-        if (tIdx < 0)
-            return null;
-        const y = parseInt(v.slice(0, 4), 10);
-        const mo = parseInt(v.slice(4, 6), 10) - 1;
-        const d = parseInt(v.slice(6, 8), 10);
-        const time = v.slice(tIdx + 1);
-        const isUtc = time.endsWith("Z");
-        const hh = parseInt(time.slice(0, 2), 10) || 0;
-        const mi = parseInt(time.slice(2, 4), 10) || 0;
-        const ss = parseInt(time.slice(4, 6), 10) || 0;
-        if (mo < 0 || mo > 11 || d < 1 || d > 31 || hh > 23 || mi > 59 || ss > 60)
-            return null;
-        const raw = _paramValue(params, "TZID");
-
-        if (isUtc) {
-            return { ms: Date.UTC(y, mo, d, hh, mi, ss), allDay: false, utc: true, tz: "" };
-        }
-        // A TZID names a real zone, so the wall clock has to be resolved
-        // through it rather than read as host-local. An unknown zone falls
-        // back to floating time, which is what the value would have meant
-        // without the parameter.
-        const tz = _tzKnown(raw) ? raw : "";
-        const ms = tz ? _zonedMs(y, mo, d, hh, mi, ss, tz) : new Date(y, mo, d, hh, mi, ss).getTime();
-        return isFinite(ms) ? { ms: ms, allDay: false, utc: false, tz: tz } : null;
-    }
-
-    function _paramValue(params, name) {
-        const m = params.match(new RegExp("(?:^|;)" + name + "=(?:\"([^\"]*)\"|([^;]*))", "i"));
-        if (!m)
-            return "";
-        return ((m[1] !== undefined ? m[1] : m[2]) || "").trim();
-    }
-
-    function _durationMs(value) {
-        const m = value.match(/^P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/);
-        if (!m)
-            return 0;
-        return ((parseInt(m[1] || 0, 10) * 7 + parseInt(m[2] || 0, 10)) * 86400 + parseInt(m[3] || 0, 10) * 3600 + parseInt(m[4] || 0, 10) * 60 + parseInt(m[5] || 0, 10)) * 1000;
-    }
-
-    function _parseRrule(value) {
-        const rule = ({});
-        const parts = value.split(";");
-        for (let i = 0; i < parts.length; i++) {
-            const eq = parts[i].indexOf("=");
-            if (eq < 0)
-                continue;
-            const k = parts[i].slice(0, eq).toUpperCase();
-            const v = parts[i].slice(eq + 1);
-            switch (k) {
-            case "FREQ":
-                rule.FREQ = v.toUpperCase();
-                break;
-            case "INTERVAL":
-                rule.INTERVAL = parseInt(v, 10) || 1;
-                break;
-            case "COUNT":
-                rule.COUNT = parseInt(v, 10);
-                break;
-            case "UNTIL": {
-                const dt = _parseDt(v, "");
-                if (dt)
-                    rule.UNTIL = dt.ms;
-                break;
-            }
-            case "BYDAY":
-                rule.BYDAY = v.split(",");
-                break;
-            case "BYMONTHDAY":
-                rule.BYMONTHDAY = v.split(",").map(s => parseInt(s, 10));
-                break;
-            case "BYMONTH":
-                rule.BYMONTH = v.split(",").map(s => parseInt(s, 10) - 1);
-                break;
-            case "WKST":
-                rule.WKST = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }[v.toUpperCase()];
-                break;
-            }
-        }
-        return rule;
-    }
-
-    function _unescape(value) {
-        return value.replace(/\\[nN]/g, "\n").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\");
-    }
 }
