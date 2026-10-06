@@ -59,7 +59,7 @@ Row {
                     } else if (mouse.button === Qt.RightButton) {
                         if (trayItemRoot.trayItem.hasMenu && trayItemRoot.trayItem.menu) {
                             // closeAll() fires willDestroy synchronously, which
-                            // clears currentMenu — no manual null-out needed.
+                            // clears currentMenu, so no manual null-out is needed.
                             if (root.currentMenu)
                                 root.currentMenu.closeAll();
 

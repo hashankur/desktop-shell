@@ -66,7 +66,7 @@ PanelWindow {
         });
 
         if (!obj) {
-            // Creation failed — release the notification so it isn't
+            // Creation failed, so release the notification instead of leaving it
             // retained forever with tracked = true.
             console.warn("Failed to create notification toast");
             notification.dismiss();

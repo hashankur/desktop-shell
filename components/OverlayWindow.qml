@@ -32,7 +32,7 @@ PanelWindow {
     property real enterOffsetY: 0
 
     // Drive content bindings from these; animated via the Behaviors below.
-    // Not readonly purely because Behavior attaches to writable properties —
+    // Not readonly only because Behavior attaches to writable properties;
     // never assign to them directly.
     property real animOpacity: _target ? 1 : 0
     property real animY: _target ? 0 : enterOffsetY

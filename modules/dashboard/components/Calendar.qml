@@ -146,7 +146,7 @@ Item {
         clip: true
 
         // Sliding page. Deliberately no anchors: anchors would override
-        // the animated `x` (tray-menu slider pattern) — the layout margin
+        // the animated `x` (tray-menu slider pattern). The layout margin
         // is folded into width/height and the static x/y offset instead.
         ColumnLayout {
             x: root.slideX + Appearance.padding.large

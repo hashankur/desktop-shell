@@ -17,7 +17,7 @@ ColumnLayout {
     property color lineColor: Appearance.colors.primary
 
     // Visible sample window. Spacing is derived ONLY from this constant and
-    // the plot width, never from the current sample count — lines scroll in
+    // the plot width, never from the current sample count, so lines scroll in
     // from the right instead of rescaling on every sample (Ambxst pattern).
     readonly property int windowSize: 60
 
@@ -71,7 +71,7 @@ ColumnLayout {
                 if (plotW <= 0 || plotH <= 0)
                     return;
 
-                // Static grid — never moves, so scrolling data reads cleanly.
+                // Static grid: never moves, so scrolling data reads cleanly.
                 ctx.strokeStyle = Appearance.colors.surface_container_high;
                 ctx.lineWidth = 1;
                 for (let g = 1; g < 4; g++) {

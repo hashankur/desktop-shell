@@ -10,7 +10,7 @@ Singleton {
 
     property int maxHistory: 50
     property bool persistenceEnabled: true
-    // Do not disturb: suppresses toasts only — history still records.
+    // Do not disturb: suppresses toasts only, history still records.
     property bool dnd: false
     readonly property string persistencePath: Quickshell.env("HOME") + "/.config/quickshell/notifications.json"
 

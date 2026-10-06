@@ -48,7 +48,7 @@ Scope {
     }
 
     // Show the pill (or extend it when already showing). Callers set
-    // iconPath/value first, then bump via trigger() — assigning
+    // iconPath/value first, then bump via trigger(). Assigning
     // `shouldShow = true` while already visible would be a no-op and
     // leave the hide timer untouched (mute toggles at constant volume).
     function trigger() {

@@ -12,7 +12,7 @@ Rectangle {
     // every clock tick and whenever CalendarEvents rebuilds its day index.
     readonly property date now: clock.date
     // Only an ongoing event shows no countdown, so this is almost always
-    // non-empty — see restLabel().
+    // non-empty, see restLabel().
     readonly property var upcoming: CalendarEvents.nextEvent(now)
     readonly property bool hovered: hoverHandler.hovered
 
@@ -148,8 +148,8 @@ Rectangle {
         implicitHeight: cardRoot.implicitHeight
 
         // Same anchoring as services/Tooltip.qml: the anchor rect and
-        // size are assigned in openCard() right before showing — live
-        // bindings here have been observed to evaluate stale.
+        // size are assigned in openCard() right before showing: live bindings
+        // here have been observed to evaluate stale across retargets.
         anchor.edges: Edges.Bottom | Edges.Left
         anchor.gravity: Edges.Bottom | Edges.Right
         anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
