@@ -63,10 +63,20 @@ Scope {
                 // Center section
                 Item {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: implicitWidth
+                    Layout.preferredWidth: centerRow.implicitWidth
 
-                    Clock {
+                    Row {
+                        id: centerRow
                         anchors.centerIn: parent
+                        spacing: Appearance.spacing.normal
+
+                        Clock {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        NextEvent {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
 

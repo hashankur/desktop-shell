@@ -13,8 +13,12 @@ import qs.services
 Item {
     id: root
 
+    // Month navigation state. `_pinned` means "still showing today", which
+    // lets the clock below roll the view over at midnight; paging away
+    // unsticks it until Today is pressed.
     property int month: (new Date()).getMonth()
     property int year: (new Date()).getFullYear()
+    property bool _pinned: true
 
     // Day drill-in (in-place, tray-menu pattern): the whole column slides
     // out, the content swaps, and the new content slides back in.
@@ -25,9 +29,33 @@ Item {
     property real _navOut: 0
     property real _navIn: 0
 
+    // Stable reference: CalendarEvents hands back the same sorted array until
+    // the index actually changes, so a 15-minute refresh does not reset the
+    // list and lose the scroll position.
     readonly property var dayEvents: root.dayView ? CalendarEvents.eventsForDay(root.selectedDate) : []
 
+    SystemClock {
+        id: calClock
+        precision: SystemClock.Minutes
+        onDateChanged: {
+            if (!root._pinned)
+                return;
+            const today = calClock.date;
+            root.month = today.getMonth();
+            root.year = today.getFullYear();
+            if (!root.dayView)
+                root.selectedDate = today;
+        }
+    }
+
+    // Expand the visible month up front so the dots are there on the first
+    // frame instead of popping in a moment later.
+    onMonthChanged: CalendarEvents.ensureMonth(root.year, root.month)
+    onYearChanged: CalendarEvents.ensureMonth(root.year, root.month)
+    Component.onCompleted: CalendarEvents.ensureMonth(root.year, root.month)
+
     function previousMonth() {
+        root._pinned = false;
         if (root.month === 0) {
             root.month = 11;
             root.year--;
@@ -37,6 +65,7 @@ Item {
     }
 
     function nextMonth() {
+        root._pinned = false;
         if (root.month === 11) {
             root.month = 0;
             root.year++;
@@ -47,6 +76,7 @@ Item {
 
     function goToToday() {
         const now = new Date();
+        root._pinned = true;
         root.month = now.getMonth();
         root.year = now.getFullYear();
     }
@@ -61,6 +91,13 @@ Item {
     function openDay(date) {
         root._transition(() => {
             root.selectedDate = date;
+            // The grid shows leading and trailing days from the neighbouring
+            // months, so the header has to follow or the two disagree.
+            if (!root.dayView) {
+                root._pinned = false;
+                root.month = date.getMonth();
+                root.year = date.getFullYear();
+            }
             root.dayView = true;
         }, true);
     }
@@ -148,7 +185,6 @@ Item {
                     verticalPadding: Appearance.padding.smaller
                     contentItem: Icon {
                         source: Quickshell.iconPath("go-previous-symbolic")
-                        opacity: enabled ? 1 : 0.3
                     }
                     onClicked: root.previousMonth()
                 }
@@ -159,10 +195,21 @@ Item {
                     verticalPadding: Appearance.padding.smaller
                     contentItem: Icon {
                         source: Quickshell.iconPath("go-next-symbolic")
-                        opacity: enabled ? 1 : 0.3
                     }
                     onClicked: root.nextMonth()
                 }
+            }
+
+            // A feed that could not be read keeps serving its last good text,
+            // so nothing in the grid would otherwise reveal that the calendar
+            // is out of date. Its own row, since the header has no slack.
+            StyledText {
+                visible: !root.dayView && CalendarEvents.fetchFailures.length > 0
+                text: "Some calendars failed to update"
+                color: Appearance.colors.error
+                font.pixelSize: Appearance.fontSize.xs
+                Layout.fillWidth: true
+                elide: Text.ElideRight
             }
 
             // ── Day header (drilled in) ──────────────────────────
@@ -177,7 +224,6 @@ Item {
                     verticalPadding: Appearance.padding.smaller
                     contentItem: Icon {
                         source: Quickshell.iconPath("go-previous-symbolic")
-                        opacity: enabled ? 1 : 0.3
                     }
                     onClicked: root.navigateBack()
                 }
@@ -303,9 +349,12 @@ Item {
                             spacing: Appearance.spacing.normal
 
                             StyledText {
-                                text: eventRow.modelData.allDay ? "All day" : Qt.formatDateTime(new Date(eventRow.modelData.start), "h:mm AP")
+                                text: eventRow.modelData.allDay
+                                      ? "All day"
+                                      : CalendarEvents.formatTime(eventRow.modelData.start)
                                 color: Appearance.colors.primary
                                 font.pixelSize: Appearance.fontSize.xs
+                                elide: Text.ElideRight
                                 // Fixed time column, derived from a token so
                                 // event titles line up without a magic width.
                                 Layout.preferredWidth: Appearance.spacing.large * 4
@@ -313,14 +362,21 @@ Item {
 
                             Rectangle {
                                 Layout.alignment: Qt.AlignVCenter
-                                width: Appearance.padding.small
-                                height: Appearance.padding.small
+                                // implicit*, not width/height: this item is
+                                // managed by the RowLayout.
+                                implicitWidth: Appearance.padding.small
+                                implicitHeight: Appearance.padding.small
                                 radius: Appearance.rounding.full
                                 color: eventRow.modelData.color || Appearance.colors.primary
                             }
 
                             StyledText {
-                                text: eventRow.modelData.title
+                                text: eventRow.modelData.tentative
+                                      ? eventRow.modelData.title + " (tentative)"
+                                      : eventRow.modelData.title
+                                color: eventRow.modelData.tentative
+                                       ? Appearance.colors.on_surface_variant
+                                       : Appearance.colors.on_surface
                                 font.pixelSize: Appearance.fontSize.sm
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
