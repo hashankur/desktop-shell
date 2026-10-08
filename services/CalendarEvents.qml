@@ -398,7 +398,13 @@ Singleton {
         const key = y + "-" + m;
         if (_months[key])
             return false;
-        _months[key] = true;
+
+        // Nothing to remember while there is nothing to expand: a view can
+        // ask before the first fetch lands, and caching that empty result
+        // would outlive it. This guard is also what keeps _rebuild's reset
+        // inert, so do not drop it as redundant.
+        if (_series.length > 0)
+            _months[key] = true;
 
         const from = new Date(y, m, 1);
         const to = new Date(y, m + 1, 1);
@@ -753,8 +759,18 @@ Singleton {
             series.push(s);
         }
 
-        _series = series;
+        // The assignments below each fire change notifications, and every
+        // binding that reads a day (month grid cells, the day list, the bar
+        // chip) re-enters _ensureMonth synchronously. That re-entry expands
+        // and caches, so an assignment which empties dayMap *after* _months
+        // has been cleared leaves the cache claiming a month that holds
+        // nothing, and every later query short-circuits to an empty list.
+        // Resetting while _series is empty closes that window: with nothing
+        // to expand, _ensureMonth neither writes dayMap nor remembers the
+        // month, and the final assignment is the one that re-expands.
+        _series = [];
         _months = ({});
         dayMap = ({});
+        _series = series;
     }
 }
