@@ -6,17 +6,20 @@ import QtQml
 import Quickshell
 import Quickshell.Io
 
-import "calendar/Ics.js" as Ics
-import "calendar/Recurrence.js" as Rec
+import "calendar/ical.js" as Cal
 
 // ICS event feeds. Reads ~/.config/quickshell/calendar.json
 // ({"feeds": [{"url": "https://…", "color": "#rrggbb"}, …]}),
 // fetches each feed with curl via Process (one per feed, in parallel), and
 // answers day queries.
 //
-// The parsing, timezone and recurrence work lives in calendar/*.js, which
-// are pure JS with no Qt dependency. This file owns the fetch pipeline,
-// the month cache and the query surface.
+// Parsing, timezone and recurrence work is delegated to the vendored
+// ical.js engine in calendar/ical.js (MPL-2.0, see services/calendar/LICENSE).
+// This file owns the fetch pipeline, the month cache and the query surface.
+//
+// Zones come from the feed: ical.js reads an offset from the VTIMEZONE block
+// the events name, and treats a time with neither a TZID nor a trailing Z as
+// floating, which it resolves as UTC.
 //
 // Recurrences are expanded lazily: only the months a view actually asks
 // for are materialized into the day index, so a big calendar costs one
@@ -106,7 +109,7 @@ Singleton {
                 }
             }
 
-            onExited: (exitCode) => {
+            onExited: exitCode => {
                 _code = exitCode;
                 _ended = true;
                 _finish();
@@ -157,7 +160,10 @@ Singleton {
                 // {"feeds": [{"url": …, "color": …}, …]}.
                 list = (cfg.feeds || []).map(function (f) {
                     if (typeof f === "string")
-                        return { url: f, color: "" };
+                        return {
+                            url: f,
+                            color: ""
+                        };
                     return {
                         url: (f && f.url) || "",
                         color: root._normColor(f && f.color)
@@ -405,17 +411,25 @@ Singleton {
             const ev = s.ev;
             // An occurrence that began before the month still shows on its
             // first days, so rewind by the event's own length.
-            const rewind = Math.min(366, Math.ceil((ev.end - ev.start) / 86400000) + 1);
-            const winFrom = fromMs - rewind * 86400000;
+            const rewindDays = Math.min(366, Math.ceil((ev.durationMs || 0) / 86400000) + 1);
+            const winFrom = fromMs - rewindDays * 86400000;
 
-            const occs = Rec.expand(ev, s.skip, winFrom, toMs);
+            const occs = _expandSeries(ev, s.skip, winFrom, toMs);
             for (let j = 0; j < occs.length; j++)
                 _addOcc(added, occs[j]);
 
             for (let j = 0; j < s.overrides.length; j++) {
                 const ov = s.overrides[j];
-                if (ov.start < toMs && ov.end > winFrom)
-                    _addOcc(added, ov);
+                if (ov.startMs < toMs && ov.startMs + (ov.durationMs || 0) > winFrom)
+                    _addOcc(added, {
+                        title: ov.title,
+                        allDay: ov.allDay,
+                        start: ov.startMs,
+                        end: ov.startMs + ov.durationMs,
+                        uid: ov.uid,
+                        color: ov.color,
+                        tentative: ov.tentative
+                    });
             }
         }
 
@@ -505,82 +519,242 @@ Singleton {
         }
     }
 
+    // Normalise a slot instant: all-day events key on local midnight, timed
+    // events on the absolute UTC instant. Both sides of the skip comparison
+    // must use the same convention.
+    function _slotFor(time, allDay) {
+        if (!time)
+            return null;
+        if (allDay)
+            return new Date(time.year, time.month - 1, time.day).getTime();
+        return time.toUnixTime() * 1000;
+    }
+
+    function _durationMsOf(ev) {
+        try {
+            const dur = ev.duration;
+            if (dur) {
+                const s = typeof dur.toSeconds === "function" ? dur.toSeconds() : null;
+                if (s !== null && s !== undefined && isFinite(s))
+                    return s * 1000;
+            }
+        } catch (e) {}
+        if (ev.endDate && ev.startDate)
+            return Math.max(0, (ev.endDate.toUnixTime() - ev.startDate.toUnixTime()) * 1000);
+        return ev.startDate && ev.startDate.isDate ? 86400000 : 0;
+    }
+
+    // Occurrences of one base record overlapping [from, to). Timed and
+    // all-day occurrences are keyed by the conventions in _slotFor.
+    function _expandSeries(rec, skipStarts, from, to) {
+        const out = [];
+        if (rec.status === "CANCELLED")
+            return out;
+
+        if (rec.isRecurring) {
+            const it = rec.ical.iterator();
+            let next, guard = 0;
+            while ((next = it.next()) && guard++ < 20000) {
+                const startMs = rec.allDay ? new Date(next.year, next.month - 1, next.day).getTime() : next.toUnixTime() * 1000;
+                if (startMs >= to)
+                    break;
+                if (startMs < from)
+                    continue;
+                if (skipStarts.indexOf(startMs) >= 0)
+                    continue;
+                out.push({
+                    title: rec.title,
+                    allDay: rec.allDay,
+                    start: startMs,
+                    end: startMs + rec.durationMs,
+                    uid: rec.uid,
+                    color: rec.color,
+                    tentative: rec.tentative
+                });
+            }
+            return out;
+        }
+
+        const startMs = rec.startMs;
+        if (startMs >= from && startMs < to && skipStarts.indexOf(startMs) < 0)
+            out.push({
+                title: rec.title,
+                allDay: rec.allDay,
+                start: startMs,
+                end: startMs + rec.durationMs,
+                uid: rec.uid,
+                color: rec.color,
+                tentative: rec.tentative
+            });
+        return out;
+    }
+
+    // Build the normalised record for one VEVENT component. Returns null
+    // when there is nothing usable to show.
+    function _recordFromVc(vc) {
+        // The date properties are lazy, so a malformed DTSTART throws on
+        // first read rather than at construction, and one broken event must
+        // not sink the whole feed.
+        try {
+            return _recordFields(vc);
+        } catch (e) {
+            console.warn("CalendarEvents: skipping unusable VEVENT:", e);
+            return null;
+        }
+    }
+
+    function _recordFields(vc) {
+        let ev;
+        try {
+            ev = new Cal.ICAL.Event(vc);
+        } catch (e) {
+            return null;
+        }
+        if (!ev.startDate)
+            return null;
+        const allDay = !!ev.startDate.isDate;
+        const status = vc.getFirstPropertyValue("status") || "";
+        const rec = {
+            uid: ev.uid || "",
+            title: (ev.summary && ev.summary.length > 0) ? ev.summary : "(untitled)",
+            status: status,
+            tentative: status === "TENTATIVE",
+            color: "",
+            feedColor: "",
+            calColor: "",
+            rawColor: "",
+            allDay: allDay,
+            ical: ev,
+            isRecurring: ev.isRecurring(),
+            recurrenceSlot: ev.recurrenceId ? _slotFor(ev.recurrenceId, allDay) : null,
+            durationMs: _durationMsOf(ev),
+            startMs: null
+        };
+
+        // RFC 7986 COLOR at the VEVENT level; kept raw because validation
+        // needs Qt.color, which the caller owns.
+        let raw = vc.getFirstPropertyValue("COLOR");
+        if (!(typeof raw === "string" && raw.length > 0))
+            raw = vc.getFirstPropertyValue("color");
+        if (!(typeof raw === "string" && raw.length > 0))
+            raw = vc.getFirstPropertyValue("X-APPLE-CALENDAR-COLOR");
+        if (typeof raw === "string" && raw.length > 0)
+            rec.rawColor = raw;
+
+        if (!rec.isRecurring) {
+            const start = ev.startDate;
+            rec.startMs = allDay ? new Date(start.year, start.month - 1, start.day).getTime() : start.toUnixTime() * 1000;
+        }
+        return rec;
+    }
+
+    function _vcalColor(comp) {
+        let c = "";
+        try {
+            c = comp.getFirstPropertyValue("X-WR-CALCOLOR") || c;
+        } catch (e) {}
+        try {
+            c = comp.getFirstPropertyValue("COLOR") || c;
+        } catch (e) {}
+        if (typeof c !== "string" || c.length === 0)
+            return "";
+        return root._normColor(c);
+    }
+
     function _rebuild(texts) {
         // Nothing to do if the feeds said exactly what they said last time;
         // rebuilding would hand every view fresh arrays for no reason.
-        const sig = texts.join(" ");
+        const sig = texts.join("\x00");
         if (sig === _indexSig)
             return;
         _indexSig = sig;
 
-        const parsed = [];
+        const bases = ({});
+        const instances = [];
+
         for (let i = 0; i < texts.length; i++) {
             if (!texts[i])
                 continue;
-            const cal = Ics.parse(texts[i]);
-            const cfgColor = feeds[i] ? feeds[i].color : "";
-            const calColor = _normColor(cal.color);
-            for (let j = 0; j < cal.events.length; j++) {
-                const ev = cal.events[j];
-                // Precedence: config color > VEVENT COLOR > VCALENDAR COLOR.
-                // The parser hands the VEVENT color back raw, since
-                // validating it needs Qt.color.
-                ev.color = cfgColor || _normColor(ev.color) || calColor;
-                // A feed is free to omit UID; without a unique key every such
-                // event would collapse onto the first one.
-                if (!ev.uid)
-                    ev.uid = "anonymous-" + parsed.length;
-                parsed.push(ev);
-            }
-        }
 
-        const bases = ({});
-        const instances = [];
-        for (let i = 0; i < parsed.length; i++) {
-            const ev = parsed[i];
-            if (ev.recurrenceId !== null) {
-                instances.push(ev);
+            let anonIdx = 0;
+            let root;
+            try {
+                root = new Cal.ICAL.Component(Cal.ICAL.parse(texts[i]));
+            } catch (e) {
+                console.warn("CalendarEvents: cannot parse feed:", e);
                 continue;
             }
-            // First base per UID wins (the same calendar in more than one feed).
-            if (!(ev.uid in bases))
-                bases[ev.uid] = { ev: ev, skip: [], overrides: [] };
+
+            const feedColor = feeds[i] ? feeds[i].color : "";
+            const calColor = _vcalColor(root);
+
+            try {
+                // Feeds usually ship a VTIMEZONE block for the zones their
+                // events use; register it so the iterator resolves
+                // TZID-anchored times in that zone.
+                for (const t of root.getAllSubcomponents("vtimezone"))
+                    Cal.ICAL.TimezoneService.register(t);
+            } catch (e) {}
+
+            for (const vc of root.getAllSubcomponents("vevent")) {
+                const rec = _recordFromVc(vc);
+                if (!rec)
+                    continue;
+                rec.feedColor = feedColor;
+                rec.calColor = calColor;
+                if (rec.recurrenceSlot !== null) {
+                    instances.push(rec);
+                    continue;
+                }
+                if (!rec.uid)
+                    rec.uid = "anonymous-" + i + "-" + anonIdx++;
+                // First base per UID wins (the same calendar in more than one feed).
+                if (!(rec.uid in bases))
+                    bases[rec.uid] = {
+                        ev: rec,
+                        skip: [],
+                        overrides: []
+                    };
+            }
         }
 
         // Instances need the base resolved first, and their RECURRENCE-ID is
         // the *original* slot: that is what the base expansion has to
         // suppress, since a reschedule moves DTSTART somewhere else.
         for (let i = 0; i < instances.length; i++) {
-            const ev = instances[i];
-            const s = bases[ev.uid];
+            const inst = instances[i];
+            const s = bases[inst.uid];
             if (!s || !s.ev)
                 continue;
-            if (s.skip.indexOf(ev.recurrenceId) < 0)
-                s.skip.push(ev.recurrenceId);
-            if (ev.status === "CANCELLED")
-                continue;
-            if (s.overrides.some(function (o) { return o.recurrenceId === ev.recurrenceId; }))
-                continue;
-            // A partial instance is still the replacement for its slot.
-            if (ev.title === "(untitled)")
-                ev.title = s.ev.title;
-            if (!ev.color)
-                ev.color = s.ev.color;
-            s.overrides.push(ev);
+            if (s.skip.indexOf(inst.recurrenceSlot) < 0)
+                s.skip.push(inst.recurrenceSlot);
+            if (inst.status !== "CANCELLED") {
+                // A partial instance is still the replacement for its slot.
+                if (inst.title === "(untitled)")
+                    inst.title = s.ev.title;
+                if (!inst.rawColor)
+                    inst.rawColor = s.ev.rawColor;
+                s.overrides.push(inst);
+            }
         }
 
         const series = [];
         for (const uid in bases) {
+            const s = bases[uid];
             // A cancelled base drops its whole series, instances included.
-            if (bases[uid].ev && bases[uid].ev.status !== "CANCELLED")
-                series.push(bases[uid]);
+            if (s.ev.status === "CANCELLED")
+                continue;
+            // Precedence: config color > VEVENT COLOR > VCALENDAR COLOR.
+            s.ev.color = s.ev.feedColor || _normColor(s.ev.rawColor) || s.ev.calColor;
+            for (let j = 0; j < s.overrides.length; j++) {
+                const ov = s.overrides[j];
+                ov.color = ov.feedColor || _normColor(ov.rawColor) || s.ev.color;
+            }
+            series.push(s);
         }
 
         _series = series;
         _months = ({});
         dayMap = ({});
     }
-
-
-
 }
