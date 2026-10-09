@@ -83,6 +83,12 @@ Singleton {
         id: brightnessFile
         path: root.brightnessPath
         watchChanges: root.brightnessPath !== ""
+        // reload() is async; the OSD trigger must wait for onLoaded or it
+        // snapshots the previous level (the unified pill takes an imperative
+        // value snapshot, so a stale emit shows last step, or even animates
+        // backwards after a Down press). The flag also keeps at-max repeats
+        // firing, since onLoaded skips assigning an unchanged value.
+        property bool _pendingTrigger: false
 
         onLoaded: {
             const raw = parseInt(brightnessFile.text().trim());
@@ -90,14 +96,16 @@ Singleton {
                 root.prevBrightness = raw;
                 root.brightness = Math.max(0, Math.min(1, raw / root.maxBrightness));
             }
+            if (_pendingTrigger) {
+                _pendingTrigger = false;
+                root.brightnessTriggered();
+            }
         }
 
         onFileChanged: {
-            // File changed on disk, re-read it
+            // File changed on disk, re-read it; trigger fires from onLoaded
+            _pendingTrigger = true;
             reload();
-            // Emit trigger signal even if normalized value doesn't change
-            // This ensures OSD shows even when brightness is already at max
-            root.brightnessTriggered();
         }
     }
 }
