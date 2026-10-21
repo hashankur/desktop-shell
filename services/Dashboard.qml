@@ -50,6 +50,14 @@ Singleton {
         }
     }
 
+    // Consumed (reset to null) by the Calendar once it has jumped to the day.
+    property var requestedDay: null
+
+    function openDay(date) {
+        requestedDay = date;
+        open("overview");
+    }
+
     function toggle(viewName) {
         if (!viewName) {
             // No view requested (IPC toggle, bar clock): plain open/close.

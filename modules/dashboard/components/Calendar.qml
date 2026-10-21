@@ -77,7 +77,33 @@ Item {
 
     onMonthChanged: _warmMonth()
     onYearChanged: _warmMonth()
-    Component.onCompleted: _warmMonth()
+
+    // The pane is unloaded while the console is closed, so a day requested
+    // from the bar arrives before this exists: jump in without the slide.
+    Component.onCompleted: {
+        root._warmMonth();
+        const day = Dashboard.requestedDay;
+        if (!day)
+            return;
+        Dashboard.requestedDay = null;
+        root._pinned = false;
+        root.month = day.getMonth();
+        root.year = day.getFullYear();
+        root.selectedDate = day;
+        root.dayView = true;
+    }
+
+    Connections {
+        target: Dashboard
+
+        function onRequestedDayChanged() {
+            const day = Dashboard.requestedDay;
+            if (!day)
+                return;
+            Dashboard.requestedDay = null;
+            root.openDay(day);
+        }
+    }
 
     function previousMonth() {
         root._pinned = false;
