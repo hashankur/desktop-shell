@@ -9,6 +9,8 @@ Singleton {
     id: root
 
     property int maxHistory: 50
+    // Single source for the popup stack and the history rows.
+    readonly property int toastWidth: 480
     property bool persistenceEnabled: true
     // Do not disturb: suppresses toasts only, history still records.
     property bool dnd: false

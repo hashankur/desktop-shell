@@ -12,7 +12,7 @@ import "components"
 PanelWindow {
     id: host
     color: "transparent"
-    implicitWidth: 400
+    implicitWidth: Notifications.toastWidth
     implicitHeight: stack.implicitHeight
     focusable: false
     screen: Niri.focusedScreen
@@ -45,7 +45,7 @@ PanelWindow {
         anchors.right: parent.right
         anchors.top: parent.top
         spacing: Appearance.spacing.normal
-        width: 400
+        width: Notifications.toastWidth
     }
 
     function pushToast(notification) {

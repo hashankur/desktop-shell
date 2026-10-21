@@ -83,14 +83,14 @@ Item {
                     required property var model
                     required property int index
 
-                    width: listView.width
-                    implicitHeight: 100
+                    width: Notifications.toastWidth
+                    implicitHeight: toast.implicitHeight
 
                     NotificationToast {
+                        id: toast
                         anchors.fill: parent
                         notificationData: delegateRoot.model
                         autoHideEnabled: false
-                        allowMultilineBody: true
                         onDismissed: Notifications.removeHistory(delegateRoot.index)
                     }
                 }

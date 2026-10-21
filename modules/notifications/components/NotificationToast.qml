@@ -6,6 +6,7 @@ import Quickshell.Services.Notifications
 
 import qs.components
 import qs.config
+import qs.services
 
 Item {
     id: root
@@ -13,8 +14,6 @@ Item {
     property var notificationObject: null
     property int autoHideTimeout: notificationData?.timeout > 0 ? notificationData.timeout : 4000
     property bool autoHideEnabled: true
-    // History rows in the dashboard allow a second body line; live toasts stay single-line.
-    property bool allowMultilineBody: false
     property bool _dismissed: false
     // Enter/exit state: `_shown` drives the fade (and, for live toasts,
     // the horizontal slide) so both happen before destruction.
@@ -28,8 +27,38 @@ Item {
 
     signal dismissed
 
-    width: 400
-    implicitHeight: 100
+    width: Notifications.toastWidth
+    // One line of body by default; an overflowing body expands in place.
+    // bodyHeight is the single animated quantity: the body box follows it and
+    // the toast grows by exactly its excess over one line (a taller chevron
+    // button used to pad the collapsed row, so growth overshot).
+    property bool expanded: false
+    readonly property real bodyLine: bodyFull.lineCount > 0 ? bodyFull.contentHeight / bodyFull.lineCount : 0
+    readonly property bool canExpand: bodyFull.lineCount > 1
+    property real bodyHeight: root.expanded && root.canExpand ? bodyFull.contentHeight : root.bodyLine
+
+    // Whole pixels only: the animation interpolates fractions, and a clip
+    // rect or text origin landing between pixels makes the glyphs shimmer.
+    readonly property int bodyShown: Math.ceil(root.bodyHeight)
+    readonly property int lineShown: Math.ceil(root.bodyLine)
+
+    implicitHeight: 100 + (root.bodyShown - root.lineShown)
+
+    Behavior on bodyHeight {
+        NumberAnimation {
+            duration: Appearance.anim.durations.medium
+            easing.bezierCurve: Appearance.anim.curves.standardDecel
+        }
+    }
+
+    function toggleExpanded() {
+        root.expanded = !root.expanded;
+        // An expanded toast is being read: it must not vanish under the cursor.
+        if (root.expanded)
+            autoHideTimer.stop();
+        else if (root.autoHideEnabled && !root._dismissed)
+            autoHideTimer.restart();
+    }
 
     Rectangle {
         id: content
@@ -160,14 +189,105 @@ Item {
                     maximumLineCount: 1
                 }
 
-                StyledText {
-                    text: root.notificationData?.body || ""
-                    color: Appearance.colors.on_surface_variant
-                    font.pixelSize: Appearance.fontSize.sm
-                    elide: Text.ElideRight
+                // The chevron lives here, not in the header, so the header
+                // (tag, date, close) is identical on every toast.
+                RowLayout {
+                    id: bodyRow
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    maximumLineCount: root.allowMultilineBody ? 2 : 1
+                    spacing: Appearance.spacing.small
+
+                    // Clip box whose height animates between one line and the
+                    // whole body. Both texts stay laid out the whole time and
+                    // crossfade, so the text never snaps while the box moves
+                    // (swapping wrap mode / line limit mid-animation did).
+                    Item {
+                        id: bodyBox
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.bodyShown
+                        Layout.alignment: Qt.AlignTop
+                        clip: true
+
+                        StyledText {
+                            id: bodyOne
+                            width: parent.width
+                            text: root.notificationData?.body || ""
+                            color: Appearance.colors.on_surface_variant
+                            font.pixelSize: Appearance.fontSize.sm
+                            elide: Text.ElideRight
+                            maximumLineCount: 1
+                            opacity: root.expanded ? 0 : 1
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Appearance.anim.durations.medium
+                                    easing.bezierCurve: Appearance.anim.curves.standardDecel
+                                }
+                            }
+                        }
+
+                        // Full wrapped body; also the measure for canExpand.
+                        StyledText {
+                            id: bodyFull
+                            width: parent.width
+                            text: bodyOne.text
+                            color: Appearance.colors.on_surface_variant
+                            font.pixelSize: Appearance.fontSize.sm
+                            wrapMode: Text.Wrap
+                            opacity: root.expanded ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Appearance.anim.durations.medium
+                                    easing.bezierCurve: Appearance.anim.curves.standardDecel
+                                }
+                            }
+                        }
+                    }
+
+                    // One body line tall and top-aligned, so it sits on the
+                    // text line when collapsed. Opacity, not visible: the slot
+                    // stays reserved on every toast, so the body width never
+                    // depends on canExpand.
+                    Item {
+                        id: chevron
+                        Layout.alignment: Qt.AlignTop
+                        implicitWidth: 18
+                        implicitHeight: root.lineShown
+                        opacity: root.canExpand ? 1 : 0
+                        enabled: root.canExpand
+
+                        StyledText {
+                            anchors.centerIn: parent
+                            text: "▾"
+                            font.pixelSize: Appearance.fontSize.xs
+                            color: chevronMouse.containsMouse ? Appearance.colors.primary : Appearance.colors.on_surface_variant
+                            rotation: root.expanded ? 180 : 0
+
+                            Behavior on rotation {
+                                NumberAnimation {
+                                    duration: Appearance.anim.durations.medium
+                                    easing.bezierCurve: Appearance.anim.curves.standardDecel
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Appearance.anim.durations.small
+                                    easing.bezierCurve: Appearance.anim.curves.standard
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: chevronMouse
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.toggleExpanded()
+                        }
+                    }
                 }
             }
         }
