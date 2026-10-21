@@ -16,6 +16,7 @@ Singleton {
         case "music":
             return "mpris";
         case "system":
+        case "status":
         case "stats":
             return "system";
         case "calendar":

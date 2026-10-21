@@ -58,6 +58,11 @@ FileView {
     readonly property alias tracking: adapter.tracking
     readonly property alias anim: adapter.anim
     readonly property alias transparency: adapter.transparency
+    // Gap between the bar and any surface that hangs under it (console band,
+    // event card). Overlay windows start below the bar's exclusive zone, so
+    // this is their top offset. Kept off the adapter so it is never written
+    // into the theme file.
+    readonly property int barGap: adapter.spacing.normal
     // Writable: Theme.qml flips these. The colors alias stays readonly so
     // call sites cannot repaint the scheme by accident; Theme writes them
     // through Appearance.setColors().

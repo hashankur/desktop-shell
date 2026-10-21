@@ -100,7 +100,7 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call clipboard toggle
 # Toggle power menu (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 
-# Toggle dashboard (also: open, close); jump to a tab with: openView overview|system|mpris
+# Toggle dashboard (also: open, close); jump to a tab with: openView overview|system (Status tab)|mpris
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
 
 # Toggle the theme / wallpaper pane (also: open, close)
