@@ -13,6 +13,10 @@ Singleton {
 
     readonly property var audio: Pipewire.defaultAudioSink?.audio ?? null
     readonly property bool available: audio !== null
+    readonly property string sinkName: {
+        const sink = Pipewire.defaultAudioSink;
+        return sink ? (sink.description || sink.nickname || sink.name || "") : "";
+    }
     readonly property real volume: audio ? Math.max(0, Math.min(1, audio.volume)) : 0
     readonly property bool muted: audio ? audio.muted : false
 

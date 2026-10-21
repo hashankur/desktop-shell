@@ -15,6 +15,8 @@ RowLayout {
     property real value: 0.0
     property string iconName: ""
     property bool iconClickable: false
+    // Optional right-aligned readout ("72%").
+    property string valueText: ""
 
     property bool _dragging: false
     property real _dragVal: 0.0
@@ -94,5 +96,16 @@ RowLayout {
                 root._dragging = false;
             }
         }
+    }
+
+    StyledText {
+        visible: root.valueText.length > 0
+        text: root.valueText
+        mono: true
+        color: Appearance.colors.on_surface_variant
+        font.pixelSize: Appearance.fontSize.sm
+        horizontalAlignment: Text.AlignRight
+        Layout.preferredWidth: 44
+        Layout.alignment: Qt.AlignVCenter
     }
 }

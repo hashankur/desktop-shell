@@ -7,13 +7,13 @@ import qs.components
 import qs.config
 import qs.services
 
-// Theme pane for the console band: scheme source (default palette, or
+// Appearance page: scheme source (default palette, or
 // matugen colors taken from a wallpaper) plus the wallpaper picker. awww
 // draws the background; this only chooses the file and reports what the
 // scheme became.
 //
-// Fixed height, like DashboardPane: the band sizes to its content, so a
-// gallery pane has to cap itself rather than grow the band to fit.
+// Fixed height: the Settings card sizes to its page, so a
+// gallery page has to cap itself rather than grow the card to fit.
 Item {
     id: root
 
@@ -65,6 +65,13 @@ Item {
 
             HudLabel {
                 label: `${Theme.wallpapers.length} wallpapers`
+            }
+
+            StyledButton {
+                text: "Rescan"
+                ghost: true
+                enabled: !Theme.listing
+                onClicked: Theme.refreshWallpapers()
             }
         }
 

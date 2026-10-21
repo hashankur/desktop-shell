@@ -9,7 +9,7 @@ import Quickshell
 Singleton {
     id: root
 
-    readonly property var pages: ["quick", "appearance"]
+    readonly property var pages: ["quick", "network", "bluetooth", "appearance"]
 
     property var window: null
     property bool requestedVisible: false

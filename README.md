@@ -109,7 +109,7 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call theme toggle
 # Toggle the Settings window on the Quick page (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call quicksettings toggle
 
-# Open the Settings window on a page (also: toggle, open, close); pages: quick|appearance
+# Open the Settings window on a page (also: toggle, open, close); pages: quick|network|bluetooth|appearance
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call settings openPage appearance
 ```
 

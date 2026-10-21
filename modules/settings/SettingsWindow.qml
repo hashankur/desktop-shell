@@ -40,11 +40,19 @@ OverlayWindow {
             index: "01",
             label: "Quick"
         }, {
-            id: "appearance",
+            id: "network",
             index: "02",
+            label: "Network"
+        }, {
+            id: "bluetooth",
+            index: "03",
+            label: "Bluetooth"
+        }, {
+            id: "appearance",
+            index: "04",
             label: "Appearance"
         }]
-    readonly property var pageOrder: ["quick", "appearance"]
+    readonly property var pageOrder: ["quick", "network", "bluetooth", "appearance"]
 
     signal closeRequested
 
@@ -199,6 +207,10 @@ OverlayWindow {
 
                     current: {
                         switch (root.activePage) {
+                        case "network":
+                            return networkLoader.item;
+                        case "bluetooth":
+                            return bluetoothLoader.item;
                         case "appearance":
                             return appearanceLoader.item;
                         default:
@@ -215,6 +227,28 @@ OverlayWindow {
                         visible: active
                         active: root.pageLive("quick")
                         sourceComponent: QuickPage {}
+                    }
+
+                    Loader {
+                        id: networkLoader
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        height: item ? item.implicitHeight : 0
+                        visible: active
+                        active: root.pageLive("network")
+                        sourceComponent: NetworkPage {}
+                    }
+
+                    Loader {
+                        id: bluetoothLoader
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        height: item ? item.implicitHeight : 0
+                        visible: active
+                        active: root.pageLive("bluetooth")
+                        sourceComponent: BluetoothPage {}
                     }
 
                     Loader {

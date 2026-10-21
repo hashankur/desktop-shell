@@ -49,6 +49,6 @@ TooltipArea {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: Settings.toggle("quick")
+        onClicked: Settings.toggle("network")
     }
 }
