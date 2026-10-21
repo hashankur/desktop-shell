@@ -323,12 +323,6 @@ OverlayWindow {
                 radius: Appearance.rounding.large
             }
 
-            CornerFrame {
-                anchors.fill: parent
-                armLength: 16
-                bracketColor: Appearance.colors.primary
-            }
-
             // Prevent clicks inside the band from reaching the backdrop.
             MouseArea {
                 anchors.fill: parent
