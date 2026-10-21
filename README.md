@@ -16,7 +16,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
-- **Theme pane** (`05 Theme` in the console band): default scheme, or [matugen](https://github.com/InioX/matugen) colors generated from a wallpaper; switching repaints the shell live
+- **Appearance page** (`02 Appearance` in the Settings window): default scheme, or [matugen](https://github.com/InioX/matugen) colors generated from a wallpaper; switching repaints the shell live
 - **Wallpaper picker**: browse `~/Pictures/Wallpapers` and hand the image to [awww](https://github.com/LGFae/awww) (`spawn-at-startup` from niri), with a fade transition
 - **Calendar**: ICS feeds (Google Calendar secret address or any ICS URL) with per-feed event colors, dots on the month grid, click a day to drill into its events
 - **Next-event dot**: event-colored dot beside the clock (plus `in 21m` once a start is within 30 minutes); hover opens a card with title, time range, countdown and an in-progress bar; click opens the dashboard
@@ -76,7 +76,7 @@ Create `~/.config/quickshell/calendar.json` with your ICS feed URLs (Google Cale
 
 ### Theme
 
-Colors live in `~/.config/quickshell/appearance.json`, written by the shell when you pick a scheme in the theme pane (`05 Theme` in the console band, or `quickshell ipc call theme toggle`). Delete the file to fall back to the built-in default scheme:
+Colors live in `~/.config/quickshell/appearance.json`, written by the shell when you pick a scheme on the Appearance page of the Settings window (the `Settings` tag in the console header, or `quickshell ipc call theme toggle`). Delete the file to fall back to the built-in default scheme:
 
 ```json
 {
@@ -103,11 +103,14 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 # Toggle dashboard (also: open, close); jump to a tab with: openView overview|system (Status tab)|mpris
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
 
-# Toggle the theme / wallpaper pane (also: open, close)
+# Toggle the Settings window on the Appearance page (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call theme toggle
 
-# Toggle quick settings (also: open, close)
+# Toggle the Settings window on the Quick page (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call quicksettings toggle
+
+# Open the Settings window on a page (also: toggle, open, close); pages: quick|appearance
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call settings openPage appearance
 ```
 
 Bind these to compositor keybindings for keyboard-driven access.

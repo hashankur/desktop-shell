@@ -8,6 +8,7 @@ import qs.modules.bar
 import qs.modules.console
 import qs.modules.notifications
 import qs.modules.osd
+import qs.modules.settings
 
 ShellRoot {
     id: root
@@ -15,6 +16,8 @@ ShellRoot {
     Bar {}
 
     ConsoleWindow {}
+
+    SettingsWindow {}
 
     Osd {}
 
