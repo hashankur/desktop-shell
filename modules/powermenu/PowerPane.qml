@@ -14,11 +14,7 @@ import "./components" as PowerComponents
 Item {
     id: root
 
-    // Content keeps its old windowed width cap so the tiles do not
-    // stretch across the full band.
-    readonly property int contentWidth: Math.min(560, width - Appearance.spacing.large * 2)
-
-    implicitHeight: frameContent.implicitHeight + Appearance.spacing.large * 2
+    implicitHeight: 150
 
     // Pending destructive action awaiting confirmation ("" = idle).
     property string pendingAction: ""
@@ -101,90 +97,76 @@ Item {
         root.pendingAction = "";
     }
 
-    ColumnLayout {
+    // One row of cells divided by Rules; the confirmation swaps into the
+    // same box, so the band does not change height mid-action.
+    Item {
         id: frameContent
-        width: root.contentWidth
-        x: (root.width - width) / 2
-        anchors.top: parent.top
-        anchors.topMargin: Appearance.spacing.large
-        spacing: Appearance.spacing.large
+        anchors.fill: parent
 
         RowLayout {
-            Layout.fillWidth: true
-            spacing: Appearance.spacing.small
-
-            HudLabel {
-                label: "POWER // SESSION"
-            }
-
-            Rule {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-            }
-        }
-
-        GridLayout {
-            columns: 3
-            columnSpacing: Appearance.spacing.normal
-            rowSpacing: Appearance.spacing.normal
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter
+            anchors.fill: parent
+            spacing: 0
             visible: root.pendingAction === ""
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("system-shutdown-symbolic")
-                indexLabel: "01"
-                label: "Shutdown"
-                onClicked: root.requestAction("shutdown")
-            }
+            Repeater {
+                model: [{
+                    action: "shutdown",
+                    icon: "system-shutdown-symbolic",
+                    label: "Shutdown"
+                }, {
+                    action: "restart",
+                    icon: "system-reboot-symbolic",
+                    label: "Restart"
+                }, {
+                    action: "suspend",
+                    icon: "weather-clear-night-symbolic",
+                    label: "Suspend"
+                }, {
+                    action: "lock",
+                    icon: "system-lock-screen-symbolic",
+                    label: "Lock"
+                }, {
+                    action: "logout",
+                    icon: "system-log-out-symbolic",
+                    label: "Logout"
+                }, {
+                    action: "firmware",
+                    icon: "preferences-system-symbolic",
+                    label: "Firmware"
+                }]
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("system-reboot-symbolic")
-                indexLabel: "02"
-                label: "Restart"
-                onClicked: root.requestAction("restart")
-            }
+                delegate: RowLayout {
+                    id: cell
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("weather-clear-night-symbolic")
-                indexLabel: "03"
-                label: "Suspend"
-                onClicked: root.requestAction("suspend")
-            }
+                    required property var modelData
+                    required property int index
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("system-lock-screen-symbolic")
-                indexLabel: "04"
-                label: "Lock"
-                onClicked: root.requestAction("lock")
-            }
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 0
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("system-log-out-symbolic")
-                indexLabel: "05"
-                label: "Logout"
-                onClicked: root.requestAction("logout")
-            }
+                    Rule {
+                        vertical: true
+                        visible: cell.index > 0
+                        Layout.fillHeight: true
+                    }
 
-            PowerComponents.PowerActionButton {
-                Layout.fillWidth: true
-                iconSource: Quickshell.iconPath("preferences-system-symbolic")
-                indexLabel: "06"
-                label: "Firmware"
-                onClicked: root.requestAction("firmware")
+                    PowerComponents.PowerActionButton {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        iconSource: Quickshell.iconPath(cell.modelData.icon)
+                        indexLabel: `0${cell.index + 1}`
+                        label: cell.modelData.label
+                        onClicked: root.requestAction(cell.modelData.action)
+                    }
+                }
             }
         }
 
-        // Confirmation state for destructive actions
         ColumnLayout {
+            anchors.centerIn: parent
             visible: root.pendingAction !== ""
             spacing: Appearance.spacing.normal
-            Layout.alignment: Qt.AlignHCenter
 
             StyledText {
                 text: "Are you sure you want to " + root.pendingActionLabel + "?"

@@ -8,7 +8,9 @@ import Quickshell.Widgets
 import qs.components
 import qs.config
 
-// Quick-settings toggle tile: PowerActionButton-style with a checked state.
+// Quick-settings toggle: flat icon + label, no card. State reads as the
+// primary accent plus an underline (the same tick the band tabs use);
+// hover is a color accent only.
 Item {
     id: root
 
@@ -16,56 +18,57 @@ Item {
     property string label: ""
     property bool checked: false
 
+    readonly property color tint: (root.checked || mouseArea.containsMouse) ? Appearance.colors.primary : Appearance.colors.on_surface
+
     signal clicked
 
     implicitWidth: 100
-    implicitHeight: 80
+    implicitHeight: 76
 
-    Rectangle {
-        id: bg
-        anchors.fill: parent
-        radius: Appearance.rounding.normal
-        color: (mouseArea.containsMouse || root.checked) ? Appearance.colors.surface_container_high : Appearance.colors.surface_container
-        border.color: root.checked ? Appearance.colors.primary : (mouseArea.containsMouse ? Appearance.colors.outline_variant : "transparent")
-        border.width: 1
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: Appearance.spacing.small
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Appearance.anim.durations.small
-                easing.bezierCurve: Appearance.anim.curves.standard
+        IconImage {
+            implicitSize: 26
+            source: root.iconSource
+            Layout.alignment: Qt.AlignHCenter
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                colorization: 1.0
+                colorizationColor: root.tint
+                brightness: 1.0
             }
         }
 
-        Behavior on border.color {
-            ColorAnimation {
-                duration: Appearance.anim.durations.small
-                easing.bezierCurve: Appearance.anim.curves.standard
-            }
-        }
+        StyledText {
+            text: root.label.toUpperCase()
+            mono: true
+            font.letterSpacing: Appearance.tracking.micro
+            font.pixelSize: Appearance.fontSize.sm
+            color: root.tint
+            Layout.alignment: Qt.AlignHCenter
 
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: Appearance.spacing.small
-
-            IconImage {
-                implicitSize: 26
-                source: root.iconSource
-                Layout.alignment: Qt.AlignHCenter
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    colorization: 1.0
-                    colorizationColor: root.checked ? Appearance.colors.primary : Appearance.colors.on_surface
-                    brightness: 1.0
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.anim.durations.small
+                    easing.bezierCurve: Appearance.anim.curves.standard
                 }
             }
+        }
+    }
 
-            StyledText {
-                text: root.label.toUpperCase()
-                mono: true
-                font.letterSpacing: Appearance.tracking.micro
-                font.pixelSize: Appearance.fontSize.sm
-                color: root.checked ? Appearance.colors.primary : Appearance.colors.on_surface
-                Layout.alignment: Qt.AlignHCenter
+    Rectangle {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        height: 2
+        width: root.checked ? parent.width : 0
+        color: Appearance.colors.primary
+
+        Behavior on width {
+            NumberAnimation {
+                duration: Appearance.anim.durations.small
+                easing.bezierCurve: Appearance.anim.curves.standard
             }
         }
     }

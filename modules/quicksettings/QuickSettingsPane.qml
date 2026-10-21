@@ -16,8 +16,7 @@ import "./components" as QSComponents
 Item {
     id: root
 
-    // Height mirrors the old windowed frame: content plus its padding.
-    implicitHeight: frameContent.implicitHeight + Appearance.padding.large * 2
+    implicitHeight: Math.max(leftColumn.implicitHeight, 300)
 
     readonly property var btAdapter: Bluetooth.defaultAdapter
     readonly property int networkCount: WifiStatus.wifiDevice ? WifiStatus.wifiDevice.networks.values.length : 0
@@ -72,27 +71,17 @@ Item {
         onTriggered: Brightness.setBrightness(root._pendingBrightness)
     }
 
-    ColumnLayout {
+    RowLayout {
         id: frameContent
-        anchors {
-            fill: parent
-            margins: Appearance.padding.large
-        }
-        spacing: Appearance.spacing.normal
+        anchors.fill: parent
+        spacing: Appearance.spacing.large
 
-        RowLayout {
+        ColumnLayout {
+            id: leftColumn
             Layout.fillWidth: true
-            spacing: Appearance.spacing.small
-
-            HudLabel {
-                label: "QUICK SETTINGS"
-            }
-
-            Rule {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-            }
-        }
+            Layout.preferredWidth: 380
+            Layout.alignment: Qt.AlignTop
+            spacing: Appearance.spacing.normal
 
         RowLayout {
             Layout.fillWidth: true
@@ -174,6 +163,26 @@ Item {
             }
             onIconClicked: Volume.toggleMute()
         }
+        }
+
+        Rule {
+            vertical: true
+            Layout.fillHeight: true
+        }
+
+        Flickable {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: 520
+            clip: true
+            contentWidth: width
+            contentHeight: rightColumn.implicitHeight
+            boundsBehavior: Flickable.StopAtBounds
+
+            ColumnLayout {
+                id: rightColumn
+                width: parent.width
+                spacing: Appearance.spacing.normal
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -337,6 +346,8 @@ Item {
                         }
                     }
                 }
+            }
+        }
             }
         }
     }

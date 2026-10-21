@@ -17,35 +17,20 @@ import qs.services
 Item {
     id: root
 
-    implicitHeight: 460
+    implicitHeight: 400
 
-    // Thumbnail box, 16:9 to match the wallpaper aspect most previews use.
-    readonly property int cellWidth: Math.max(120, Math.floor((width - Appearance.spacing.small * 7) / 8))
+    // Six columns across the band, thumbnails 16:9 to match the wallpaper
+    // aspect most previews use.
+    readonly property int columns: 6
+    readonly property int slot: Math.floor(width / root.columns)
+    readonly property int thumbWidth: root.slot - Appearance.spacing.small
+    readonly property int thumbHeight: Math.round(root.thumbWidth * 9 / 16)
 
     Component.onCompleted: Theme.refreshWallpapers()
 
     ColumnLayout {
         anchors.fill: parent
         spacing: Appearance.spacing.normal
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Appearance.spacing.small
-
-            HudLabel {
-                label: "Scheme"
-            }
-
-            Rule {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-            }
-
-            HudLabel {
-                accent: !Theme.wallpaperColors
-                label: Theme.wallpaperColors ? "Wallpaper" : "Default"
-            }
-        }
 
         RowLayout {
             Layout.fillWidth: true
@@ -66,20 +51,11 @@ Item {
             }
 
             StyledText {
-                Layout.fillWidth: true
                 text: Theme.status
                 color: Appearance.colors.on_surface_variant
                 font.pixelSize: Appearance.fontSize.xs
                 elide: Text.ElideRight
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Appearance.spacing.small
-
-            HudLabel {
-                label: "Wallpaper"
+                Layout.maximumWidth: 360
             }
 
             Rule {
@@ -87,10 +63,8 @@ Item {
                 Layout.alignment: Qt.AlignVCenter
             }
 
-            StyledText {
-                text: Theme.wallpapers.length + " found"
-                color: Appearance.colors.on_surface_variant
-                font.pixelSize: Appearance.fontSize.xs
+            HudLabel {
+                label: `${Theme.wallpapers.length} wallpapers`
             }
         }
 
@@ -104,8 +78,8 @@ Item {
             cacheBuffer: 0
 
             // Spacing lives in the cell: GridView has no gap property.
-            cellWidth: root.cellWidth + Appearance.spacing.small
-            cellHeight: Math.round(root.cellWidth * 9 / 16) + Appearance.spacing.small
+            cellWidth: root.slot
+            cellHeight: root.thumbHeight + Appearance.spacing.small
             model: Theme.wallpapers
 
             delegate: Item {
@@ -119,8 +93,8 @@ Item {
                 height: wallGrid.cellHeight
 
                 Rectangle {
-                    width: root.cellWidth
-                    height: Math.round(root.cellWidth * 9 / 16)
+                    width: root.thumbWidth
+                    height: root.thumbHeight
                     color: Appearance.colors.surface_container
                     border.width: cell.current ? 2 : 1
                     border.color: cell.current ? Appearance.colors.primary : Appearance.colors.outline_variant
