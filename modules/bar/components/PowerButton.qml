@@ -7,12 +7,13 @@ import qs.services
 
 TooltipArea {
     id: root
-    implicitWidth: 16
-    implicitHeight: 16
+    implicitWidth: 14
+    implicitHeight: 14
 
-    text: "Power"
+    text: "POWER"
 
     Icon {
+        implicitSize: 14
         source: Quickshell.iconPath("system-shutdown-symbolic")
     }
 

@@ -47,23 +47,36 @@ Singleton {
         return n > 0 ? screens[0] : undefined;
     }
 
+    // Workspace updates arrive in bursts; one tick per event-loop turn keeps
+    // the focused-output scan from running once per row signal.
+    property bool _bumpQueued: false
+    function _bump() {
+        if (root._bumpQueued)
+            return;
+        root._bumpQueued = true;
+        Qt.callLater(() => {
+            root._bumpQueued = false;
+            root._modelTick += 1;
+        });
+    }
+
     Connections {
         target: root.workspaces
 
         function onDataChanged(topLeft, bottomRight, roles) {
-            root._modelTick += 1;
+            root._bump();
         }
         function onModelReset() {
-            root._modelTick += 1;
+            root._bump();
         }
         function onRowsInserted(parent, first, last) {
-            root._modelTick += 1;
+            root._bump();
         }
         function onRowsRemoved(parent, first, last) {
-            root._modelTick += 1;
+            root._bump();
         }
         function onLayoutChanged(topLeft, bottomRight, roles) {
-            root._modelTick += 1;
+            root._bump();
         }
     }
 

@@ -48,6 +48,14 @@ Singleton {
     property var _series: []
     // "y-m" months already expanded into dayMap.
     property var _months: ({})
+    // "y-m" months a view has explicitly asked for; _rewarm re-expands
+    // exactly these (plus the chip window) after a rebuild, so expansion
+    // stays out of binding evaluation.
+    property var _wanted: ({})
+    // Set while _rebuild swaps the index state: view bindings re-enter
+    // _ensureRange on those assignments and must no-op instead of
+    // expanding mid-notification.
+    property bool _warming: false
 
     // Last good text per feed slot; kept until a fetch succeeds again.
     property var _texts: []
@@ -60,9 +68,17 @@ Singleton {
     // refresh that lands identical bytes does not disturb the day arrays.
     property string _indexSig: ""
 
+    // Locale's short time format, resolved once: Qt.locale() construction is
+    // not free and this is read on every rendered event time.
+    property string _fmtTime: ""
+
+    Component.onCompleted: _resolveTimeFormat()
+
     FileView {
         id: configFile
         path: root.configPath
+        watchChanges: true
+        onFileChanged: reload()
 
         // The `loaded` signal fires on every successful load. The
         // `loaded` *property* stays true across path swaps, so an
@@ -133,17 +149,22 @@ Singleton {
         interval: root.refreshMinutes * 60 * 1000
         repeat: true
         running: root.feeds.length > 0
-        onTriggered: root.refresh()
+        onTriggered: {
+            // Keep the bar chip's day window from drifting past the
+            // months a rebuild last materialized (cheap no-op when warm).
+            root._rewarm();
+            root.refresh();
+        }
     }
 
     // Backstop for a fetch that never reports. Process emits no `exited` when
     // the binary is missing, and a broken pipe can leave streamFinished
     // unfired, so without this a dead feed would be indistinguishable from a
-    // slow one. curl is capped well below the grace period.
+    // slow one. curl is capped well below the grace period. One-shot per
+    // wave: it only matters once the 40 s grace has passed.
     Timer {
-        interval: 10000
-        repeat: true
-        running: root.feeds.length > 0
+        id: sweepTimer
+        interval: 41000
         onTriggered: root._sweep()
     }
 
@@ -185,6 +206,7 @@ Singleton {
         // already belong to the new generation.
         _generation++;
         _waveAt = Date.now();
+        sweepTimer.restart();
         feeds = list;
         // A different feed list invalidates every slot, so events from a
         // removed or edited feed cannot linger.
@@ -230,6 +252,7 @@ Singleton {
         // keeps serving its previous text until its own fetch lands.
         _generation++;
         _waveAt = Date.now();
+        sweepTimer.restart();
         feedFetcher.active = false;
         feedFetcher.active = true;
     }
@@ -299,14 +322,14 @@ Singleton {
     // instead of being hardcoded; anything unexpected falls back to a
     // readable fixed format.
     function formatTime(ms) {
-        const fmt = _timeFormat();
-        return Qt.locale().toString(new Date(ms), fmt);
+        return Qt.locale().toString(new Date(ms), _fmtTime);
     }
 
-    function _timeFormat() {
-        const cached = _fmtTime;
-        if (cached !== "")
-            return cached;
+    // Resolved once from Component.onCompleted, never lazily: formatTime()
+    // is called from event-time bindings, and caching on first call would
+    // write a property those bindings read (a binding loop). Construction
+    // order beats a warmup call for the same reason.
+    function _resolveTimeFormat() {
         let f = "";
         try {
             f = Qt.locale().timeFormat(Locale.ShortFormat);
@@ -314,11 +337,13 @@ Singleton {
             f = "";
         }
         _fmtTime = (typeof f === "string" && f.length > 0) ? f : "h:mm AP";
-        return _fmtTime;
     }
 
+    // Queries below are pure reads of the expanded index. Views must
+    // pre-warm via ensureMonth/ensureWindow: expanding inside a binding
+    // writes dayMap the binding itself depends on, which QML reports as a
+    // binding loop (and re-runs the whole grid per cold month).
     function hasEvents(date) {
-        _ensureRange(date, date);
         const arr = dayMap[_key(date)];
         return !!arr && arr.length > 0;
     }
@@ -326,12 +351,69 @@ Singleton {
     // Returns the stored array itself: it is built sorted and never mutated
     // afterwards, so a model binding on it survives unrelated refreshes.
     function eventsForDay(date) {
-        _ensureRange(date, date);
         return dayMap[_key(date)] || [];
     }
 
+    // Normalizes y/m (so month -1/12 from a caller registers the same
+    // key it expands), records the month as wanted for _rewarm, and
+    // materializes it synchronously.
     function ensureMonth(y, m) {
-        _ensureRange(new Date(y, m, 1), new Date(y, m + 1, 1));
+        const d = new Date(y, m, 1);
+        const ny = d.getFullYear();
+        const nm = d.getMonth();
+        _register(ny + "-" + nm);
+        _ensureRange(d, new Date(ny, nm + 1, 1));
+    }
+
+    // Materializes every month overlapping [from, to] and records them.
+    function ensureWindow(from, to) {
+        const a = _asDate(from);
+        const b = _asDate(to);
+        let y = a.getFullYear();
+        let m = a.getMonth();
+        const endY = b.getFullYear();
+        const endM = b.getMonth();
+        let guard = 0;
+        while ((y < endY || (y === endY && m <= endM)) && guard++ < 24) {
+            _register(y + "-" + m);
+            m++;
+            if (m > 11) {
+                m = 0;
+                y++;
+            }
+        }
+        _ensureRange(a, b);
+    }
+
+    // FIFO trim so months of paging cannot grow the wanted set unboundedly.
+    function _register(key) {
+        if (_wanted[key])
+            return;
+        _wanted[key] = true;
+        let n = 0;
+        for (const k in _wanted)
+            n++;
+        if (n > 12) {
+            let dropped = n - 8;
+            for (const k in _wanted) {
+                if (dropped <= 0)
+                    break;
+                delete _wanted[k];
+                dropped--;
+            }
+        }
+    }
+
+    // Re-expands the months views last asked for, plus the bar chip's
+    // 8-day window, from imperative context so view bindings only ever
+    // read a warm index.
+    function _rewarm() {
+        for (const k in _wanted) {
+            const parts = k.split("-");
+            _ensureMonth(parseInt(parts[0], 10), parseInt(parts[1], 10));
+        }
+        const now = new Date();
+        _ensureRange(new Date(now.getFullYear(), now.getMonth(), now.getDate()), new Date(now.getFullYear(), now.getMonth(), now.getDate() + 8));
     }
 
     function _key(d) {
@@ -347,9 +429,10 @@ Singleton {
     // all-day one, then the rest of today, then the next week. Ongoing beats
     // upcoming so a week-old all-day event cannot push a meeting off the bar,
     // and every branch produces a label so the chip is never a bare dot.
+    // Pure read; the chip window is kept warm by NextEvent's own
+    // ensureWindow calls and by _rewarm after each rebuild.
     function nextEvent(now) {
         const base = _asDate(now);
-        _ensureRange(base, new Date(base.getFullYear(), base.getMonth(), base.getDate() + 8));
 
         let ongoingTimed = null;
         let ongoingAllDay = null;
@@ -444,6 +527,10 @@ Singleton {
     }
 
     function _ensureRange(from, to) {
+        // Mid-swap: view bindings re-enter on the reset assignments and
+        // must not expand (or re-mark months) until _rebuild re-warms.
+        if (_warming)
+            return;
         const a = _asDate(from);
         const b = _asDate(to);
         let y = a.getFullYear();
@@ -667,10 +754,62 @@ Singleton {
         return root._normColor(c);
     }
 
+    // Canonical feed signature. Google reorders VEVENT blocks between
+    // exports and churns DTSTAMP/LAST-MODIFIED/SEQUENCE on every fetch,
+    // so the raw bytes differ even when no event changed; signing raw
+    // text forced a full 3.5 s ical.js reparse on every stale open and
+    // refresh tick. Signature = calendar header lines (churn dropped)
+    // plus component blocks sorted, so identical content hashes equal.
+    function _sigOf(text) {
+        const churnRe = /^(DTSTAMP|LAST-MODIFIED|SEQUENCE|X-MOZ-LASTACK|X-MOZ-GENERATION):/;
+        if (!text)
+            return "";
+        const lines = text.split(/\r\n|\r|\n/);
+        const header = [];
+        const blocks = [];
+        let cur = null;
+        let curStart = 0;
+        let depth = 0;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.startsWith("BEGIN:")) {
+                depth++;
+                if (!cur && line !== "BEGIN:VCALENDAR") {
+                    cur = [line];
+                    curStart = depth;
+                } else if (cur) {
+                    cur.push(line);
+                }
+                continue;
+            }
+            if (line.startsWith("END:")) {
+                if (cur) {
+                    cur.push(line);
+                    if (depth === curStart) {
+                        blocks.push(cur.join("\n"));
+                        cur = null;
+                    }
+                }
+                depth--;
+                continue;
+            }
+            if (churnRe.test(line))
+                continue;
+            if (cur)
+                cur.push(line);
+            else
+                header.push(line);
+        }
+        if (cur)
+            blocks.push(cur.join("\n"));
+        blocks.sort();
+        return header.join("\n") + "\n" + blocks.join("\n");
+    }
+
     function _rebuild(texts) {
         // Nothing to do if the feeds said exactly what they said last time;
         // rebuilding would hand every view fresh arrays for no reason.
-        const sig = texts.join("\x00");
+        const sig = texts.map(_sigOf).join("\x00");
         if (sig === _indexSig)
             return;
         _indexSig = sig;
@@ -761,16 +900,17 @@ Singleton {
 
         // The assignments below each fire change notifications, and every
         // binding that reads a day (month grid cells, the day list, the bar
-        // chip) re-enters _ensureMonth synchronously. That re-entry expands
-        // and caches, so an assignment which empties dayMap *after* _months
-        // has been cleared leaves the cache claiming a month that holds
-        // nothing, and every later query short-circuits to an empty list.
-        // Resetting while _series is empty closes that window: with nothing
-        // to expand, _ensureMonth neither writes dayMap nor remembers the
-        // month, and the final assignment is the one that re-expands.
+        // chip) re-enters _ensureRange synchronously. _warming turns that
+        // re-entry into a no-op, so the reset cannot leave _months claiming
+        // months that hold nothing. _rewarm then re-expands the months views
+        // actually asked for (plus the chip window) from imperative context,
+        // and the final dayMap write is the one the bindings settle on.
+        _warming = true;
         _series = [];
         _months = ({});
         dayMap = ({});
         _series = series;
+        _warming = false;
+        _rewarm();
     }
 }

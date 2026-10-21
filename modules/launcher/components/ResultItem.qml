@@ -28,7 +28,9 @@ Rectangle {
     width: parent?.width ?? 0
     height: 64
     radius: Appearance.rounding.normal
-    color: root.isCurrent ? Appearance.colors.surface_container : "transparent"
+    // Selected row inverts to the paper chip (blue text on paper), the
+    // reference's selected boot entry; hover gets a container tint.
+    color: root.isCurrent ? Appearance.colors.primary_container : (rowMouse.containsMouse ? Appearance.colors.surface_container : "transparent")
 
   Behavior on color {
     ColorAnimation {
@@ -76,6 +78,8 @@ Rectangle {
         fillMode: Image.PreserveAspectFit
         smooth: true
         asynchronous: true
+        sourceSize: Qt.size(96, 96)
+        cache: false
       }
     }
 
@@ -87,7 +91,7 @@ Rectangle {
       Text {
         width: parent.width
         text: root.primaryText
-        color: Appearance.colors.on_surface
+        color: root.isCurrent ? Appearance.colors.on_primary_container : Appearance.colors.on_surface
         font.pixelSize: Appearance.fontSize.base
         font.weight: Font.DemiBold
         font.family: Appearance.font.sans
@@ -98,7 +102,7 @@ Rectangle {
       Text {
         width: parent.width
         text: root.secondaryText
-        color: Appearance.colors.on_surface_variant
+        color: root.isCurrent ? Appearance.colors.on_primary_container : Appearance.colors.on_surface_variant
         font.pixelSize: Appearance.fontSize.sm
         font.family: Appearance.font.sans
         elide: Text.ElideRight
@@ -137,9 +141,10 @@ Rectangle {
 
     Text {
       text: root.hintText
-      color: Appearance.colors.on_surface_variant
+      color: root.isCurrent ? Appearance.colors.on_primary_container : Appearance.colors.on_surface_variant
+      font.family: Appearance.font.mono
+      font.letterSpacing: Appearance.tracking.micro
       font.pixelSize: Appearance.fontSize.xs
-      font.family: Appearance.font.sans
       Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
       Layout.preferredWidth: 56
       horizontalAlignment: Text.AlignRight

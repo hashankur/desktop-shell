@@ -29,22 +29,28 @@ Rectangle {
     property real cardY: _cardTarget ? 0 : -Appearance.spacing.small
 
     visible: upcoming !== null
-    radius: Appearance.rounding.full
-    color: hovered ? Appearance.colors.primary_container : "transparent"
+    // Explicitly transparent: the chip is now bare content over the bar, and
+    // a Rectangle left at its default paints white.
+    color: "transparent"
     implicitHeight: 22
-    implicitWidth: chipRow.implicitWidth + Appearance.padding.small * 2
+    implicitWidth: chipRow.implicitWidth
 
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
     }
 
-    Behavior on color {
-        ColorAnimation {
-            duration: Appearance.anim.durations.small
-            easing.bezierCurve: Appearance.anim.curves.standard
-        }
+    // nextEvent() is a pure read, so the chip owns its window: warm the
+    // today...+8d range on creation and whenever the day rolls over.
+    // Signal handlers run outside binding evaluation, so this cannot
+    // re-create the dayMap write-during-read loop.
+    function _warmWindow() {
+        const base = clock.date;
+        CalendarEvents.ensureWindow(base, new Date(base.getFullYear(), base.getMonth(), base.getDate() + 8));
     }
+
+    onNowChanged: _warmWindow()
+    Component.onCompleted: _warmWindow()
 
     Behavior on cardOpacity {
         NumberAnimation {
@@ -125,7 +131,11 @@ Rectangle {
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             text: chip.restLabel()
-            color: Appearance.colors.on_surface
+            // No box to fill on hover, so the accent carries it: the label
+            // takes the primary token and the bar's divider does the
+            // separating. Token-driven, per the animation rules.
+            color: hovered ? Appearance.colors.primary : Appearance.colors.on_surface
+            mono: true
             font.pixelSize: Appearance.fontSize.xs
             font.weight: Font.DemiBold
             // Fixed width and never hidden: the countdown changes text but
@@ -134,6 +144,13 @@ Rectangle {
             // the chip width the moment a label appears.)
             width: Appearance.spacing.large * 3
             elide: Text.ElideRight
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.anim.durations.small
+                    easing.bezierCurve: Appearance.anim.curves.standard
+                }
+            }
         }
     }
 

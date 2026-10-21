@@ -63,7 +63,8 @@ RowLayout {
         Rectangle {
             width: 14
             height: 14
-            radius: Appearance.rounding.full
+            // Square handle: the HUD language has no round thumbs.
+            radius: Appearance.rounding.normal
             color: Appearance.colors.primary
             anchors.verticalCenter: bar.verticalCenter
             x: Math.max(0, Math.min(track.width - width, root._shown * track.width - width / 2))

@@ -81,7 +81,7 @@ Scope {
             Rectangle {
                 id: pill
                 anchors.fill: parent
-                radius: height / 2
+                radius: Appearance.rounding.normal
                 color: Appearance.colors.surface_container_lowest
                 // Content state; deferred so the entrance animates from 0.
                 property bool _in: false
@@ -114,7 +114,7 @@ Scope {
                 }
 
                 border {
-                    color: Appearance.colors.surface_container
+                    color: Appearance.colors.outline_variant
                 }
 
                 RowLayout {
@@ -145,40 +145,21 @@ Scope {
                                 visible: root.label !== ""
                                 text: root.label
                                 color: Appearance.colors.on_surface
+                                font.family: Appearance.font.mono
+                                font.letterSpacing: Appearance.tracking.label
                                 font.pixelSize: Appearance.fontSize.xs
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }
                     }
 
-                    // Progress bar
-                    Rectangle {
-                        // Stretches to fill all left-over space
+                    // Progress: boot-segment blocks instead of a pill track.
+                    SegmentBar {
                         Layout.fillWidth: true
-
-                        implicitHeight: 20
-                        radius: 20
-                        color: Appearance.colors.surface_container
-
-                        Rectangle {
-                            anchors {
-                                left: parent.left
-                                top: parent.top
-                                bottom: parent.bottom
-                            }
-
-                            // Cap value at 1.0 for display (prevents overflow for volume boost)
-                            implicitWidth: parent.width * Math.min(1.0, root.value)
-                            radius: parent.radius
-                            color: Appearance.colors.primary
-
-                            Behavior on implicitWidth {
-                                NumberAnimation {
-                                    duration: Appearance.anim.durations.medium
-                                    easing.bezierCurve: Appearance.anim.curves.standardDecel
-                                }
-                            }
-                        }
+                        implicitHeight: 12
+                        segments: 12
+                        // Cap value at 1.0 for display (prevents overflow for volume boost)
+                        progress: Math.min(1.0, root.value)
                     }
                 }
             }

@@ -15,18 +15,21 @@ Item {
         // CPU
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            size: 14
             value: SystemStats.cpuUsage
         }
 
         // Memory
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            size: 14
             value: SystemStats.memoryUsage
         }
 
         // GPU
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            size: 14
             visible: SystemStats.gpuAvailable
             value: SystemStats.gpuUsage
         }
@@ -34,6 +37,7 @@ Item {
         // Temperature
         CircularProgress {
             anchors.verticalCenter: parent.verticalCenter
+            size: 14
             visible: SystemStats.temperatureAvailable
             value: SystemStats.temperature
             tooltipText: `${SystemStats.temperatureCelsius.toFixed(1)}°C`

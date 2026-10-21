@@ -5,31 +5,18 @@ import QtQuick
 import Quickshell
 
 import qs.modules.bar
-import qs.modules.frame
-import qs.modules.launcher
+import qs.modules.console
 import qs.modules.notifications
 import qs.modules.osd
-import qs.modules.dashboard
-import qs.modules.powermenu
-import qs.modules.quicksettings
-import qs.services
 
 ShellRoot {
     id: root
 
-    GlobalFrame {}
-
     Bar {}
 
-    Launcher {}
+    ConsoleWindow {}
 
     Osd {}
 
     NotificationHost {}
-
-    DashboardWindow {}
-
-    PowerMenu {}
-
-    QuickSettingsWindow {}
 }

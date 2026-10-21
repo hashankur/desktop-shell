@@ -39,6 +39,7 @@ Scope {
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: 20
                 anchors.rightMargin: 20
+                anchors.bottomMargin: 1
                 spacing: 10
 
                 // Left section
@@ -50,7 +51,18 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 20
 
+                        HudLabel {
+                            anchors.verticalCenter: parent.verticalCenter
+                            label: "SYS"
+                        }
+
                         SystemStats {
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Rule {
+                            vertical: true
+                            height: parent.height
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
@@ -58,6 +70,11 @@ Scope {
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
+                }
+
+                Rule {
+                    Layout.fillHeight: true
+                    vertical: true
                 }
 
                 // Center section
@@ -68,16 +85,32 @@ Scope {
                     Row {
                         id: centerRow
                         anchors.centerIn: parent
-                        spacing: Appearance.spacing.normal
+                        spacing: Appearance.spacing.large
 
                         Clock {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
+                        // Separates clock and event chip the way the left and
+                        // right sections separate their groups. Hides with the
+                        // chip so a day without events leaves no stray tick.
+                        Rule {
+                            vertical: true
+                            height: parent.height
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: nextEventChip.visible
+                        }
+
                         NextEvent {
+                            id: nextEventChip
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
+                }
+
+                Rule {
+                    Layout.fillHeight: true
+                    vertical: true
                 }
 
                 // Right section
@@ -101,8 +134,30 @@ Scope {
                             activeOnScreen: barWindow.modelData.name === (Quickshell.screens[0]?.name ?? "")
                         }
 
+                        Rule {
+                            vertical: true
+                            height: parent.height
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        HudLabel {
+                            anchors.verticalCenter: parent.verticalCenter
+                            label: "NET"
+                        }
+
                         Wifi {
                             anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Rule {
+                            vertical: true
+                            height: parent.height
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        HudLabel {
+                            anchors.verticalCenter: parent.verticalCenter
+                            label: "PWR"
                         }
 
                         Battery {
@@ -114,6 +169,13 @@ Scope {
                         }
                     }
                 }
+            }
+
+            // Seats the bar as a HUD strip against the desktop.
+            Rule {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
             }
         }
     }

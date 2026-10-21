@@ -60,7 +60,9 @@ Item {
             }
 
             StyledText {
-                text: root.label
+                text: root.label.toUpperCase()
+                mono: true
+                font.letterSpacing: Appearance.tracking.micro
                 font.pixelSize: Appearance.fontSize.sm
                 color: root.checked ? Appearance.colors.primary : Appearance.colors.on_surface
                 Layout.alignment: Qt.AlignHCenter

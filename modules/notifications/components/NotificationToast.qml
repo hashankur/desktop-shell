@@ -35,9 +35,9 @@ Item {
         id: content
         anchors.fill: parent
         color: root.critical ? Appearance.colors.error_container : Appearance.colors.surface_container_low
-        border.width: root.critical ? 0 : 2
-        border.color: Appearance.colors.surface_container
-        radius: 12
+        border.width: root.critical ? 0 : 1
+        border.color: Appearance.colors.outline_variant
+        radius: Appearance.rounding.normal
         opacity: root._shown ? 1 : 0
         transform: Translate {
             x: root._shown ? 0 : (root.slideIn ? 40 : 0)
@@ -87,7 +87,7 @@ Item {
                 Layout.preferredHeight: 64
                 Layout.alignment: Qt.AlignVCenter
                 visible: showImage || showIcon
-                radius: Appearance.rounding.full
+                radius: Appearance.rounding.normal
                 color: "transparent"
 
                 Image {
@@ -97,6 +97,8 @@ Item {
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     asynchronous: true
+                    sourceSize: Qt.size(128, 128)
+                    cache: false
                     onStatusChanged: {
                         if (status === Image.Error) {
                             iconArea.imageLoadFailed = true;
@@ -121,15 +123,15 @@ Item {
                     Layout.fillWidth: true
                     spacing: Appearance.spacing.small
 
-                    StyledText {
-                        text: root.notificationData?.app || "Notification"
-                        color: Appearance.colors.on_surface_variant
-                        font.pixelSize: Appearance.fontSize.xs
+                    HudLabel {
+                        label: root.notificationData?.app || "Notification"
                         Layout.fillWidth: true
+                        elide: Text.ElideRight
                     }
 
                     StyledText {
                         text: Qt.formatDateTime(new Date(root.notificationData?.timestamp || Date.now()), "MMM d · h:mm AP")
+                        mono: true
                         color: Appearance.colors.on_surface_variant
                         font.pixelSize: Appearance.fontSize.xs
                         Layout.alignment: Qt.AlignRight
@@ -137,7 +139,6 @@ Item {
 
                     StyledButton {
                         ghost: true
-                        circle: true
                         // Normal: the critical red as hover chip; critical
                         // (red background): inverted near-white chip.
                         hoverColor: root.critical ? Appearance.colors.on_error_container : Appearance.colors.error_container

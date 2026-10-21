@@ -20,6 +20,38 @@ Item {
     property int year: (new Date()).getFullYear()
     property bool _pinned: true
 
+    // Source of truth for the "you are here" chip. MonthGrid's model.today
+    // role is frozen when the model is built (Qt refreshes it only in
+    // populate(), on month/year/locale change), so a long-running shell
+    // marks the wrong day after midnight. This moves once per real day
+    // change, never per minute or per panel open.
+    property date _today: new Date()
+
+    function _sameDay(a, b) {
+        return a.getFullYear() === b.getFullYear()
+            && a.getMonth() === b.getMonth()
+            && a.getDate() === b.getDate();
+    }
+
+    SystemClock {
+        id: calClock
+        precision: SystemClock.Minutes
+        onDateChanged: {
+            const now = calClock.date;
+            if (root._sameDay(now, root._today))
+                return;
+            // Day boundary. Refresh the chip source before the pinned check
+            // so the highlight stays correct while paged to another month.
+            root._today = now;
+            if (!root._pinned)
+                return;
+            root.month = now.getMonth();
+            root.year = now.getFullYear();
+            if (!root.dayView)
+                root.selectedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        }
+    }
+
     // Day drill-in (in-place, tray-menu pattern): the whole column slides
     // out, the content swaps, and the new content slides back in.
     property bool dayView: false
@@ -34,25 +66,18 @@ Item {
     // list and lose the scroll position.
     readonly property var dayEvents: root.dayView ? CalendarEvents.eventsForDay(root.selectedDate) : []
 
-    SystemClock {
-        id: calClock
-        precision: SystemClock.Minutes
-        onDateChanged: {
-            if (!root._pinned)
-                return;
-            const today = calClock.date;
-            root.month = today.getMonth();
-            root.year = today.getFullYear();
-            if (!root.dayView)
-                root.selectedDate = today;
-        }
+    // Expand the visible month (and its neighbours, which MonthGrid shows
+    // as leading/trailing day cells) up front so the dots are there on the
+    // first frame instead of a binding expanding them lazily mid-eval.
+    function _warmMonth() {
+        CalendarEvents.ensureMonth(root.year, root.month - 1);
+        CalendarEvents.ensureMonth(root.year, root.month);
+        CalendarEvents.ensureMonth(root.year, root.month + 1);
     }
 
-    // Expand the visible month up front so the dots are there on the first
-    // frame instead of popping in a moment later.
-    onMonthChanged: CalendarEvents.ensureMonth(root.year, root.month)
-    onYearChanged: CalendarEvents.ensureMonth(root.year, root.month)
-    Component.onCompleted: CalendarEvents.ensureMonth(root.year, root.month)
+    onMonthChanged: _warmMonth()
+    onYearChanged: _warmMonth()
+    Component.onCompleted: _warmMonth()
 
     function previousMonth() {
         root._pinned = false;
@@ -146,13 +171,12 @@ Item {
         clip: true
 
         // Sliding page. Deliberately no anchors: anchors would override
-        // the animated `x` (tray-menu slider pattern). The layout margin
-        // is folded into width/height and the static x/y offset instead.
+        // the animated `x` (tray-menu slider pattern). No internal inset
+        // either: content aligns with the pane edge and the tab bar.
         ColumnLayout {
-            x: root.slideX + Appearance.padding.large
-            y: Appearance.padding.large
-            width: viewPort.width - Appearance.padding.large * 2
-            height: viewPort.height - Appearance.padding.large * 2
+            x: root.slideX
+            width: viewPort.width
+            height: viewPort.height
             spacing: Appearance.spacing.normal
 
             // ── Month header ─────────────────────────────────────
@@ -249,8 +273,10 @@ Item {
                     delegate: StyledText {
                         required property string shortName
 
-                        text: shortName
-                        color: Appearance.colors.on_surface
+                        text: shortName.toUpperCase()
+                        mono: true
+                        font.letterSpacing: Appearance.tracking.micro
+                        color: Appearance.colors.on_surface_variant
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         padding: 10
@@ -270,15 +296,22 @@ Item {
                         required property var model
                         readonly property var dayData: model
                         readonly property string dayLabel: monthGrid.locale.toString(dayData.date, "d")
-                        readonly property color dayTextColor: dayData.month === monthGrid.month ? Appearance.colors.on_surface : Appearance.colors.on_surface_variant
-                        readonly property color dayBackgroundColor: dayData.today ? Appearance.colors.surface_container_high : "transparent"
+                        // Computed against root._today, not model.today:
+                        // the model role is frozen at rebuild time and the
+                        // chip would sit on the day the grid was created.
+                        readonly property bool isToday: root._sameDay(dayData.date, root._today)
+                        // Today wears the inverted paper chip: the one
+                        // "you are here" marker in the grid.
+                        readonly property color dayTextColor: dayCard.isToday ? Appearance.colors.on_primary_container : (dayData.month === monthGrid.month ? Appearance.colors.on_surface : Appearance.colors.on_surface_variant)
+                        readonly property color dayBackgroundColor: dayCard.isToday ? Appearance.colors.primary_container : "transparent"
 
-                        radius: Appearance.rounding.full
+                        radius: Appearance.rounding.normal
                         color: dayBackgroundColor
 
                         StyledText {
                             anchors.centerIn: parent
                             text: dayCard.dayLabel
+                            mono: true
                             color: dayCard.dayTextColor
                             font.pixelSize: Appearance.fontSize.sm
                         }
@@ -300,7 +333,7 @@ Item {
 
                                     width: Appearance.padding.small
                                     height: Appearance.padding.small
-                                    radius: Appearance.rounding.full
+                                    radius: Appearance.rounding.normal
                                     color: modelData.color || Appearance.colors.primary
                                 }
                             }
@@ -352,6 +385,7 @@ Item {
                                 text: eventRow.modelData.allDay
                                       ? "All day"
                                       : CalendarEvents.formatTime(eventRow.modelData.start)
+                                mono: true
                                 color: Appearance.colors.primary
                                 font.pixelSize: Appearance.fontSize.xs
                                 elide: Text.ElideRight
@@ -366,7 +400,7 @@ Item {
                                 // managed by the RowLayout.
                                 implicitWidth: Appearance.padding.small
                                 implicitHeight: Appearance.padding.small
-                                radius: Appearance.rounding.full
+                                radius: Appearance.rounding.normal
                                 color: eventRow.modelData.color || Appearance.colors.primary
                             }
 

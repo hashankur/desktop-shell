@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 
+import qs.config
 import qs.services
 import "components"
 
@@ -43,7 +44,7 @@ PanelWindow {
         id: stack
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: 12
+        spacing: Appearance.spacing.normal
         width: 400
     }
 

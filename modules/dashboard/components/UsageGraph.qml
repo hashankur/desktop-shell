@@ -15,6 +15,7 @@ ColumnLayout {
     property string detail: `${Math.round(root.value * 100)}%`
     property bool available: true
     property color lineColor: Appearance.colors.primary
+    readonly property color gridColor: Appearance.colors.surface_container_high
 
     // Visible sample window. Spacing is derived ONLY from this constant and
     // the plot width, never from the current sample count, so lines scroll in
@@ -29,7 +30,9 @@ ColumnLayout {
         spacing: Appearance.spacing.small
 
         StyledText {
-            text: root.label
+            text: root.label.toUpperCase()
+            mono: true
+            font.letterSpacing: Appearance.tracking.micro
             font.pixelSize: Appearance.fontSize.base
             font.weight: Font.DemiBold
         }
@@ -40,6 +43,7 @@ ColumnLayout {
 
         StyledText {
             text: root.detail
+            mono: true
             color: Appearance.colors.on_surface_variant
             font.pixelSize: Appearance.fontSize.sm
         }
@@ -51,13 +55,18 @@ ColumnLayout {
         Layout.minimumHeight: 88
         radius: Appearance.rounding.normal
         color: Appearance.colors.surface_container
+        border.width: 1
+        border.color: Appearance.colors.outline_variant
 
         Canvas {
             id: canvas
             anchors.fill: parent
 
-            onWidthChanged: requestPaint()
-            onHeightChanged: requestPaint()
+            renderTarget: Canvas.FramebufferObject
+            renderStrategy: Canvas.Threaded
+
+            onWidthChanged: Qt.callLater(requestPaint)
+            onHeightChanged: Qt.callLater(requestPaint)
 
             onPaint: {
                 const ctx = getContext("2d");
@@ -72,7 +81,7 @@ ColumnLayout {
                     return;
 
                 // Static grid: never moves, so scrolling data reads cleanly.
-                ctx.strokeStyle = Appearance.colors.surface_container_high;
+                ctx.strokeStyle = root.gridColor;
                 ctx.lineWidth = 1;
                 for (let g = 1; g < 4; g++) {
                     const y = Math.round(pad + (g / 4) * plotH) + 0.5;
@@ -144,5 +153,7 @@ ColumnLayout {
     }
 
     onHistoryChanged: if (root.visible) canvas.requestPaint()
+    onLineColorChanged: if (root.visible) canvas.requestPaint()
+    onGridColorChanged: if (root.visible) canvas.requestPaint()
     onVisibleChanged: if (root.visible) canvas.requestPaint()
 }

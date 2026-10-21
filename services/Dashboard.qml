@@ -51,11 +51,12 @@ Singleton {
 
     function toggle(viewName) {
         if (!viewName) {
-            // No view requested (IPC toggle): plain open/close.
+            // No view requested (IPC toggle, bar clock): plain open/close.
+            // Reopening keeps the last-shown tab: never navigates.
             if (requestedVisible)
                 close();
             else
-                open("overview");
+                open(requestedView);
             return;
         }
         // View-aware: switching to the already-open view closes; requesting

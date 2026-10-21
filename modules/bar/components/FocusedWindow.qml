@@ -40,12 +40,13 @@ Row {
     }
 
     Icon {
+        implicitSize: 14
         source: root.symbolicSource
         visible: root.symbolicSource !== ""
     }
 
     IconImage {
-        implicitSize: 16
+        implicitSize: 14
         anchors.verticalCenter: parent.verticalCenter
         source: root.fullSource
         visible: root.fullSource !== ""
@@ -57,6 +58,7 @@ Row {
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
         text: Niri.focusedWindow?.title ?? "Desktop"
-        font.pixelSize: Appearance.fontSize.sm
+        mono: true
+        font.pixelSize: Appearance.fontSize.xs
     }
 }

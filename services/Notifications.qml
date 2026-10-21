@@ -85,7 +85,7 @@ Singleton {
     function clearHistory() {
         historyModelStore.clear();
         if (root.persistenceEnabled) {
-            root.writeHistory();
+            root.saveHistory();
         }
     }
 
@@ -95,7 +95,7 @@ Singleton {
         }
         historyModelStore.remove(index);
         if (root.persistenceEnabled) {
-            root.writeHistory();
+            root.saveHistory();
         }
     }
 

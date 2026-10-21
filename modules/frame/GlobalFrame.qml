@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 
+import qs.components
 import qs.config
 
 Variants {
@@ -26,10 +27,18 @@ Variants {
 
         BorderFrame {
             anchors.fill: parent
-            // anchors.topMargin: 44
-            color: Appearance.colors.surface
-            radius: 20 // Inner radius + spacing
-            thickness: 0
+            // 1px hairline around the screen edge; radius follows the token
+            // (sharp in the HUD scheme).
+            color: Appearance.colors.outline_variant
+            radius: Appearance.rounding.normal
+            thickness: 1
+        }
+
+        CornerFrame {
+            anchors.fill: parent
+            armLength: 28
+            thickness: 2
+            bracketColor: Appearance.colors.primary
         }
     }
 }

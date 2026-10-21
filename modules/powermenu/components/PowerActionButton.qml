@@ -14,6 +14,8 @@ Item {
     property string iconSource: ""
     property string label: ""
     property color iconColor: Appearance.colors.on_surface
+    // Orange index tag ("01") pinned to the tile corner.
+    property string indexLabel: ""
 
     signal clicked
 
@@ -26,6 +28,15 @@ Item {
         radius: Appearance.rounding.normal
         color: mouseArea.containsMouse ? Appearance.colors.surface_container_high : Appearance.colors.surface_container
         border.color: mouseArea.containsMouse ? Appearance.colors.outline_variant : "transparent"
+
+        HudLabel {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: Appearance.padding.normal
+            visible: root.indexLabel.length > 0
+            label: root.indexLabel
+            accent: true
+        }
 
         Behavior on color {
             ColorAnimation {

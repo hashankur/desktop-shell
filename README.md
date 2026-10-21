@@ -16,6 +16,8 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls
+- **Theme pane** (`05 Theme` in the console band): default scheme, or [matugen](https://github.com/InioX/matugen) colors generated from a wallpaper; switching repaints the shell live
+- **Wallpaper picker**: browse `~/Pictures/Wallpapers` and hand the image to [awww](https://github.com/LGFae/awww) (`spawn-at-startup` from niri), with a fade transition
 - **Calendar**: ICS feeds (Google Calendar secret address or any ICS URL) with per-feed event colors, dots on the month grid, click a day to drill into its events
 - **Next-event dot**: event-colored dot beside the clock (plus `in 21m` once a start is within 30 minutes); hover opens a card with title, time range, countdown and an in-progress bar; click opens the dashboard
 - **Notifications**: dismiss, click-to-invoke actions; critical urgency gets sticky toasts, error accent, and DND bypass
@@ -25,8 +27,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 ## Roadmap
 
 - Built-in lock screen (Quickshell libraries instead of an external locker)
-- Wallpaper manager
-- Theme/scheme manager (light/dark and accent switching)
+- Light scheme (`matugen image -m light`); the HUD is tuned for dark and needs a pass before light is offered
 
 ## Requirements
 
@@ -38,6 +39,8 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 | [cliphist](https://github.com/sentriz/cliphist) | Clipboard history |
 | [wl-clipboard](https://github.com/bugaevc/wl-clipboard) | `wl-copy` for clipboard writes |
 | [curl](https://curl.se/) | Calendar feed fetching |
+| [matugen](https://github.com/InioX/matugen) | Wallpaper-derived color schemes |
+| [awww](https://github.com/LGFae/awww) | Wallpaper daemon (started by niri, driven by the shell) |
 | [MoreWaita](https://github.com/somepaulo/MoreWaita) | Icon theme |
 
 ## Installation
@@ -71,6 +74,20 @@ Create `~/.config/quickshell/calendar.json` with your ICS feed URLs (Google Cale
 }
 ```
 
+### Theme
+
+Colors live in `~/.config/quickshell/appearance.json`, written by the shell when you pick a scheme in the theme pane (`05 Theme` in the console band, or `quickshell ipc call theme toggle`). Delete the file to fall back to the built-in default scheme:
+
+```json
+{
+  "colors": { "primary": "#ff5e1f", "surface": "#0d2557" },
+  "themeMode": "default",
+  "wallpaper": "/home/you/Pictures/Wallpapers/example.jpg"
+}
+```
+
+Keys you leave out keep their defaults, so a partial file is valid. Everything outside `colors` stays in `config/Appearance.qml`.
+
 ### IPC
 
 ```sh
@@ -85,6 +102,9 @@ quickshell ipc --path ~/.config/quickshell/neue/shell.qml call powermenu toggle
 
 # Toggle dashboard (also: open, close); jump to a tab with: openView overview|system|mpris
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call dashboard toggle
+
+# Toggle the theme / wallpaper pane (also: open, close)
+quickshell ipc --path ~/.config/quickshell/neue/shell.qml call theme toggle
 
 # Toggle quick settings (also: open, close)
 quickshell ipc --path ~/.config/quickshell/neue/shell.qml call quicksettings toggle

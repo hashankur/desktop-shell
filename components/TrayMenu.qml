@@ -55,14 +55,12 @@ OverlayWindow {
     }
 
     // Shared 1px divider: under the back header and between entries.
-    component Hairline: Rectangle {
+    component Hairline: Rule {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: root.horizontalPadding
         anchors.rightMargin: root.horizontalPadding
-        height: 1
-        color: Appearance.colors.outline_variant
     }
 
     property var _navCommit: null
@@ -245,7 +243,8 @@ OverlayWindow {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            radius: delegateRoot.entry.buttonType === 2 ? 8 : 3
+                                            // Radios stay circular; checkboxes go sharp.
+                                            radius: delegateRoot.entry.buttonType === 2 ? 8 : Appearance.rounding.normal
                                             color: "transparent"
                                             border.color: Appearance.colors.on_surface_variant
                                             border.width: 1
@@ -254,7 +253,7 @@ OverlayWindow {
                                                 anchors.centerIn: parent
                                                 width: 10
                                                 height: 10
-                                                radius: delegateRoot.entry.buttonType === 2 ? 5 : 2
+                                                radius: delegateRoot.entry.buttonType === 2 ? 5 : Appearance.rounding.normal
                                                 color: Appearance.colors.primary
                                                 visible: delegateRoot.entry.checkState === Qt.Checked
                                             }
@@ -263,7 +262,7 @@ OverlayWindow {
                                                 anchors.centerIn: parent
                                                 width: 6
                                                 height: 6
-                                                radius: delegateRoot.entry.buttonType === 2 ? 3 : 1
+                                                radius: delegateRoot.entry.buttonType === 2 ? 3 : Appearance.rounding.normal
                                                 color: Appearance.colors.on_surface_variant
                                                 visible: delegateRoot.entry.checkState === Qt.PartiallyChecked
                                             }
@@ -297,6 +296,7 @@ OverlayWindow {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "▶"
+                                            font.family: Appearance.font.mono
                                             font.pixelSize: 10
                                             color: Appearance.colors.on_surface_variant
                                         }
