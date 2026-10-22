@@ -124,10 +124,22 @@ Scope {
                         spacing: 20
 
                         Mpris {
+                            id: mediaChip
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
+                        // Both neighbours come and go (Spotify closed, tray
+                        // empty or on another output); the rule after the tray
+                        // already divides when the tray stands alone.
+                        Rule {
+                            vertical: true
+                            height: parent.height
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: mediaChip.visible && trayChip.visible
+                        }
+
                         SystemTray {
+                            id: trayChip
                             anchors.verticalCenter: parent.verticalCenter
                             parentWindow: barWindow
                             // Tray lives on the primary output only.
