@@ -114,7 +114,7 @@ Rectangle {
             // separating. Token-driven, per the animation rules.
             color: hovered ? Appearance.colors.primary : Appearance.colors.on_surface
             mono: true
-            font.pixelSize: Appearance.fontSize.xs
+            font.pixelSize: Appearance.fontSize.sm
             font.weight: Font.DemiBold
             // Fixed width and never hidden: the countdown changes text but
             // not footprint, so the clock cannot be nudged. (A Row skips

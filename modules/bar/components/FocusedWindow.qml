@@ -59,6 +59,6 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
         text: Niri.focusedWindow?.title ?? "Desktop"
         mono: true
-        font.pixelSize: Appearance.fontSize.xs
+        font.pixelSize: Appearance.fontSize.sm
     }
 }

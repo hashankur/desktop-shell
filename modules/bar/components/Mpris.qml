@@ -16,13 +16,15 @@ Row {
     visible: root.activePlayer !== null
 
     Icon {
+        anchors.verticalCenter: parent.verticalCenter
         implicitSize: 14
         source: root.isPlaying ? Quickshell.iconPath("media-playback-pause-symbolic") : Quickshell.iconPath("media-playback-start-symbolic")
     }
 
     StyledText {
+        anchors.verticalCenter: parent.verticalCenter
         mono: true
-        font.pixelSize: Appearance.fontSize.xs
+        font.pixelSize: Appearance.fontSize.sm
 
         text: {
             if (root.activePlayer === null) {

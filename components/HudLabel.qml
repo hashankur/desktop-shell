@@ -13,6 +13,8 @@ Text {
     property string label: ""
     property bool accent: false
 
+    renderType: Text.NativeRendering
+    verticalAlignment: Text.AlignVCenter
     text: root.label.toUpperCase()
     color: root.accent ? Appearance.colors.primary : Appearance.colors.on_surface_variant
     font {

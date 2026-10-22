@@ -9,7 +9,7 @@ StyledText {
     mono: true
     text: Time.time.toUpperCase()
     font.letterSpacing: Appearance.tracking.label
-    font.pixelSize: Appearance.fontSize.xs
+    font.pixelSize: Appearance.fontSize.sm
 
     MouseArea {
         anchors.fill: parent
