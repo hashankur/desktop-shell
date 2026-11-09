@@ -78,9 +78,7 @@ fn left(theme: &Theme) -> Column {
 
 // four grid columns wide, flush with the right margin
 fn side(theme: &Theme, screen_width: u32) -> Column {
-    let free = screen_width as f32 - 2.0 * grid::MARGIN - (grid::COLUMNS - 1) as f32 * grid::GUTTER;
-    let column = free / grid::COLUMNS as f32;
-    let width = 4.0 * column + 3.0 * grid::GUTTER;
+    let width = grid::span(4, screen_width as f32);
 
     let mut blocks: Vec<Box<dyn Widget>> = Vec::new();
 

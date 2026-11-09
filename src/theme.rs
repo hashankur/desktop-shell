@@ -11,6 +11,9 @@ use amane::{Color, Service};
  * design prototype
  */
 
+// how much of the scrim's color covers the windows behind a surface
+pub const SCRIM_OPACITY: f32 = 0.62;
+
 // names and titles
 pub const SANS: &str = "Outfit";
 // readouts: times, numbers, labels
@@ -21,18 +24,41 @@ pub mod grid {
     pub const COLUMNS: u32 = 12;
     pub const MARGIN: f32 = 72.0;
     pub const GUTTER: f32 = 24.0;
+
+    // the width of `columns` columns and the gutters between them, on a screen this wide
+    pub fn span(columns: u32, screen_width: f32) -> f32 {
+        let free = screen_width - 2.0 * MARGIN - (COLUMNS - 1) as f32 * GUTTER;
+        let column = free / COLUMNS as f32;
+
+        columns as f32 * column + columns.saturating_sub(1) as f32 * GUTTER
+    }
 }
 
 pub mod space {
     pub const SM: f32 = 8.0;
+    pub const MD: f32 = 16.0;
     pub const LG: f32 = 32.0;
 }
 
 // the type sizes surfaces pick from, three at most per surface
 pub mod size {
+    pub const LG: f32 = 88.0;
     pub const POSTER: f32 = 260.0;
     pub const MD: f32 = 18.0;
     pub const SM: f32 = 12.0;
+}
+
+// the launcher and the surfaces shaped like it: a large query over a fixed list
+pub mod list {
+    // rows the list reserves room for, so the query above it never moves
+    pub const ROWS: f32 = 10.0;
+    // the query keeps its last characters when it outgrows the column
+    pub const QUERY_CHARS: usize = 12;
+    // a row's right-hand description is cut to this many characters
+    pub const DESCRIPTION_CHARS: usize = 24;
+    // the caret is a still, thin bar of this share of the query's size
+    pub const CARET_WIDTH: f32 = 0.08;
+    pub const CARET_HEIGHT: f32 = 0.9;
 }
 
 pub mod bar {
@@ -126,6 +152,16 @@ pub fn state_folder() -> PathBuf {
     base.join("yohaku")
 }
 
+// yohaku's own config, next to its code; nothing is read from another shell's folder
+pub fn config_folder() -> PathBuf {
+    let base = env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".config")))
+        .unwrap_or_else(|| PathBuf::from("/tmp"));
+
+    base.join("amane/yohaku")
+}
+
 fn scheme_path() -> PathBuf {
     state_folder().join("scheme")
 }
@@ -166,6 +202,7 @@ fn is_hex(text: &str) -> bool {
 #[derive(Clone, Copy)]
 pub struct Theme {
     pub surface: Color,
+    pub scrim: Color,
     pub on_surface: Color,
     pub on_surface_variant: Color,
     pub outline: Color,
@@ -180,6 +217,7 @@ pub fn current() -> Theme {
 
     Theme {
         surface: scheme.get("surface"),
+        scrim: scheme.get("scrim"),
         on_surface: scheme.get("on_surface"),
         on_surface_variant: scheme.get("on_surface_variant"),
         outline: scheme.get("outline"),

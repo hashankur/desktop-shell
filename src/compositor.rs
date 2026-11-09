@@ -123,6 +123,28 @@ pub fn spaces_on(output: &str) -> Vec<Space> {
     spaces
 }
 
+/*
+ * the output the user is working on, where a surface opens; none when the
+ * compositor doesn't say, and the caller then shows it on every output
+ */
+pub fn focused_output() -> Option<String> {
+    match backend() {
+        Some(Backend::Umbriel) => Desktop::read()
+            .spaces
+            .iter()
+            .find(|space| space.focused)
+            .map(|space| space.output.clone()),
+
+        Some(Backend::Niri) => Workspaces::read()
+            .list()
+            .iter()
+            .find(|workspace| workspace.focused())
+            .and_then(|workspace| workspace.output().map(str::to_string)),
+
+        None => None,
+    }
+}
+
 pub fn switch_to(space: &Space) {
     match backend() {
         Some(Backend::Umbriel) => umbriel::switch_to(space),

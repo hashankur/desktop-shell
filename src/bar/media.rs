@@ -1,6 +1,7 @@
 use amane::{Center, Rectangle, Row, Service, Text, Widget};
 
-use super::parts::{clickable, hovered_color, icon, shorten};
+use super::parts::{clickable, hovered_color, icon};
+use crate::text::shorten;
 use crate::hover;
 use crate::icons;
 use crate::spotify::Spotify;

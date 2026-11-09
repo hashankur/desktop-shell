@@ -54,15 +54,3 @@ pub fn hovered_color(key: &str, theme: &Theme) -> Color {
         theme.on_surface_variant
     }
 }
-
-// cut to a character count, not bytes, so a title in any script cuts cleanly
-pub fn shorten(text: &str, limit: usize) -> String {
-    if text.chars().count() <= limit {
-        return text.to_string();
-    }
-
-    let mut short: String = text.chars().take(limit.saturating_sub(1)).collect();
-    short.push('…');
-
-    short
-}
