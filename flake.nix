@@ -21,6 +21,7 @@
           freetype
           libpulseaudio
           libxkbcommon
+          linux-pam # amane's lock screen links it, so cargo test does too
           wayland
           vulkan-loader
         ];
