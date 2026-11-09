@@ -13,12 +13,12 @@ RowLayout {
     anchors.right: parent.right
     height: 4
 
-    // Niri output name of the screen this bar lives on; only that
+    // Compositor output name of the screen this bar lives on; only that
     // output's workspaces are shown.
     property string outputName: ""
 
     Repeater {
-        model: Niri.workspaces
+        model: Compositor.workspaces
 
         Rectangle {
             required property var model
@@ -32,7 +32,7 @@ RowLayout {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Niri.focusWorkspaceById(parent.model.id)
+                onClicked: Compositor.focusWorkspace(parent.model)
             }
 
             Behavior on opacity {

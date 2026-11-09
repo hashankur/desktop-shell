@@ -21,6 +21,22 @@ Item {
     // it restores the service's view instead of resetting to Overview.
     property int viewIndex: viewIndexFor(Dashboard.requestedView)
 
+    // The history list lives on Overview, so seeing it (or a toast landing
+    // while it is up) clears the bar's unread count.
+    readonly property bool listingNotifications: viewIndex === 0
+    onListingNotificationsChanged: if (listingNotifications)
+        Notifications.markRead()
+    Component.onCompleted: if (listingNotifications)
+        Notifications.markRead()
+
+    Connections {
+        target: Notifications
+        function onUnreadCountChanged() {
+            if (root.listingNotifications)
+                Notifications.markRead();
+        }
+    }
+
     // Horizontal pager (caelestia pattern): pages sit side by side and slide
     // to the current one. viewIndex is the single source of truth; pages
     // derive their position from it, so direction-aware travel comes for

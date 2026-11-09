@@ -18,6 +18,16 @@ Rectangle {
     readonly property var upcoming: CalendarEvents.nextEvent(now)
     readonly property bool hovered: hoverHandler.hovered
 
+    // Other events still live today, so a holiday or a single meeting does
+    // not read as the whole day. Same filter as EventCard's "later" list.
+    readonly property int othersToday: {
+        const ev = upcoming;
+        if (!ev)
+            return 0;
+        const nowMs = now.getTime();
+        return CalendarEvents.eventsForDay(now).filter(e => e.end > nowMs && !(e.start === ev.start && e.title === ev.title)).length;
+    }
+
     // Below this, the label switches from a minute countdown to a duration
     // and then to a weekday.
     readonly property int soonMinutes: 30
@@ -108,6 +118,7 @@ Rectangle {
 
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: font.pixelSize / 10
             text: chip.restLabel()
             // No box to fill on hover, so the accent carries it: the label
             // takes the primary token and the bar's divider does the
@@ -116,12 +127,6 @@ Rectangle {
             mono: true
             font.pixelSize: Appearance.fontSize.sm
             font.weight: Font.DemiBold
-            // Fixed width and never hidden: the countdown changes text but
-            // not footprint, so the clock cannot be nudged. (A Row skips
-            // invisible children, so an empty-string guard here would change
-            // the chip width the moment a label appears.)
-            width: Appearance.spacing.large * 3
-            elide: Text.ElideRight
 
             Behavior on color {
                 ColorAnimation {
@@ -129,6 +134,18 @@ Rectangle {
                     easing.bezierCurve: Appearance.anim.curves.standard
                 }
             }
+        }
+
+        // Hidden with no other events so it takes no room; the chip hugs
+        // its content and the center group re-centers around it.
+        StyledText {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: font.pixelSize / 10
+            visible: chip.othersToday > 0
+            text: `+${Math.min(chip.othersToday, 9)}`
+            color: Appearance.colors.on_surface_variant
+            mono: true
+            font.pixelSize: Appearance.fontSize.sm
         }
     }
 

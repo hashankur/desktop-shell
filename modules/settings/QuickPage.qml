@@ -97,6 +97,14 @@ Item {
                     checked: Notifications.dnd
                     onClicked: Notifications.dnd = !Notifications.dnd
                 }
+
+                SettingsComponents.ToggleTile {
+                    Layout.fillWidth: true
+                    iconSource: Quickshell.iconPath(IdleInhibit.enabled ? "view-reveal-symbolic" : "view-conceal-symbolic", true)
+                    label: "Awake"
+                    checked: IdleInhibit.enabled
+                    onClicked: IdleInhibit.toggle()
+                }
             }
 
             RowLayout {

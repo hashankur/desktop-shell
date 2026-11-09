@@ -15,7 +15,7 @@ PanelWindow {
     implicitWidth: Notifications.toastWidth
     implicitHeight: stack.implicitHeight
     focusable: false
-    screen: Niri.focusedScreen
+    screen: Compositor.focusedScreen
     anchors.top: true
     anchors.right: true
     margins.top: 18

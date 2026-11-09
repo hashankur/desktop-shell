@@ -50,9 +50,9 @@ Item {
             StatTile {
                 divider: Battery.available
                 title: "Network"
-                value: WifiStatus.connected ? (WifiStatus.ssid || "Connected") : "Offline"
+                value: WifiStatus.connected ? (WifiStatus.ssid || "Connected") : (WiredStatus.connected ? (WiredStatus.kind === "phone" ? "USB tethering" : WiredStatus.kind === "usb" ? "USB ethernet" : "Wired") : "Offline")
                 progress: WifiStatus.connected ? WifiStatus.signal / 100 : -1
-                detail: WifiStatus.connected ? `${WifiStatus.signal}% signal` : ""
+                detail: WifiStatus.connected ? `${WifiStatus.signal}% signal` : (WiredStatus.connected ? WiredStatus.iface : "")
                 extra: `↓ ${Fmt.rate(SystemInfo.netDown)} ↑ ${Fmt.rate(SystemInfo.netUp)}`
             }
 

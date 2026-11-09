@@ -65,7 +65,7 @@ Scope {
 
         PanelWindow {
             anchors.bottom: true
-            screen: Niri.focusedScreen
+            screen: Compositor.focusedScreen
             margins.bottom: screen.height / 10
             exclusiveZone: 0
 

@@ -425,10 +425,13 @@ Singleton {
         return v instanceof Date ? v : new Date(v);
     }
 
-    // What the bar chip shows: an ongoing timed event, then an ongoing
-    // all-day one, then the rest of today, then the next week. Ongoing beats
-    // upcoming so a week-old all-day event cannot push a meeting off the bar,
-    // and every branch produces a label so the chip is never a bare dot.
+    // What the bar chip shows: an ongoing timed event, then the rest of
+    // today's timed events, then an ongoing all-day one, then the next week.
+    // An all-day event is "ongoing" from midnight, so ranking it above the
+    // rest of today let a holiday hide the meeting that is actually coming up.
+    // It still beats later days so a week-old all-day event cannot push out
+    // something live, and every branch produces a label so the chip is never
+    // a bare dot.
     // Pure read; the chip window is kept warm by NextEvent's own
     // ensureWindow calls and by _rewarm after each rebuild.
     function nextEvent(now) {
@@ -464,7 +467,7 @@ Singleton {
             }
         }
 
-        return ongoingTimed || ongoingAllDay || todayUpcoming || soonUpcoming || null;
+        return ongoingTimed || todayUpcoming || ongoingAllDay || soonUpcoming || null;
     }
 
     function _cmpOcc(a, b) {

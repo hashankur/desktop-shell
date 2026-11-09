@@ -58,7 +58,7 @@ Item {
 
             StyledText {
                 Layout.fillWidth: true
-                text: WifiStatus.connected ? `Connected to ${WifiStatus.ssid} (${WifiStatus.signal}%)` : (WifiStatus.wifiEnabled ? "Not connected" : "Wi-Fi is off")
+                text: (WifiStatus.connected ? `Connected to ${WifiStatus.ssid} (${WifiStatus.signal}%)` : (WifiStatus.wifiEnabled ? "Not connected" : "Wi-Fi is off")) + (WiredStatus.connected ? ` · ${WiredStatus.label}` : "")
                 mono: true
                 elide: Text.ElideRight
                 color: Appearance.colors.on_surface_variant

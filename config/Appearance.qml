@@ -75,7 +75,7 @@ FileView {
         const target = adapter.colors;
         for (const key in Palette.cobalt.colors) {
             if (map[key] !== undefined)
-                target[key] = map[key];
+            target[key] = map[key];
         }
     }
 
@@ -174,7 +174,7 @@ FileView {
     component FontSize: JsonObject {
         property real scale: 1
         property int xs: 12 * scale
-        property int sm: 14 * scale
+        property int sm: 13 * scale
         property int base: 16 * scale
         property int lg: 18 * scale
         property int xl: 20 * scale

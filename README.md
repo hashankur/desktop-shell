@@ -12,7 +12,7 @@ Top bar with workspace indicators, system stats, clock, media, tray, wifi, batte
 
 ## Features
 
-- **Top bar**: per-screen, with Niri workspace strip, CPU/RAM/GPU/temp rings, focused window, clock, next-event chip, media, system tray, WiFi, battery, power button
+- **Top bar**: per-screen, with workspace strip (niri or umbriel), CPU/RAM/GPU/temp rings, focused window, clock, next-event chip, media, system tray, WiFi, battery, power button
 - **App launcher**: fuzzy search over desktop entries, keyboard navigation, Alt+number shortcuts
 - **Clipboard history**: `cliphist`-backed picker
 - **Dashboard**: tabbed overlay with calendar, notification history, usage graphs, and media controls

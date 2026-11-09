@@ -8,6 +8,7 @@ import qs.modules.bar
 import qs.modules.console
 import qs.modules.notifications
 import qs.modules.osd
+import qs.modules.screenshot
 import qs.modules.settings
 
 ShellRoot {
@@ -20,6 +21,8 @@ ShellRoot {
     SettingsWindow {}
 
     Osd {}
+
+    ScreenshotOverlay {}
 
     NotificationHost {}
 }

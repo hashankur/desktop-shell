@@ -1,13 +1,13 @@
-pragma Singleton
-
 import QtQuick
 import Quickshell
 import Niri 0.1
 
-Singleton {
+// Loaded by Compositor only on niri: the plugin import below is a hard
+// dependency, so keeping it in its own file lets the shell start without it.
+Item {
     id: root
+    visible: false
 
-    // Forwarded from the plugin object so consumers see a stable API.
     readonly property var workspaces: niri.workspaces
     readonly property var focusedWindow: niri.focusedWindow
 
@@ -34,18 +34,9 @@ Singleton {
         return "";
     }
 
-    // Quickshell Screen matching the niri-focused output; falls back to
-    // the primary screen before niri connects / while undetermined.
-    readonly property var focusedScreen: {
-        root.focusedOutputName;
-        const screens = Quickshell.screens;
-        const n = screens.length ?? 0;
-        for (let i = 0; i < n; i++) {
-            if (screens[i].name === root.focusedOutputName)
-                return screens[i];
-        }
-        return n > 0 ? screens[0] : undefined;
-    }
+    readonly property bool hasFocusedWindow: root.focusedWindow !== null && root.focusedWindow !== undefined
+    readonly property string focusedAppId: root.focusedWindow?.appId ?? ""
+    readonly property string focusedTitle: root.focusedWindow?.title ?? ""
 
     // Workspace updates arrive in bursts; one tick per event-loop turn keeps
     // the focused-output scan from running once per row signal.
@@ -80,8 +71,8 @@ Singleton {
         }
     }
 
-    function focusWorkspaceById(id) {
-        niri.focusWorkspaceById(id);
+    function focusWorkspace(ws) {
+        niri.focusWorkspaceById(ws.id);
     }
 
     Niri {
@@ -97,7 +88,10 @@ Singleton {
         }
     }
 
-    Component.onCompleted: niri.connect()
+    Component.onCompleted: {
+        if (Quickshell.env("NIRI_SOCKET"))
+            niri.connect();
+    }
 
     // Reconnect with exponential backoff: if the socket isn't up when the
     // shell starts, workspaces/focused-window would otherwise stay dead

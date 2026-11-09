@@ -293,7 +293,7 @@ Item {
                 Layout.fillHeight: true
 
                 DayOfWeekRow {
-                    locale: Qt.locale()
+                    locale: Qt.locale("en_GB")
                     Layout.fillWidth: true
 
                     delegate: StyledText {
@@ -313,7 +313,7 @@ Item {
                     id: monthGrid
                     month: root.month
                     year: root.year
-                    locale: Qt.locale()
+                    locale: Qt.locale("en_GB")
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 

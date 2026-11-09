@@ -18,6 +18,10 @@ Singleton {
 
     signal toastQueued(var notification)
 
+    // Arrivals since the Overview (which lists the history) was last on
+    // screen. In memory only: a shell restart starts from zero.
+    property int unreadCount: 0
+
     ListModel {
         id: historyModelStore
     }
@@ -63,6 +67,7 @@ Singleton {
             };
 
             historyModelStore.insert(0, item);
+            root.unreadCount++;
             while (historyModelStore.count > root.maxHistory) {
                 historyModelStore.remove(historyModelStore.count - 1);
             }
@@ -84,8 +89,13 @@ Singleton {
         onTriggered: root.writeHistory()
     }
 
+    function markRead() {
+        root.unreadCount = 0;
+    }
+
     function clearHistory() {
         historyModelStore.clear();
+        root.unreadCount = 0;
         if (root.persistenceEnabled) {
             root.saveHistory();
         }

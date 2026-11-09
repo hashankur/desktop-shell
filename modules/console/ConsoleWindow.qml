@@ -21,7 +21,7 @@ OverlayWindow {
 
     // The band sits under the bar, so content enters from above.
     enterOffsetY: -40
-    screen: Niri.focusedScreen
+    screen: Compositor.focusedScreen
     anchors {
         left: true
         right: true

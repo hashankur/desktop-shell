@@ -17,7 +17,7 @@ OverlayWindow {
     id: root
 
     enterOffsetY: -40
-    screen: Niri.focusedScreen
+    screen: Compositor.focusedScreen
     anchors {
         left: true
         right: true
