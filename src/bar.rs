@@ -1,29 +1,42 @@
+mod media;
+mod net;
+mod parts;
+mod power;
+mod system;
+mod window;
+mod workspaces;
+
 use amane::{
-    Arc, Canvas, Cap, Center, Column, Cpu, Full, Layer, LayerWindow, Memory, Monitor, Parent,
-    Pointer, Rectangle, Row, Service, Shape, Start, Text, Vertical, Widget, Zone, children, shapes,
+    Center, Column, End, Full, Layer, LayerWindow, Monitor, Parent, Rectangle, Row, Service,
+    Start, Text, Vertical, Widget, Zone, children,
 };
 
 use crate::clock::Clock;
-use crate::compositor::{self, Desktop, Space};
-use crate::stats::Sensors;
-use crate::theme::{self, MONO, SANS, Theme, bar};
+use crate::compositor;
+use crate::theme::{self, MONO, Theme, bar};
+use parts::rule;
 
 /*
  * the only persistent chrome: neue's layout, kept from the prototype.
  * the workspace line runs along the top edge; below it the left and right
  * groups take equal shares of the free width, so the clock stays centered
- * whatever they hold
+ * whatever they hold. each group lives in its own module; this file only
+ * places them
  */
 pub fn view(monitor: &Monitor) -> LayerWindow {
     let theme = theme::current();
 
     let spaces = compositor::spaces_on(&monitor.name);
 
-    let row = Row::new(children![left(&theme), center(&theme), right(&theme)])
-        .width(Parent)
-        .height(Parent)
-        .gap(bar::GROUP_GAP)
-        .align(Center);
+    let row = Row::new(children![
+        left(&theme),
+        center(&theme),
+        right(&theme, &monitor.name)
+    ])
+    .width(Parent)
+    .height(Parent)
+    .gap(bar::GROUP_GAP)
+    .align(Center);
 
     let content = Rectangle::new()
         .width(Parent)
@@ -48,64 +61,19 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
                 .width(Parent)
                 .height(Parent)
                 .fill(theme.surface)
-                .child(Column::new(children![line(&spaces, &theme), content])),
+                .child(Column::new(children![
+                    workspaces::view(&spaces, &theme),
+                    content
+                ])),
         )
 }
 
-/*
- * one segment per workspace: active is the bar's accent, occupied reads
- * as quiet text tone, empty recedes further
- */
-fn line(spaces: &[Space], theme: &Theme) -> Row {
-    let mut segments: Vec<Box<dyn Widget>> = Vec::new();
-
-    for space in spaces {
-        let color = if space.active {
-            theme.primary
-        } else if space.occupied {
-            theme::faded(theme.on_surface_variant, 0.45)
-        } else {
-            theme::faded(theme.outline_variant, 0.6)
-        };
-
-        let target = space.clone();
-
-        segments.push(Box::new(
-            Rectangle::new()
-                .width(Parent)
-                .height(bar::LINE)
-                .fill(color)
-                .cursor(Pointer)
-                .on_click(move |_| compositor::switch_to(&target)),
-        ));
-    }
-
-    Row::new(segments)
-        .width(Parent)
-        .height(bar::LINE)
-        .gap(bar::LINE_GAP)
-}
-
-// SYS and its rings, a rule, then the focused window's title in what's left
+// SYS and its rings, a rule, then the focused window in what's left
 fn left(theme: &Theme) -> Rectangle {
-    let desktop = Desktop::read();
-
-    let title = desktop
-        .focused()
-        .map(|focused| focused.title.clone())
-        .unwrap_or_else(|| String::from("Desktop"));
-
-    drop(desktop);
-
     let row = Row::new(children![
-        tag("SYS", theme),
-        rings(theme),
+        system::view(theme),
         rule(theme),
-        Text::new(title)
-            .font(SANS)
-            .size(bar::TEXT)
-            .color(theme.on_surface_variant)
-            .elide(),
+        window::view(theme),
     ])
     .width(Parent)
     .height(Parent)
@@ -119,66 +87,6 @@ fn left(theme: &Theme) -> Rectangle {
         .child(row)
 }
 
-/*
- * cpu, memory, gpu and cpu temperature as neue had them; a sensor this
- * machine doesn't have leaves its ring out instead of showing zero
- */
-fn rings(theme: &Theme) -> Row {
-    let cpu = f32::from(Cpu::read().percent()) / 100.0;
-    let memory = f32::from(Memory::read().percent()) / 100.0;
-
-    let sensors = Sensors::read();
-    let (gpu, temp) = (sensors.gpu(), sensors.temp());
-    drop(sensors);
-
-    let values = [Some(cpu), Some(memory), gpu, temp];
-
-    let rings: Vec<Box<dyn Widget>> = values
-        .into_iter()
-        .flatten()
-        .map(|value| Box::new(ring(value, theme)) as Box<dyn Widget>)
-        .collect();
-
-    Row::new(rings).gap(bar::ITEM_GAP).align(Center)
-}
-
-// a track with the value over it, from the top, clockwise
-fn ring(value: f32, theme: &Theme) -> Canvas {
-    let middle = bar::RING / 2.0;
-
-    // the stroke is centered on the radius, so half of it sits outside
-    let radius = middle - bar::RING_STROKE / 2.0;
-
-    Canvas::new().width(bar::RING).height(bar::RING).shapes(shapes![
-        Arc::new()
-            .center(middle, middle)
-            .radius(radius)
-            .stroke(bar::RING_STROKE, theme.outline_variant),
-        Arc::new()
-            .center(middle, middle)
-            .radius(radius)
-            .sweep(360.0 * value.clamp(0.0, 1.0))
-            .stroke(bar::RING_STROKE, theme.primary)
-            .cap(Cap::Round),
-    ])
-}
-
-// the small group labels: SYS, NET, PWR
-fn tag(label: &str, theme: &Theme) -> Text {
-    Text::new(label)
-        .font(MONO)
-        .size(bar::TAG)
-        .color(theme.on_surface_variant)
-}
-
-// the one place the bar draws lines: between groups
-fn rule(theme: &Theme) -> Rectangle {
-    Rectangle::new()
-        .width(bar::RULE_WIDTH)
-        .height(bar::RULE_HEIGHT)
-        .fill(theme.outline_variant)
-}
-
 fn center(theme: &Theme) -> Text {
     Text::new(Clock::read().readout())
         .font(MONO)
@@ -186,7 +94,25 @@ fn center(theme: &Theme) -> Text {
         .color(theme.on_surface)
 }
 
-// media, network, volume and power arrive in the next slice
-fn right(_theme: &Theme) -> Rectangle {
-    Rectangle::new().width(Parent).height(Parent)
+/*
+ * media, then NET with wifi and volume, then PWR with the battery and the
+ * power icon, split by rules; media and its rule leave when spotify isn't open
+ */
+fn right(theme: &Theme, monitor: &str) -> Rectangle {
+    let mut groups: Vec<Box<dyn Widget>> = Vec::new();
+
+    if let Some(media) = media::view(theme, monitor) {
+        groups.push(Box::new(media));
+        groups.push(Box::new(rule(theme)));
+    }
+
+    groups.push(Box::new(net::view(theme, monitor)));
+    groups.push(Box::new(rule(theme)));
+    groups.push(Box::new(power::view(theme)));
+
+    Rectangle::new()
+        .width(Parent)
+        .height(Parent)
+        .align_child(End, Center)
+        .child(Row::new(groups).gap(bar::GROUP_GAP).align(Center))
 }

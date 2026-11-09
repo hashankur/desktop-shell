@@ -31,9 +31,18 @@ pub mod bar {
     pub const TAG: f32 = 12.0;
     pub const RULE_HEIGHT: f32 = 16.0;
     pub const RULE_WIDTH: f32 = 1.0;
+    // symbolic icons next to text
+    pub const ICON: f32 = 16.0;
     // the SYS rings
     pub const RING: f32 = 14.0;
     pub const RING_STROKE: f32 = 2.0;
+    // the PWR battery: a row of segments, lit in proportion to the charge
+    pub const BATTERY_SEGMENTS: usize = 8;
+    pub const BATTERY_WIDTH: f32 = 52.0;
+    pub const BATTERY_HEIGHT: f32 = 8.0;
+    pub const BATTERY_GAP: f32 = 2.0;
+    // "artist - title" is cut to this many characters, so a long track can't crowd the clock
+    pub const MEDIA_CHARS: usize = 48;
 }
 
 /*

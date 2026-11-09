@@ -1,12 +1,16 @@
 mod bar;
 mod clock;
 mod compositor;
+mod hover;
+mod icons;
+mod spotify;
 mod stats;
 mod theme;
 
 use amane::{App, Service};
 
 use compositor::Desktop;
+use icons::Icons;
 use stats::Sensors;
 use theme::Scheme;
 
@@ -15,6 +19,7 @@ fn main() {
     drop(Scheme::read());
     drop(Desktop::read());
     drop(Sensors::read());
+    drop(Icons::read());
 
     App::new()
         .font(theme::MONO)
