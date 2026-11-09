@@ -3,6 +3,7 @@ mod clock;
 mod compositor;
 mod hover;
 mod icons;
+mod poster;
 mod spotify;
 mod stats;
 mod theme;
@@ -24,5 +25,6 @@ fn main() {
     App::new()
         .font(theme::MONO)
         .window_per_monitor(bar::view)
+        .window_per_monitor(poster::view)
         .run();
 }

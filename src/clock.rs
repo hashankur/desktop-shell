@@ -63,7 +63,49 @@ impl Service for Clock {
     }
 }
 
+const WEEKDAY_NAMES: [&str; 7] = [
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+];
+
+const MONTH_NAMES: [&str; 12] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
 impl Clock {
+    // 24-hour time for the poster, like "15:49"
+    pub fn hm(&self) -> String {
+        let today = self.local.rem_euclid(SECONDS_PER_DAY);
+
+        format!("{:02}:{:02}", today / 3600, today % 3600 / 60)
+    }
+
+    // the poster's date line, like "Sunday 9 November"
+    pub fn day(&self) -> String {
+        let days = self.local.div_euclid(SECONDS_PER_DAY);
+
+        let weekday = WEEKDAY_NAMES[days.rem_euclid(7) as usize];
+        let (_, month, day) = civil_date(days);
+
+        format!("{weekday} {day} {}", MONTH_NAMES[(month - 1) as usize])
+    }
+
     // the bar's readout, like "SUN 09 NOV 🞄 03:49 PM"
     pub fn readout(&self) -> String {
         let days = self.local.div_euclid(SECONDS_PER_DAY);

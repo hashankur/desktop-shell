@@ -16,6 +16,25 @@ pub const SANS: &str = "Outfit";
 // readouts: times, numbers, labels
 pub const MONO: &str = "Iosevka";
 
+// the 12-column grid every surface snaps to, and the spacing steps between things
+pub mod grid {
+    pub const COLUMNS: u32 = 12;
+    pub const MARGIN: f32 = 72.0;
+    pub const GUTTER: f32 = 24.0;
+}
+
+pub mod space {
+    pub const SM: f32 = 8.0;
+    pub const LG: f32 = 32.0;
+}
+
+// the type sizes surfaces pick from, three at most per surface
+pub mod size {
+    pub const POSTER: f32 = 260.0;
+    pub const MD: f32 = 18.0;
+    pub const SM: f32 = 12.0;
+}
+
 pub mod bar {
     pub const HEIGHT: f32 = 44.0;
     // the workspace line along the top edge
