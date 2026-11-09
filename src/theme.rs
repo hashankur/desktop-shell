@@ -27,9 +27,13 @@ pub mod bar {
     pub const GROUP_GAP: f32 = 20.0;
     // between an icon and its text, and between the stats rings
     pub const ITEM_GAP: f32 = 6.0;
-    pub const TEXT: f32 = 13.0;
+    pub const TEXT: f32 = 14.0;
     pub const TAG: f32 = 12.0;
     pub const RULE_HEIGHT: f32 = 16.0;
+    pub const RULE_WIDTH: f32 = 1.0;
+    // the SYS rings
+    pub const RING: f32 = 14.0;
+    pub const RING_STROKE: f32 = 2.0;
 }
 
 /*
