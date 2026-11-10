@@ -1,6 +1,7 @@
 mod clipboard;
 mod launcher;
 mod list;
+mod power;
 mod search;
 
 use amane::{
@@ -17,6 +18,7 @@ use crate::theme::{self, SCRIM_OPACITY};
 pub enum Kind {
     Launcher,
     Clipboard,
+    Power,
 }
 
 /*
@@ -60,6 +62,8 @@ impl Surface {
 
         match kind {
             Kind::Launcher => list::reset(),
+
+            Kind::Power => power::reset(),
 
             Kind::Clipboard => {
                 list::reset();
@@ -115,6 +119,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     let content = match open.or(last) {
         Some(Kind::Launcher) if drawn => launcher::view(&theme, monitor),
         Some(Kind::Clipboard) if drawn => clipboard::view(&theme, monitor),
+        Some(Kind::Power) if drawn => power::view(&theme, monitor),
         _ => Rectangle::new().width(Parent).height(Parent),
     };
 
@@ -151,19 +156,27 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     if here { window } else { window.click_through() }
 }
 
-// escape always closes; every other key belongs to the open surface
+// escape closes, except where a surface has something to cancel first; every other key is the open surface's
 fn key(key: Key) {
+    let open = Surface::read().open;
+
     if key == Key::Escape {
-        Surface::close();
+        let cancelled = match open {
+            Some(Kind::Power) => power::escape(),
+            _ => false,
+        };
+
+        if !cancelled {
+            Surface::close();
+        }
 
         return;
     }
 
-    let open = Surface::read().open;
-
     match open {
         Some(Kind::Launcher) => launcher::key(key),
         Some(Kind::Clipboard) => clipboard::key(key),
+        Some(Kind::Power) => power::key(key),
         None => {}
     }
 }
@@ -192,4 +205,9 @@ fn command(kind: Kind, arguments: &[String]) -> String {
 // `amane ipc call clipboard [toggle|show|hide]`
 pub fn clipboard_ipc(arguments: &[String]) -> String {
     command(Kind::Clipboard, arguments)
+}
+
+// `amane ipc call power [toggle|show|hide]`
+pub fn power_ipc(arguments: &[String]) -> String {
+    command(Kind::Power, arguments)
 }

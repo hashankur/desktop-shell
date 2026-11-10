@@ -48,12 +48,15 @@ pub struct Timeline {
 }
 
 impl Timeline {
-    pub fn closed(now: Instant) -> Self {
+    // already where `open` puts it, with nothing moving
+    pub fn resting(open: bool, now: Instant) -> Self {
+        let value = if open { 1.0 } else { 0.0 };
+
         Self {
-            open: false,
+            open,
             since: now,
-            from_scrim: 0.0,
-            from_content: 0.0,
+            from_scrim: value,
+            from_content: value,
         }
     }
 
@@ -139,7 +142,8 @@ pub fn presence(key: &str, open: bool) -> Presence {
     let timeline = timelines
         .get_or_insert_with(HashMap::new)
         .entry(key.to_string())
-        .or_insert_with(|| Timeline::closed(now));
+        // a timeline first seen starts where it is asked to be: nothing animates in at startup
+        .or_insert_with(|| Timeline::resting(open, now));
 
     timeline.set(open, now);
 
@@ -173,7 +177,7 @@ mod tests {
     #[test]
     fn rests_closed_until_opened() {
         let start = Instant::now();
-        let timeline = Timeline::closed(start);
+        let timeline = Timeline::resting(false, start);
 
         assert_eq!(timeline.at(after(start, 5.0)), (0.0, 0.0));
         assert!(!timeline.moving(start));
@@ -182,7 +186,7 @@ mod tests {
     #[test]
     fn the_scrim_leads_and_the_content_follows_a_beat_later() {
         let start = Instant::now();
-        let mut timeline = Timeline::closed(start);
+        let mut timeline = Timeline::resting(false, start);
 
         timeline.set(true, start);
 
@@ -201,7 +205,7 @@ mod tests {
     #[test]
     fn arrives_fully_and_stops_moving() {
         let start = Instant::now();
-        let mut timeline = Timeline::closed(start);
+        let mut timeline = Timeline::resting(false, start);
 
         timeline.set(true, start);
 
@@ -215,7 +219,7 @@ mod tests {
     #[test]
     fn leaving_takes_the_content_first_and_is_faster() {
         let start = Instant::now();
-        let mut timeline = Timeline::closed(start);
+        let mut timeline = Timeline::resting(false, start);
 
         timeline.set(true, start);
         timeline.set(false, after(start, 1.0));
@@ -236,7 +240,7 @@ mod tests {
     #[test]
     fn reversing_halfway_never_jumps() {
         let start = Instant::now();
-        let mut timeline = Timeline::closed(start);
+        let mut timeline = Timeline::resting(false, start);
 
         timeline.set(true, start);
 
@@ -254,7 +258,7 @@ mod tests {
     #[test]
     fn setting_the_same_state_again_changes_nothing() {
         let start = Instant::now();
-        let mut timeline = Timeline::closed(start);
+        let mut timeline = Timeline::resting(false, start);
 
         timeline.set(true, start);
 
@@ -264,5 +268,14 @@ mod tests {
         timeline.set(true, after(start, 0.05));
 
         assert_eq!(timeline.at(at), once);
+    }
+
+    #[test]
+    fn a_timeline_resting_open_is_fully_there_and_still() {
+        let start = Instant::now();
+        let timeline = Timeline::resting(true, start);
+
+        assert_eq!(timeline.at(start), (1.0, 1.0));
+        assert!(!timeline.moving(start));
     }
 }

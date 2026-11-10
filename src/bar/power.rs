@@ -1,11 +1,13 @@
 use amane::{Battery, Center, Rectangle, Row, Service, Text, Widget, children};
 
-use super::parts::{icon, tag};
+use super::parts::{clickable, hovered_color, icon, tag};
+use crate::hover;
 use crate::icons;
+use crate::surface::{Kind, Surface};
 use crate::theme::{MONO, Theme, bar};
 
 // PWR, the battery's segments and percent when there is one, then the power icon
-pub fn view(theme: &Theme) -> Row {
+pub fn view(theme: &Theme, monitor: &str) -> Row {
     let mut items: Vec<Box<dyn Widget>> = vec![Box::new(tag("PWR", theme))];
 
     let battery = Battery::read();
@@ -26,8 +28,16 @@ pub fn view(theme: &Theme) -> Row {
         items.push(Box::new(level));
     }
 
-    if let Some(path) = icons::symbolic("system-shutdown", theme.on_surface_variant) {
-        items.push(Box::new(icon(path)));
+    // the power icon opens the power surface; it turns primary under the pointer like the rest
+    let key = hover::key(monitor, "power");
+    let color = hovered_color(&key, theme);
+
+    if let Some(path) = icons::symbolic("system-shutdown", color) {
+        items.push(Box::new(clickable(
+            Row::new(children![icon(path)]),
+            key,
+            |_| Surface::toggle(Kind::Power),
+        )));
     }
 
     Row::new(items).gap(bar::GROUP_GAP).align(Center)

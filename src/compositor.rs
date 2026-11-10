@@ -145,6 +145,15 @@ pub fn focused_output() -> Option<String> {
     }
 }
 
+// ends the session; the power surface has already asked, so the compositor doesn't again
+pub fn logout() {
+    match backend() {
+        Some(Backend::Umbriel) => amane::spawn("umbriel msg session-quit:skip-confirmation"),
+        Some(Backend::Niri) => amane::spawn("niri msg action quit --skip-confirmation"),
+        None => {}
+    }
+}
+
 pub fn switch_to(space: &Space) {
     match backend() {
         Some(Backend::Umbriel) => umbriel::switch_to(space),

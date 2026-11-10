@@ -13,6 +13,7 @@ use amane::{
 
 use crate::clock::Clock;
 use crate::compositor;
+use crate::lock;
 use crate::theme::{self, MONO, Theme, bar};
 use parts::rule;
 
@@ -61,6 +62,8 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
                 .width(Parent)
                 .height(Parent)
                 .fill(theme.surface)
+                // leaves first when the session locks, and comes back last
+                .opacity(lock::curtain_items())
                 .child(Column::new(children![
                     workspaces::view(&spaces, &theme),
                     content
@@ -108,7 +111,7 @@ fn right(theme: &Theme, monitor: &str) -> Rectangle {
 
     groups.push(Box::new(net::view(theme, monitor)));
     groups.push(Box::new(rule(theme)));
-    groups.push(Box::new(power::view(theme)));
+    groups.push(Box::new(power::view(theme, monitor)));
 
     Rectangle::new()
         .width(Parent)

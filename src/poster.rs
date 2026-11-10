@@ -5,6 +5,7 @@ use amane::{
 
 use crate::clock::Clock;
 use crate::compositor;
+use crate::lock;
 use crate::motion;
 use crate::spotify::Spotify;
 use crate::theme::{self, MONO, SANS, Theme, grid, size, space};
@@ -39,7 +40,8 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
             Rectangle::new()
                 .width(Parent)
                 .height(Parent)
-                .opacity(motion.content)
+                // it also leaves with the bar when the session locks
+                .opacity(motion.content * lock::curtain_items())
                 .translate(0.0, motion.shift)
                 .padding(Padding {
                     top: grid::MARGIN,
@@ -48,7 +50,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
                     left: grid::MARGIN,
                 })
                 .child(
-                    Row::new(children![left(&theme), side(&theme, monitor.width)])
+                    Row::new(children![time_and_date(&theme), side(&theme, monitor.width)])
                         .width(Parent)
                         .height(Parent)
                         .gap(grid::GUTTER),
@@ -64,7 +66,8 @@ fn is_empty(output: &str) -> bool {
         .is_some_and(|space| !space.occupied)
 }
 
-fn left(theme: &Theme) -> Column {
+// the time and date, large; the lock screen shows the same block
+pub fn time_and_date(theme: &Theme) -> Column {
     let clock = Clock::read();
     let (time, day) = (clock.hm(), clock.day());
     drop(clock);
