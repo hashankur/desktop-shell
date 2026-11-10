@@ -1,4 +1,5 @@
 mod media;
+mod notifications;
 mod net;
 mod parts;
 mod power;
@@ -8,7 +9,7 @@ mod workspaces;
 
 use amane::{
     Center, Column, End, Full, Layer, LayerWindow, Monitor, Parent, Rectangle, Row, Service,
-    Start, Text, Vertical, Widget, Zone, children,
+    Size, Start, Text, Vertical, Widget, Zone, children,
 };
 
 use crate::clock::Clock;
@@ -31,7 +32,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
 
     let row = Row::new(children![
         left(&theme),
-        center(&theme),
+        center(&theme, &monitor.name),
         right(&theme, &monitor.name)
     ])
     .width(Parent)
@@ -90,11 +91,42 @@ fn left(theme: &Theme) -> Rectangle {
         .child(row)
 }
 
-fn center(theme: &Theme) -> Text {
-    Text::new(Clock::read().readout())
+/*
+ * the clock stays dead center: whatever sits beside it, the bell and its rule
+ * now, the next event later, gets a side of the same width on each side
+ */
+fn center(theme: &Theme, monitor: &str) -> Row {
+    let clock = Text::new(Clock::read().readout())
         .font(MONO)
         .size(bar::TEXT)
-        .color(theme.on_surface)
+        .color(theme.on_surface);
+
+    let after = notifications::view(theme, monitor).map(|bell| {
+        Row::new(children![rule(theme), bell])
+            .gap(bar::GROUP_GAP)
+            .align(Center)
+    });
+
+    let side = after.as_ref().map_or(0.0, |row| match Widget::width(row) {
+        Size::Fixed(width) => width,
+        Size::Parent => 0.0,
+    });
+
+    let before = Rectangle::new().width(side).height(Parent);
+
+    let mut after_side = Rectangle::new()
+        .width(side)
+        .height(Parent)
+        .align_child(Start, Center);
+
+    if let Some(row) = after {
+        after_side = after_side.child(row);
+    }
+
+    Row::new(children![before, clock, after_side])
+        .height(Parent)
+        .gap(bar::GROUP_GAP)
+        .align(Center)
 }
 
 /*

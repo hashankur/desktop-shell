@@ -37,3 +37,12 @@ pub fn set(key: &str, inside: bool) {
         Hover::write().key = None;
     }
 }
+
+// whether the pointer is over any item whose key starts this way, on any monitor
+pub fn within(item: &str) -> bool {
+    Hover::read()
+        .key
+        .as_deref()
+        .and_then(|key| key.split_once('/'))
+        .is_some_and(|(_, rest)| rest.starts_with(item))
+}

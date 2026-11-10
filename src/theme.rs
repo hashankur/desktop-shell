@@ -11,8 +11,12 @@ use amane::{Color, Service};
  * design prototype
  */
 
-// how much of the scrim's color covers the windows behind a surface
-pub const SCRIM_OPACITY: f32 = 0.62;
+/*
+ * how much of the scrim's color covers the windows behind a surface. on
+ * its own it let a window's text read through; umbriel blurs behind the
+ * surface too (a layer rule on yohaku-surface), which does that job
+ */
+pub const SCRIM_OPACITY: f32 = 0.60;
 
 // names and titles
 pub const SANS: &str = "Outfit";
@@ -28,6 +32,8 @@ pub mod timing {
     pub const OUT: f32 = 0.16;
     // how far below its place the content starts, and ends up when it leaves
     pub const SHIFT: f32 = 12.0;
+    // how long a toast stays, unless it is critical or under the pointer
+    pub const TOAST: f32 = 4.0;
 }
 
 // the 12-column grid every surface snaps to, and the spacing steps between things
@@ -57,6 +63,44 @@ pub mod size {
     pub const POSTER: f32 = 260.0;
     pub const MD: f32 = 18.0;
     pub const SM: f32 = 12.0;
+}
+
+// a notification toast, top right under the bar
+pub mod toast {
+    // grid columns wide
+    pub const COLUMNS: u32 = 3;
+    // the body is cut after this many lines
+    pub const BODY_LINES: usize = 2;
+
+    /*
+     * the scrim comes in from the screen's corner instead of sitting behind
+     * the text: full strength over the text and off the edges, fading out
+     * to the left and below. this is its fade, as a blur in pixels
+     */
+    pub const WASH: f32 = 120.0;
+
+    /*
+     * the wash's edge sits this far past the text, so the text stays on the
+     * dense part: a blur spans two deviations, and 1.3 of them in is ~90%
+     */
+    pub const fn inset() -> f32 {
+        WASH * 0.65
+    }
+
+    // how far past its edge the wash still shows; it is gone by three deviations
+    pub const fn fade() -> f32 {
+        WASH * 1.5
+    }
+}
+
+// a region screenshot: the frozen frame, dimmed outside the box being drawn
+pub mod shot {
+    // how much of the scrim covers the frame outside the box
+    pub const DIM: f32 = 0.45;
+    // the box's outline
+    pub const BORDER: f32 = 1.0;
+    // a box smaller than this either way is a stray click, not a region
+    pub const MIN: f32 = 4.0;
 }
 
 // the launcher and the surfaces shaped like it: a large query over a fixed list
@@ -173,7 +217,8 @@ pub fn config_folder() -> PathBuf {
     base.join("amane/yohaku")
 }
 
-fn scheme_path() -> PathBuf {
+// where the scheme lives; the wallpaper writes it, the theme follows it
+pub fn scheme_path() -> PathBuf {
     state_folder().join("scheme")
 }
 

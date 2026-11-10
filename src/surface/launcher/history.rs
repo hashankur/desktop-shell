@@ -1,7 +1,7 @@
 use std::fs;
-use std::io::Write;
 use std::path::PathBuf;
 
+use crate::files;
 use crate::theme;
 
 // how many recently launched apps are remembered
@@ -48,22 +48,6 @@ pub fn record(name: &str) {
     names.insert(0, name.to_string());
     names.truncate(RECENT_LIMIT);
 
-    let path = recent_path();
-
-    if let Some(folder) = path.parent() {
-        let _ = fs::create_dir_all(folder);
-    }
-
-    // written aside and moved in, so a crash never leaves half a list
-    let partial = path.with_extension("part");
-
-    let Ok(mut file) = fs::File::create(&partial) else {
-        return;
-    };
-
-    if file.write_all(names.join("\n").as_bytes()).is_err() {
-        return;
-    }
-
-    let _ = fs::rename(&partial, &path);
+    // a recents list that can't be saved only costs the ordering, never the launch
+    let _ = files::write_atomic(&recent_path(), &names.join("\n"));
 }

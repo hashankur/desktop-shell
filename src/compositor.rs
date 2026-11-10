@@ -123,6 +123,35 @@ pub fn spaces_on(output: &str) -> Vec<Space> {
     spaces
 }
 
+// every output with a workspace on it, each once, in the order the compositor lists them
+pub fn outputs() -> Vec<String> {
+    let listed: Vec<String> = match backend() {
+        Some(Backend::Umbriel) => Desktop::read()
+            .spaces
+            .iter()
+            .map(|space| space.output.clone())
+            .collect(),
+
+        Some(Backend::Niri) => Workspaces::read()
+            .list()
+            .iter()
+            .filter_map(|workspace| workspace.output().map(str::to_string))
+            .collect(),
+
+        None => Vec::new(),
+    };
+
+    let mut outputs: Vec<String> = Vec::new();
+
+    for output in listed {
+        if !output.is_empty() && !outputs.contains(&output) {
+            outputs.push(output);
+        }
+    }
+
+    outputs
+}
+
 /*
  * the output the user is working on, where a surface opens; none when the
  * compositor doesn't say, and the caller then shows it on every output
