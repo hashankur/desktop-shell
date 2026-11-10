@@ -19,6 +19,17 @@ pub const SANS: &str = "Outfit";
 // readouts: times, numbers, labels
 pub const MONO: &str = "Iosevka";
 
+// how surfaces and the poster come and go, in seconds and pixels
+pub mod timing {
+    // coming in, and the beat the content waits behind the scrim
+    pub const IN: f32 = 0.26;
+    pub const BEAT: f32 = 0.07;
+    // going out, quicker than coming in
+    pub const OUT: f32 = 0.16;
+    // how far below its place the content starts, and ends up when it leaves
+    pub const SHIFT: f32 = 12.0;
+}
+
 // the 12-column grid every surface snaps to, and the spacing steps between things
 pub mod grid {
     pub const COLUMNS: u32 = 12;

@@ -3,6 +3,7 @@ mod clock;
 mod compositor;
 mod hover;
 mod icons;
+mod motion;
 mod poster;
 mod spotify;
 mod stats;
@@ -32,5 +33,6 @@ fn main() {
         .window_per_monitor(poster::view)
         .window_per_monitor(surface::view)
         .ipc("launcher", surface::launcher_ipc)
+        .ipc("clipboard", surface::clipboard_ipc)
         .run();
 }

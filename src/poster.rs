@@ -5,6 +5,7 @@ use amane::{
 
 use crate::clock::Clock;
 use crate::compositor;
+use crate::motion;
 use crate::spotify::Spotify;
 use crate::theme::{self, MONO, SANS, Theme, grid, size, space};
 
@@ -18,7 +19,12 @@ use crate::theme::{self, MONO, SANS, Theme, grid, size, space};
 pub fn view(monitor: &Monitor) -> LayerWindow {
     let theme = theme::current();
 
-    let shown = is_empty(&monitor.name);
+    let empty = is_empty(&monitor.name);
+
+    // it fades and slides in and out with the workspace; the window stays shown until it has left
+    let motion = motion::presence(&format!("poster/{}", monitor.name), empty);
+
+    let shown = empty || motion.moving;
 
     LayerWindow::new()
         .width(Full)
@@ -33,6 +39,8 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
             Rectangle::new()
                 .width(Parent)
                 .height(Parent)
+                .opacity(motion.content)
+                .translate(0.0, motion.shift)
                 .padding(Padding {
                     top: grid::MARGIN,
                     right: grid::MARGIN,
