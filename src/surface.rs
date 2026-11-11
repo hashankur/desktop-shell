@@ -1,8 +1,10 @@
 mod clipboard;
+mod dashboard;
 mod launcher;
 mod list;
 mod power;
 mod search;
+mod settings;
 
 use amane::{
     Full, Key, Keyboard, Layer, LayerWindow, Monitor, Parent, Rectangle, Service, Stack, Widget,
@@ -19,6 +21,8 @@ pub enum Kind {
     Launcher,
     Clipboard,
     Power,
+    Dashboard,
+    Settings,
 }
 
 /*
@@ -60,10 +64,19 @@ impl Surface {
         // asked before taking the lock for writing, since it reads other services
         let output = compositor::focused_output();
 
+        // opening one surface closes the other, so it gets to leave the same way
+        if Self::read().open.is_some_and(|open| open != kind) {
+            leave();
+        }
+
         match kind {
             Kind::Launcher => list::reset(),
 
             Kind::Power => power::reset(),
+
+            Kind::Dashboard => dashboard::refresh(),
+
+            Kind::Settings => settings::reset(),
 
             Kind::Clipboard => {
                 list::reset();
@@ -79,6 +92,8 @@ impl Surface {
     }
 
     pub fn close() {
+        leave();
+
         let mut surface = Self::write();
 
         // the output is kept: the fade-out still happens where it was open
@@ -93,6 +108,13 @@ impl Surface {
         } else {
             Self::open(kind);
         }
+    }
+}
+
+// what the open surface stops when it goes, like a bluetooth scan
+fn leave() {
+    if Surface::read().open == Some(Kind::Settings) {
+        settings::leave();
     }
 }
 
@@ -115,11 +137,19 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
 
     let drawn = on_output && (here || motion.moving);
 
+    // the dashboard and settings sit at the top, so they come down from above; the others rise into place
+    let shift = match open.or(last) {
+        Some(Kind::Dashboard | Kind::Settings) => -motion.shift,
+        _ => motion.shift,
+    };
+
     // the surface still fading out is the one that was open
     let content = match open.or(last) {
         Some(Kind::Launcher) if drawn => launcher::view(&theme, monitor),
         Some(Kind::Clipboard) if drawn => clipboard::view(&theme, monitor),
         Some(Kind::Power) if drawn => power::view(&theme, monitor),
+        Some(Kind::Dashboard) if drawn => dashboard::view(&theme, monitor),
+        Some(Kind::Settings) if drawn => settings::view(&theme, monitor),
         _ => Rectangle::new().width(Parent).height(Parent),
     };
 
@@ -134,7 +164,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .width(Parent)
         .height(Parent)
         .opacity(motion.content)
-        .translate(0.0, motion.shift)
+        .translate(0.0, shift)
         .child(content);
 
     let window = LayerWindow::new()
@@ -177,6 +207,8 @@ fn key(key: Key) {
         Some(Kind::Launcher) => launcher::key(key),
         Some(Kind::Clipboard) => clipboard::key(key),
         Some(Kind::Power) => power::key(key),
+        Some(Kind::Settings) => settings::key(key),
+        Some(Kind::Dashboard) => {}
         None => {}
     }
 }
@@ -210,4 +242,23 @@ pub fn clipboard_ipc(arguments: &[String]) -> String {
 // `amane ipc call power [toggle|show|hide]`
 pub fn power_ipc(arguments: &[String]) -> String {
     command(Kind::Power, arguments)
+}
+
+// `amane ipc call dashboard [toggle|show|hide]`
+pub fn dashboard_ipc(arguments: &[String]) -> String {
+    command(Kind::Dashboard, arguments)
+}
+
+// `amane ipc call settings [toggle|show|hide] [quick|network|bluetooth|appearance]`
+pub fn settings_ipc(arguments: &[String]) -> String {
+    let reply = command(Kind::Settings, arguments);
+
+    // a page after the command opens settings on it, for a bind straight to the wifi list
+    if let Some(page) = arguments.get(1)
+        && Surface::read().open == Some(Kind::Settings)
+    {
+        settings::show_page(page);
+    }
+
+    reply
 }

@@ -1,3 +1,4 @@
+mod commands;
 mod history;
 
 use amane::{Apps, DesktopApp, Key, Monitor, Rectangle, Service};
@@ -20,11 +21,15 @@ fn entry(app: &DesktopApp) -> Entry {
 
 /*
  * what the list shows. an empty query shows the pinned apps, then the
- * recent ones; a query shows the best matches. amane's app scan starts
- * empty and takes a few seconds, so an empty list says so instead of
- * looking broken
+ * recent ones; a query shows the best matches, and one starting with >
+ * lists commands instead. amane's app scan starts empty and takes a few
+ * seconds, so an empty list says so instead of looking broken
  */
 fn groups(query: &str) -> Vec<Group> {
+    if let Some(rest) = query.strip_prefix(commands::PREFIX) {
+        return commands::groups(rest);
+    }
+
     let apps = Apps::read();
     let apps = apps.list();
 
@@ -103,12 +108,28 @@ fn resting(apps: &[DesktopApp]) -> Vec<Group> {
     groups
 }
 
+// a query starting with > makes the launcher a command list
+fn commanding(query: &str) -> bool {
+    query.starts_with(commands::PREFIX)
+}
+
 pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
-    let spec = Spec {
-        placeholder: "apps",
-        groups: groups(&list::query()),
-        hints: &["↵ open", "tab clipboard", "esc close"],
-        pick: launch,
+    let query = list::query();
+
+    let spec = if commanding(&query) {
+        Spec {
+            placeholder: "apps",
+            groups: groups(&query),
+            hints: &["↵ run", "esc close"],
+            pick: commands::run,
+        }
+    } else {
+        Spec {
+            placeholder: "apps",
+            groups: groups(&query),
+            hints: &["↵ open", "> commands", "tab clipboard", "esc close"],
+            pick: launch,
+        }
     };
 
     list::view(theme, monitor, spec)
@@ -128,8 +149,14 @@ fn launch(name: &str) {
 pub fn key(key: Key) {
     match list::handle(key, |query| list::count(&groups(query))) {
         Outcome::Enter => {
-            if let Some(entry) = list::picked(groups(&list::query())) {
-                launch(&entry.id);
+            let query = list::query();
+
+            if let Some(entry) = list::picked(groups(&query)) {
+                if commanding(&query) {
+                    commands::run(&entry.id);
+                } else {
+                    launch(&entry.id);
+                }
             }
         }
 

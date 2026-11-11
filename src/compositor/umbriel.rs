@@ -96,9 +96,13 @@ fn unescape(field: &str) -> String {
     out
 }
 
+// `umbriel msg workspace-switch <workspace> --output <output>`: arguments are separate words, not "action:args"
 pub fn switch_to(space: &Space) {
-    // names and outputs come from umbriel's own config, but quote them anyway
-    let target = format!("{}/{}", space.index, space.output).replace('\'', "");
+    // outputs come from umbriel itself, but quote them anyway
+    let output = space.output.replace('\'', "");
 
-    amane::spawn(&format!("umbriel msg 'workspace-switch:{target}'"));
+    amane::spawn(&format!(
+        "umbriel msg workspace-switch {} --output '{output}'",
+        space.index
+    ));
 }

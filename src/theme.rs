@@ -3,7 +3,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-use amane::{Color, Service};
+use amane::{Color, Service, Weight};
 
 /*
  * every design value lives here, widgets never carry their own colors,
@@ -32,8 +32,22 @@ pub mod timing {
     pub const OUT: f32 = 0.16;
     // how far below its place the content starts, and ends up when it leaves
     pub const SHIFT: f32 = 12.0;
+    // a bar item easing into and out of its hovered colour, and unfolding its details
+    pub const HOVER: f32 = 0.18;
     // how long a toast stays, unless it is critical or under the pointer
     pub const TOAST: f32 = 4.0;
+    // how long the osd stays after the last change
+    pub const OSD: f32 = 1.5;
+    // how long after the shell starts a level change is taken as settling, not a key
+    pub const OSD_SETTLE: f32 = 1.0;
+}
+
+// the volume and brightness readout, bottom right; it sits on the same wash as a toast
+pub mod osd {
+    pub const WIDTH: f32 = 220.0;
+    // the level line under the label, and the gap above it
+    pub const TRACK: f32 = 1.0;
+    pub const TRACK_GAP: f32 = 8.0;
 }
 
 // the 12-column grid every surface snaps to, and the spacing steps between things
@@ -52,6 +66,7 @@ pub mod grid {
 }
 
 pub mod space {
+    pub const XS: f32 = 4.0;
     pub const SM: f32 = 8.0;
     pub const MD: f32 = 16.0;
     pub const LG: f32 = 32.0;
@@ -93,6 +108,42 @@ pub mod toast {
     }
 }
 
+// the dashboard, top left: the day, the month, and what is going on, in blocks
+pub mod dash {
+    // grid columns wide
+    pub const COLUMNS: u32 = 4;
+    // the small left column of a row: a time, an app, a player
+    pub const LEAD: f32 = 72.0;
+    // the name column of the system block
+    pub const KEY: f32 = 110.0;
+    // the month is narrower than the column, so its numbers stay close together
+    pub const CALENDAR: f32 = 340.0;
+    pub const CALENDAR_ROW_GAP: f32 = 2.0;
+    // the line under today
+    pub const UNDERLINE: f32 = 1.0;
+    // the newest notifications listed; the label counts them all
+    pub const NOTES: usize = 5;
+    // the playing track's progress line
+    pub const TRACK: f32 = 1.0;
+    // the left column's text and the end of a line, like an artist, cut to this many characters
+    pub const LEAD_CHARS: usize = 10;
+    pub const TRAILING_CHARS: usize = 24;
+}
+
+// settings, top left below where the dashboard starts: the page, its tabs, then its rows
+pub mod settings {
+    // grid columns wide
+    pub const COLUMNS: u32 = 4;
+    // how far down the screen the page name sits, as a share of its height
+    pub const TOP: f32 = 0.30;
+    // rows shown at once; a longer page scrolls with the selection
+    pub const ROWS: usize = 10;
+    // a row's value is cut to this many characters
+    pub const VALUE_CHARS: usize = 20;
+    // how much a press or a wheel step moves the volume or the brightness, in percent
+    pub const STEP: u8 = 5;
+}
+
 // a region screenshot: the frozen frame, dimmed outside the box being drawn
 pub mod shot {
     // how much of the scrim covers the frame outside the box
@@ -123,26 +174,32 @@ pub mod bar {
     pub const LINE_GAP: f32 = 5.0;
     // from the screen edge to the first and last item
     pub const EDGE: f32 = 20.0;
-    // between groups, and around the rules that split them
-    pub const GROUP_GAP: f32 = 20.0;
+    // between groups; space alone sets them apart, so it is a wide step
+    pub const GROUP_GAP: f32 = 32.0;
     // between an icon and its text, and between the stats rings
     pub const ITEM_GAP: f32 = 6.0;
+    // between the readings an item spells out on hover, "12% cpu  40% mem"
+    pub const READING_GAP: f32 = 12.0;
     pub const TEXT: f32 = 14.0;
-    pub const TAG: f32 = 12.0;
-    pub const RULE_HEIGHT: f32 = 16.0;
-    pub const RULE_WIDTH: f32 = 1.0;
+    // the small size: units after a value and the clock's am/pm
+    pub const SMALL: f32 = 12.0;
+    // the clock's time, the one thing in the bar a step up
+    pub const TIME: f32 = 15.0;
+    pub const TIME_WEIGHT: super::Weight = super::Weight::Medium;
+    // between the time and its date
+    pub const DATE_GAP: f32 = 12.0;
     // symbolic icons next to text
     pub const ICON: f32 = 16.0;
-    // the SYS rings
+    // the stats and battery rings
     pub const RING: f32 = 14.0;
     pub const RING_STROKE: f32 = 2.0;
-    // the PWR battery: a row of segments, lit in proportion to the charge
-    pub const BATTERY_SEGMENTS: usize = 8;
-    pub const BATTERY_WIDTH: f32 = 52.0;
-    pub const BATTERY_HEIGHT: f32 = 8.0;
-    pub const BATTERY_GAP: f32 = 2.0;
     // "artist - title" is cut to this many characters, so a long track can't crowd the clock
     pub const MEDIA_CHARS: usize = 48;
+    // the next event's dot, and its countdown a weight up from the rest of the bar
+    pub const EVENT_DOT: f32 = 5.0;
+    pub const EVENT_WEIGHT: super::Weight = super::Weight::SemiBold;
+    // the event's title, shown while hovered, is cut to this many characters
+    pub const EVENT_CHARS: usize = 32;
 }
 
 /*
@@ -264,7 +321,6 @@ pub struct Theme {
     pub outline: Color,
     pub outline_variant: Color,
     pub primary: Color,
-    pub surface_container_high: Color,
     pub error: Color,
 }
 
@@ -279,7 +335,6 @@ pub fn current() -> Theme {
         outline: scheme.get("outline"),
         outline_variant: scheme.get("outline_variant"),
         primary: scheme.get("primary"),
-        surface_container_high: scheme.get("surface_container_high"),
         error: scheme.get("error"),
     }
 }

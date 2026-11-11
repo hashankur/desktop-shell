@@ -75,6 +75,11 @@ impl Sensors {
         self.temp.map(|celsius| (celsius / TEMP_FULL).clamp(0.0, 1.0))
     }
 
+    // the same reading in degrees, for the bar's hover readout
+    pub fn celsius(&self) -> Option<f32> {
+        self.temp
+    }
+
     pub fn gpu(&self) -> Option<f32> {
         if self.gpu_samples.is_empty() {
             return None;

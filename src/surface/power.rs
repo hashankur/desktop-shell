@@ -3,7 +3,7 @@ mod view;
 
 use amane::{Key, Service};
 
-use super::Surface;
+use super::{Kind, Surface};
 
 pub use view::view;
 
@@ -47,6 +47,33 @@ fn choose(index: usize) {
     }
 
     run(action);
+}
+
+// each action's label and what it does, for the launcher's command list
+pub fn commands() -> impl Iterator<Item = (&'static str, &'static str)> {
+    actions::ALL
+        .iter()
+        .map(|action| (action.label(), action.description()))
+}
+
+/*
+ * an action picked from the launcher. it goes through the power surface
+ * like a click would: lock runs at once, anything else opens the surface
+ * already waiting for its confirmation, so a stray enter can't power off
+ */
+pub fn start(label: &str) {
+    let Some(index) = actions::ALL
+        .iter()
+        .position(|action| action.label() == label)
+    else {
+        return;
+    };
+
+    if actions::ALL[index].needs_confirm() {
+        Surface::open(Kind::Power);
+    }
+
+    choose(index);
 }
 
 fn run(action: actions::Action) {

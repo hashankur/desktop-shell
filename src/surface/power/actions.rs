@@ -30,6 +30,17 @@ impl Action {
         }
     }
 
+    // what it does, for the launcher's command list
+    pub fn description(self) -> &'static str {
+        match self {
+            Action::Lock => "lock the session",
+            Action::Suspend => "sleep",
+            Action::Logout => "end the session",
+            Action::Reboot => "restart",
+            Action::Shutdown => "power off",
+        }
+    }
+
     // locking loses nothing, so it doesn't ask; every other action does
     pub fn needs_confirm(self) -> bool {
         self != Action::Lock

@@ -1,13 +1,14 @@
 use amane::{Center, Notifications, Rectangle, Row, Service, Text, Widget};
 
-use super::parts::{clickable, hovered_color, icon};
+use super::parts::{clickable, hover_icon};
 use crate::hover;
-use crate::icons;
+use crate::surface::{Kind, Surface};
+use crate::toast::Quiet;
 use crate::theme::{MONO, Theme, bar};
 
 /*
  * the bell and how many notifications are waiting, right of the clock; a
- * click dismisses them all, until the dashboard lists them. none while
+ * click opens the dashboard, which lists them and clears them. none while
  * another daemon holds the notifications, so the bar never shows a false zero
  */
 pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
@@ -20,21 +21,22 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
     }
 
     let key = hover::key(monitor, "notifications");
-    let color = hovered_color(&key, theme);
-
     let mut items: Vec<Box<dyn Widget>> = Vec::new();
 
-    if let Some(path) = icons::symbolic("preferences-system-notifications", color) {
-        items.push(Box::new(icon(path)));
+    // do not disturb crosses the bell out, so toasts held back are never a surprise
+    let bell = if Quiet::read().on() {
+        "notifications-disabled"
+    } else {
+        "preferences-system-notifications"
+    };
+
+    if let Some(icon) = hover_icon(bell, &key, theme.on_surface_variant, theme.primary) {
+        items.push(Box::new(icon));
     }
 
     // waiting ones read a step brighter than the rest of the bar
     if count > 0 {
-        let count_color = if hover::is(&key) {
-            theme.primary
-        } else {
-            theme.on_surface
-        };
+        let count_color = hover::mix(&key, theme.on_surface, theme.primary);
 
         items.push(Box::new(
             Text::new(count.to_string())
@@ -47,6 +49,6 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
     Some(clickable(
         Row::new(items).gap(bar::ITEM_GAP).align(Center),
         key,
-        |_| Notifications::clear(),
+        |_| Surface::toggle(Kind::Dashboard),
     ))
 }

@@ -92,11 +92,7 @@ fn options(selected: usize, theme: &Theme, monitor: &str) -> Row {
 fn option(action: Action, index: usize, selected: usize, theme: &Theme, monitor: &str) -> Rectangle {
     let key = hover::key(monitor, &format!("power/{index}"));
 
-    let color = if index == selected || hover::is(&key) {
-        theme.primary
-    } else {
-        theme.on_surface
-    };
+    let color = hover::mix_selected(&key, index == selected, theme.on_surface, theme.primary);
 
     let text = Text::new(action.label()).font(SANS).size(size::MD).color(color);
 

@@ -46,6 +46,12 @@ impl Service for Wallpaper {
     }
 }
 
+impl Wallpaper {
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
+    }
+}
+
 fn state_path() -> PathBuf {
     theme::state_folder().join("wallpaper")
 }
@@ -124,7 +130,8 @@ pub fn ipc(arguments: &[String]) -> String {
     }
 }
 
-fn set(path: &Path) -> String {
+// sets the wallpaper and colors the shell after it, off the calling thread; says how it went
+pub fn set(path: &Path) -> String {
     // an absolute path, so the state still means the same file from anywhere
     let Ok(path) = fs::canonicalize(path) else {
         return format!("no such file: {}", path.display());

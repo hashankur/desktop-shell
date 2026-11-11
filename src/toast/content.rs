@@ -15,7 +15,7 @@ use crate::theme::{MONO, SANS, Theme, size, space, toast};
  */
 pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Column {
     let key = hover::key(monitor, "toast");
-    let hovered = hover::is(&key);
+    let summary_color = hover::mix(&key, theme.on_surface, theme.primary);
 
     let accent = if note.urgency() == Urgency::Critical {
         theme.primary
@@ -31,7 +31,7 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
     let summary = Text::new(note.summary().to_string())
         .font(SANS)
         .size(size::MD)
-        .color(if hovered { theme.primary } else { theme.on_surface })
+        .color(summary_color)
         .elide();
 
     let mut lines: Vec<Box<dyn Widget>> = vec![Box::new(head), Box::new(summary)];
@@ -55,7 +55,7 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
 }
 
 // the app's name, lowercased like every small label; some senders leave it empty
-fn sender(note: &Notification) -> String {
+pub fn sender(note: &Notification) -> String {
     let name = note.app_name().trim();
 
     if name.is_empty() {
@@ -65,7 +65,7 @@ fn sender(note: &Notification) -> String {
     }
 }
 
-fn age(received: SystemTime) -> String {
+pub fn age(received: SystemTime) -> String {
     let seconds = SystemTime::now()
         .duration_since(received)
         .map(|age| age.as_secs())
@@ -89,11 +89,7 @@ fn actions(note: &Notification, theme: &Theme, monitor: &str) -> Row {
         .map(|(index, action)| {
             let key = hover::key(monitor, &format!("toast-action/{index}"));
 
-            let color = if hover::is(&key) {
-                theme.primary
-            } else {
-                theme.on_surface_variant
-            };
+            let color = hover::mix(&key, theme.on_surface_variant, theme.primary);
 
             let label = Text::new(action.label().to_lowercase())
                 .font(MONO)

@@ -8,10 +8,10 @@ const OFFSET_REFRESH: u32 = 600;
 const SECONDS_PER_DAY: i64 = 24 * 60 * 60;
 
 // 1970-01-01 was a thursday
-const WEEKDAYS: [&str; 7] = ["THU", "FRI", "SAT", "SUN", "MON", "TUE", "WED"];
+const WEEKDAYS: [&str; 7] = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"];
 
 const MONTHS: [&str; 12] = [
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
 /*
@@ -106,32 +106,72 @@ impl Clock {
         format!("{weekday} {day} {}", MONTH_NAMES[(month - 1) as usize])
     }
 
-    // the bar's readout, like "SUN 09 NOV 🞄 03:49 PM"
-    pub fn readout(&self) -> String {
-        let days = self.local.div_euclid(SECONDS_PER_DAY);
-        let today = self.local.rem_euclid(SECONDS_PER_DAY);
+    // seconds since 1970 in utc, the way calendar events are kept
+    pub fn now(&self) -> i64 {
+        self.local - self.offset
+    }
+
+    // seconds east of utc
+    pub fn offset(&self) -> i64 {
+        self.offset
+    }
+
+    // days since 1970 in local time, for the dashboard's calendar
+    pub fn days(&self) -> i64 {
+        self.local.div_euclid(SECONDS_PER_DAY)
+    }
+
+    // the dashboard's large line, like "Tuesday 10"
+    pub fn weekday_and_day(&self) -> String {
+        let days = self.days();
+
+        let (_, _, day) = civil_date(days);
+
+        format!("{} {day}", WEEKDAY_NAMES[days.rem_euclid(7) as usize])
+    }
+
+    // the month in full and the year, like "November 2026"
+    pub fn month_and_year(&self) -> String {
+        let (year, month, _) = civil_date(self.days());
+
+        format!("{} {year}", MONTH_NAMES[(month - 1) as usize])
+    }
+
+    // the bar's time, like ("4:03", "PM"); the period is drawn smaller
+    pub fn time(&self) -> (String, &'static str) {
+        twelve_hour(self.local.rem_euclid(SECONDS_PER_DAY))
+    }
+
+    // the bar's date after the time, like "Tue 10 Nov"
+    pub fn date(&self) -> String {
+        let days = self.days();
 
         let weekday = WEEKDAYS[days.rem_euclid(7) as usize];
         let (_, month, day) = civil_date(days);
-        let month = MONTHS[(month - 1) as usize];
 
-        let hours = today / 3600;
-        let minutes = today % 3600 / 60;
-
-        let period = if hours < 12 { "AM" } else { "PM" };
-
-        // 0 and 12 both read as 12
-        let hours = match hours % 12 {
-            0 => 12,
-            hours => hours,
-        };
-
-        format!("{weekday} {day:02} {month} 🞄 {hours:02}:{minutes:02} {period}")
+        format!("{weekday} {day:02} {}", MONTHS[(month - 1) as usize])
     }
+
+}
+
+// seconds into the day as a 12-hour time without a leading zero, and its period
+fn twelve_hour(today: i64) -> (String, &'static str) {
+    let hours = today / 3600;
+    let minutes = today % 3600 / 60;
+
+    let period = if hours < 12 { "AM" } else { "PM" };
+
+    // 0 and 12 both read as 12
+    let hours = match hours % 12 {
+        0 => 12,
+        hours => hours,
+    };
+
+    (format!("{hours}:{minutes:02}"), period)
 }
 
 // `date +%z` prints like +0530; anything unreadable counts as utc
-fn read_offset() -> i64 {
+pub fn read_offset() -> i64 {
     let text = amane::output("date +%z");
 
     let (sign, digits) = match text.split_at_checked(1) {
@@ -151,7 +191,7 @@ fn read_offset() -> i64 {
 }
 
 // days since 1970 to year, month from 1, day from 1 (howard hinnant's algorithm)
-fn civil_date(days: i64) -> (i64, i64, i64) {
+pub fn civil_date(days: i64) -> (i64, i64, i64) {
     let z = days + 719_468;
     let era = z.div_euclid(146_097);
     let day_of_era = z.rem_euclid(146_097);
@@ -163,4 +203,30 @@ fn civil_date(days: i64) -> (i64, i64, i64) {
     let year = year_of_era + era * 400 + i64::from(month <= 2);
 
     (year, month, day)
+}
+
+// year, month from 1, day from 1 to days since 1970; civil_date the other way round
+pub fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
+    let year = if month <= 2 { year - 1 } else { year };
+    let era = year.div_euclid(400);
+    let year_of_era = year.rem_euclid(400);
+    let shifted_month = (month + 9) % 12;
+    let day_of_year = (153 * shifted_month + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+
+    era * 146_097 + day_of_era - 719_468
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn twelve_hour_time_reads_like_a_wall_clock() {
+        assert_eq!(twelve_hour(0), (String::from("12:00"), "AM"));
+        assert_eq!(twelve_hour(9 * 3600 + 5 * 60), (String::from("9:05"), "AM"));
+        assert_eq!(twelve_hour(12 * 3600), (String::from("12:00"), "PM"));
+        assert_eq!(twelve_hour(16 * 3600 + 3 * 60 + 59), (String::from("4:03"), "PM"));
+        assert_eq!(twelve_hour(23 * 3600 + 59 * 60), (String::from("11:59"), "PM"));
+    }
 }

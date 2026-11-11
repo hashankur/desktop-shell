@@ -1,9 +1,8 @@
 use amane::{Center, Rectangle, Row, Service, Text, Widget};
 
-use super::parts::{clickable, hovered_color, icon};
+use super::parts::{clickable, hover_icon, hovered_color};
 use crate::text::shorten;
 use crate::hover;
-use crate::icons;
 use crate::spotify::Spotify;
 use crate::theme::{SANS, Theme, bar};
 
@@ -31,8 +30,8 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
 
     let mut items: Vec<Box<dyn Widget>> = Vec::new();
 
-    if let Some(path) = icons::symbolic(action, color) {
-        items.push(Box::new(icon(path)));
+    if let Some(icon) = hover_icon(action, &key, theme.on_surface_variant, theme.primary) {
+        items.push(Box::new(icon));
     }
 
     items.push(Box::new(

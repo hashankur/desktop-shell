@@ -1,4 +1,6 @@
 mod bar;
+mod calendar;
+mod charge;
 mod clock;
 mod compositor;
 mod files;
@@ -6,6 +8,7 @@ mod hover;
 mod icons;
 mod lock;
 mod motion;
+mod osd;
 mod poster;
 mod screenshot;
 mod spotify;
@@ -47,12 +50,16 @@ fn main() {
         .window_per_monitor(poster::view)
         .window_per_monitor(toast::view)
         .window_per_monitor(surface::view)
+        .window_per_monitor(osd::view)
         .window_per_monitor(screenshot::view)
         .window_per_monitor(lock::curtain_view)
         .lock(lock::view)
         .ipc("launcher", surface::launcher_ipc)
         .ipc("clipboard", surface::clipboard_ipc)
         .ipc("power", surface::power_ipc)
+        .ipc("dashboard", surface::dashboard_ipc)
+        .ipc("settings", surface::settings_ipc)
+        .ipc("calendar", calendar::ipc)
         .ipc("lock", lock::ipc)
         .ipc("wallpaper", wallpaper::ipc)
         .ipc("screenshot", screenshot::ipc)

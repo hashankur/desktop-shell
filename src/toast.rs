@@ -1,4 +1,9 @@
 mod content;
+mod quiet;
+
+// the dashboard lists notifications the way a toast heads them
+pub use content::{age, sender};
+pub use quiet::Quiet;
 
 use std::thread;
 use std::time::{Duration, SystemTime};
@@ -66,14 +71,17 @@ fn identity(note: &Option<Notification>) -> Option<(u32, SystemTime)> {
     note.as_ref().map(|note| (note.id(), note.received()))
 }
 
+// do not disturb lets only critical ones through
 fn pick() -> Option<Notification> {
     let now = SystemTime::now();
+    let quiet = Quiet::read().on();
 
     let fresh = |note: &&Notification| {
         note.urgency() == Urgency::Critical
-            || now
-                .duration_since(note.received())
-                .map_or(true, |age| age.as_secs_f32() < timing::TOAST)
+            || !quiet
+                && now
+                    .duration_since(note.received())
+                    .map_or(true, |age| age.as_secs_f32() < timing::TOAST)
     };
 
     Notifications::read().list().iter().rev().find(fresh).cloned()

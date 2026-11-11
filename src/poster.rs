@@ -3,6 +3,7 @@ use amane::{
     Service, Text, Weight, Widget, Zone, children,
 };
 
+use crate::calendar::{Calendar, agenda};
 use crate::clock::Clock;
 use crate::compositor;
 use crate::lock;
@@ -93,6 +94,10 @@ fn side(theme: &Theme, screen_width: u32) -> Column {
 
     let mut blocks: Vec<Box<dyn Widget>> = Vec::new();
 
+    if let Some(today) = today(theme) {
+        blocks.push(Box::new(today));
+    }
+
     if let Some(playing) = playing(theme) {
         blocks.push(Box::new(playing));
     }
@@ -120,6 +125,56 @@ fn small(text: impl Into<String>, theme: &Theme) -> Text {
         .size(size::SM)
         .color(theme.on_surface_variant)
         .elide()
+}
+
+// what's still to come today, the next one in the accent; none when the day is done
+fn today(theme: &Theme) -> Option<Column> {
+    let clock = Clock::read();
+    let (now, offset) = (clock.now(), clock.offset());
+    drop(clock);
+
+    let calendar = Calendar::read();
+    let events = calendar.events();
+    let next = agenda::next(events, now, offset);
+
+    let mut lines: Vec<Box<dyn Widget>> = agenda::today(events, now, offset)
+        .into_iter()
+        .filter(|event| event.end > now)
+        .map(|event| {
+            let (time_color, title_color) = if next == Some(event) {
+                (theme.primary, theme.primary)
+            } else {
+                (theme.on_surface_variant, theme.on_surface)
+            };
+
+            let row = Row::new(children![
+                Text::new(agenda::start_time(event, now, offset))
+                    .font(MONO)
+                    .size(size::SM)
+                    .color(time_color),
+                Text::new(event.title.clone())
+                    .font(SANS)
+                    .size(size::MD)
+                    .color(title_color)
+                    .elide(),
+            ])
+            .width(Parent)
+            .gap(space::MD)
+            .align(amane::Center);
+
+            Box::new(row) as Box<dyn Widget>
+        })
+        .collect();
+
+    drop(calendar);
+
+    if lines.is_empty() {
+        return None;
+    }
+
+    lines.insert(0, Box::new(label("today", theme)));
+
+    Some(Column::new(lines).width(Parent).gap(space::SM))
 }
 
 // spotify's track, none while it isn't open

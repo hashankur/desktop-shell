@@ -4,7 +4,7 @@ use std::time::Duration;
 use amane::{Media, Service};
 
 // how the player names itself over mpris
-const IDENTITY: &str = "Spotify";
+pub const IDENTITY: &str = "Spotify";
 
 /*
  * the bar's media is spotify only, by design: browser tabs and other mpris

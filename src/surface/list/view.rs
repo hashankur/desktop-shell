@@ -164,11 +164,8 @@ fn row(
 ) -> Rectangle {
     let key = hover::key(monitor, &format!("list/{index}"));
 
-    let (name_color, note_color) = if selected || hover::is(&key) {
-        (theme.primary, theme.primary)
-    } else {
-        (theme.on_surface, theme.on_surface_variant)
-    };
+    let name_color = hover::mix_selected(&key, selected, theme.on_surface, theme.primary);
+    let note_color = hover::mix_selected(&key, selected, theme.on_surface_variant, theme.primary);
 
     let name = Text::new(entry.name.clone())
         .font(SANS)
