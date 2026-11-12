@@ -28,6 +28,7 @@ Singleton {
     property bool _dirReady: false
     property bool _dirQueued: false
     property var _pendingWrite: null
+    property var _xhr: null
 
     function _hash(s) {
         let h1 = 5381;
@@ -56,6 +57,13 @@ Singleton {
             id: root._seq,
             url: url
         };
+        // A stalled download for a track the user already skipped must not
+        // hold up the new one (it used to block for the full 5 s timeout).
+        if (root._busy && root._xhr) {
+            root._xhr.abort();
+            root._xhr = null;
+            root._busy = false;
+        }
         if (root._busy)
             root._queued = entry;
         else
@@ -84,7 +92,9 @@ Singleton {
 
     function _settle(fileUrl) {
         root._memo[root._activeUrl] = fileUrl;
-        if (root._activeId === root._seq)
+        // Keep an already published remote URL: swapping to file:// would
+        // reload the Image and flash it for no visible gain.
+        if (root._activeId === root._seq && root.resolvedUrl !== root._activeUrl)
             root.resolvedUrl = fileUrl;
         root._done();
     }
@@ -97,10 +107,14 @@ Singleton {
 
     function _download() {
         const xhr = new XMLHttpRequest();
+        root._xhr = xhr;
         xhr.open("GET", root._activeUrl, true);
         xhr.responseType = "arraybuffer";
         xhr.timeout = 5000;
         xhr.onload = function () {
+            if (xhr !== root._xhr)
+                return;
+            root._xhr = null;
             if (xhr.status === 200 && xhr.response && xhr.response.byteLength > 0) {
                 root._write(xhr.response);
             } else {
@@ -109,10 +123,16 @@ Singleton {
             }
         };
         xhr.onerror = function () {
+            if (xhr !== root._xhr)
+                return;
+            root._xhr = null;
             console.error("ArtCache: download failed for", root._activeUrl);
             root._settleRemote();
         };
         xhr.ontimeout = function () {
+            if (xhr !== root._xhr)
+                return;
+            root._xhr = null;
             console.error("ArtCache: download timed out for", root._activeUrl);
             root._settleRemote();
         };
@@ -165,8 +185,13 @@ Singleton {
         }
 
         onLoadFailed: {
-            if (root._busy)
-                root._download();
+            if (!root._busy)
+                return;
+            // Cache miss: let the Image start fetching the remote URL now,
+            // in parallel; the download only fills the cache for next time.
+            if (root._activeId === root._seq)
+                root.resolvedUrl = root._activeUrl;
+            root._download();
         }
     }
 

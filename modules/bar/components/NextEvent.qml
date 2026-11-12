@@ -4,109 +4,103 @@ import QtQuick
 import qs.components
 import qs.config
 import qs.services
+import "EventTime.js" as ET
 
 Rectangle {
     id: chip
 
-    // Minute-resolution: the label, card status and progress all recompute on
-    // every clock tick and whenever CalendarEvents rebuilds its day index.
+    // Minute-resolution: the label and the card's status and progress all
+    // recompute on every clock tick and whenever CalendarEvents rebuilds its
+    // day index.
     readonly property date now: clock.date
     // Only an ongoing event shows no countdown, so this is almost always
     // non-empty, see restLabel().
     readonly property var upcoming: CalendarEvents.nextEvent(now)
     readonly property bool hovered: hoverHandler.hovered
 
+    // Other events still live today, so a holiday or a single meeting does
+    // not read as the whole day. Same filter as EventCard's "later" list.
+    readonly property int othersToday: {
+        const ev = upcoming;
+        if (!ev)
+            return 0;
+        const nowMs = now.getTime();
+        return CalendarEvents.eventsForDay(now).filter(e => e.end > nowMs && !(e.start === ev.start && e.title === ev.title)).length;
+    }
+
     // Below this, the label switches from a minute countdown to a duration
     // and then to a weekday.
     readonly property int soonMinutes: 30
 
-    // Flyout lifecycle mirrors OverlayWindow: `visible` lags behind on
-    // exit so the fade can finish before the popup unmaps; _cardTarget
-    // drives the animated properties below (never assign directly).
-    property bool _cardTarget: false
-    property bool _cardExit: false
-    property real cardOpacity: _cardTarget ? 1 : 0
-    property real cardY: _cardTarget ? 0 : -Appearance.spacing.small
+    // The open details card, if any (see EventCard.qml).
+    property var _card: null
 
     visible: upcoming !== null
-    radius: Appearance.rounding.full
-    color: hovered ? Appearance.colors.primary_container : "transparent"
+    // Explicitly transparent: the chip is now bare content over the bar, and
+    // a Rectangle left at its default paints white.
+    color: "transparent"
     implicitHeight: 22
-    implicitWidth: chipRow.implicitWidth + Appearance.padding.small * 2
+    implicitWidth: chipRow.implicitWidth
 
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
     }
 
-    Behavior on color {
-        ColorAnimation {
-            duration: Appearance.anim.durations.small
-            easing.bezierCurve: Appearance.anim.curves.standard
-        }
+    // nextEvent() is a pure read, so the chip owns its window: warm the
+    // today...+8d range on creation and whenever the day rolls over.
+    // Signal handlers run outside binding evaluation, so this cannot
+    // re-create the dayMap write-during-read loop.
+    function _warmWindow() {
+        const base = clock.date;
+        CalendarEvents.ensureWindow(base, new Date(base.getFullYear(), base.getMonth(), base.getDate() + 8));
     }
 
-    Behavior on cardOpacity {
-        NumberAnimation {
-            duration: chip._cardTarget ? Appearance.anim.durations.expressiveFastSpatial : Appearance.anim.durations.small
-            easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
-        }
+    onNowChanged: _warmWindow()
+    Component.onCompleted: _warmWindow()
+
+    Component {
+        id: cardComponent
+
+        EventCard {}
     }
 
-    Behavior on cardY {
-        NumberAnimation {
-            duration: chip._cardTarget ? Appearance.anim.durations.expressiveFastSpatial : Appearance.anim.durations.small
-            easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+    function toggleCard() {
+        if (chip._card) {
+            chip._card.closeAnimated();
+            return;
         }
-    }
-
-    onCardOpacityChanged: {
-        // Exit finished: unmap. `<= 0` because the expressive curve
-        // overshoots past the target.
-        if (cardOpacity <= 0 && !_cardTarget) {
-            _cardExit = false;
-            card.visible = false;
+        // Map into the bar window so the card can centre on the chip; the
+        // card itself is a screen-sized overlay on the same output.
+        const win = chip.QsWindow.window;
+        const p = win && win.contentItem ? chip.mapToItem(win.contentItem, chip.width / 2, 0) : Qt.point(chip.width / 2, 0);
+        const props = {
+            chip: chip,
+            anchorX: p.x
+        };
+        if (win && win.screen)
+            props.screen = win.screen;
+        const card = cardComponent.createObject(chip, props);
+        if (!card) {
+            console.warn("NextEvent: failed to create event card");
+            return;
         }
-    }
-
-    onUpcomingChanged: {
-        if (!upcoming && (_cardTarget || _cardExit))
-            closeCard();
+        chip._card = card;
+        card.willDestroy.connect(() => {
+            if (chip._card === card)
+                chip._card = null;
+        });
+        card.openAnimated();
     }
 
     HoverHandler {
         id: hoverHandler
-        onHoveredChanged: {
-            if (chip.hovered) {
-                hideTimer.stop();
-                armTimer.restart();
-            } else {
-                armTimer.stop();
-                if (chip._cardTarget || chip._cardExit)
-                    hideTimer.restart();
-            }
-        }
-    }
-
-    Timer {
-        id: armTimer
-        interval: 200
-        onTriggered: chip.openCard()
-    }
-
-    Timer {
-        id: hideTimer
-        interval: 120
-        onTriggered: chip.closeCard()
     }
 
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            Dashboard.toggle("overview");
-            chip.closeCard();
-        }
+        onClicked: chip.toggleCard()
     }
 
     Row {
@@ -124,163 +118,35 @@ Rectangle {
 
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: font.pixelSize / 10
             text: chip.restLabel()
-            color: Appearance.colors.on_surface
-            font.pixelSize: Appearance.fontSize.xs
+            // No box to fill on hover, so the accent carries it: the label
+            // takes the primary token and the bar's divider does the
+            // separating. Token-driven, per the animation rules.
+            color: hovered ? Appearance.colors.primary : Appearance.colors.on_surface
+            mono: true
+            font.pixelSize: Appearance.fontSize.sm
             font.weight: Font.DemiBold
-            // Fixed width and never hidden: the countdown changes text but
-            // not footprint, so the clock cannot be nudged. (A Row skips
-            // invisible children, so an empty-string guard here would change
-            // the chip width the moment a label appears.)
-            width: Appearance.spacing.large * 3
-            elide: Text.ElideRight
-        }
-    }
 
-    PopupWindow {
-        id: card
-        visible: false
-        color: "transparent"
-
-        // Live-bound: measuring/snapshotting at open time races the text
-        // bindings' first layout pass and freezes a clipped height.
-        implicitWidth: cardRoot.implicitWidth
-        implicitHeight: cardRoot.implicitHeight
-
-        // Same anchoring as services/Tooltip.qml: the anchor rect and
-        // size are assigned in openCard() right before showing: live bindings
-        // here have been observed to evaluate stale across retargets.
-        anchor.edges: Edges.Bottom | Edges.Left
-        anchor.gravity: Edges.Bottom | Edges.Right
-        anchor.adjustment: PopupAdjustment.Flip | PopupAdjustment.Slide
-
-        onVisibleChanged: {
-            if (!card.visible) {
-                // The compositor dismissed the grab (click outside).
-                chip._cardExit = false;
-                chip._cardTarget = false;
-            }
-        }
-
-        Item {
-            id: cardRoot
-            implicitWidth: Appearance.spacing.large * 15
-            implicitHeight: cardCol.implicitHeight + Appearance.padding.normal * 2
-
-            Rectangle {
-                id: cardBg
-                width: cardRoot.implicitWidth
-                height: cardRoot.implicitHeight
-                opacity: chip.cardOpacity
-                y: chip.cardY
-                radius: Appearance.rounding.normal
-                color: Appearance.colors.surface_container_high
-                border.color: Appearance.colors.outline_variant
-                border.width: 1
-
-                HoverHandler {
-                    id: cardHover
-                    onHoveredChanged: {
-                        if (hovered) {
-                            armTimer.stop();
-                            hideTimer.stop();
-                        } else if (chip._cardTarget) {
-                            hideTimer.restart();
-                        }
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        Dashboard.toggle("overview");
-                        chip.closeCard();
-                    }
-                }
-
-                Column {
-                    id: cardCol
-                    x: Appearance.padding.normal
-                    y: Appearance.padding.normal
-                    width: cardRoot.implicitWidth - Appearance.padding.normal * 2
-                    spacing: Appearance.padding.small
-
-                    Row {
-                        width: parent.width
-                        spacing: Appearance.padding.small
-
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: Appearance.padding.small
-                            height: Appearance.padding.small
-                            radius: Appearance.rounding.full
-                            color: (chip.upcoming && chip.upcoming.color) || Appearance.colors.primary
-                        }
-
-                        StyledText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: chip.upcoming ? chip.upcoming.title : ""
-                            color: Appearance.colors.on_surface
-                            font.pixelSize: Appearance.fontSize.sm
-                            font.weight: Font.DemiBold
-                            width: cardCol.width - Appearance.padding.small * 2
-                            elide: Text.ElideRight
-                        }
-                    }
-
-                    Row {
-                        spacing: Appearance.padding.small
-
-                        StyledText {
-                            text: chip.rangeLabel()
-                            color: Appearance.colors.on_surface_variant
-                            font.pixelSize: Appearance.fontSize.xs
-                        }
-
-                        StyledText {
-                            visible: text !== ""
-                            text: chip.statusLabel() !== "" ? "· " + chip.statusLabel() : ""
-                            color: Appearance.colors.primary
-                            font.pixelSize: Appearance.fontSize.xs
-                            font.weight: Font.DemiBold
-                        }
-                    }
-
-                    ProgressBar {
-                        width: parent.width
-                        height: Appearance.padding.small
-                        visible: chip.progressVisible()
-                        progress: chip.progressValue()
-                    }
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.anim.durations.small
+                    easing.bezierCurve: Appearance.anim.curves.standard
                 }
             }
         }
-    }
 
-    function openCard() {
-        if (!visible || !upcoming)
-            return;
-        // Center under the chip: gravity grows rightward from the
-        // anchor point, so shifting rect.x shifts the popup with it.
-        // Both anchor.item and the rect are assigned imperatively right
-        // before showing (Tooltip pattern): reactive bindings here have
-        // been observed to evaluate stale across retargets.
-        card.anchor.item = chip;
-        card.anchor.rect.x = Math.round((width - cardRoot.implicitWidth) / 2);
-        card.anchor.rect.y = Math.round(height) + 8;
-        card.visible = true;
-        _cardExit = false;
-        _cardTarget = true;
-    }
-
-    function closeCard() {
-        armTimer.stop();
-        hideTimer.stop();
-        if (!_cardTarget)
-            return;
-        _cardExit = true;
-        _cardTarget = false;
+        // Hidden with no other events so it takes no room; the chip hugs
+        // its content and the center group re-centers around it.
+        StyledText {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: font.pixelSize / 10
+            visible: chip.othersToday > 0
+            text: `+${Math.min(chip.othersToday, 9)}`
+            color: Appearance.colors.on_surface_variant
+            mono: true
+            font.pixelSize: Appearance.fontSize.sm
+        }
     }
 
     // The chip label. Always something once the chip is visible, so a
@@ -296,7 +162,7 @@ Rectangle {
         if (mins <= soonMinutes)
             return `in ${mins}m`;
         if (mins < 1440)
-            return `in ${duration(mins)}`;
+            return `in ${ET.duration(mins)}`;
         const d = new Date(ev.start);
         return d.toLocaleDateString(Qt.locale(), daysAway(d) <= 6 ? "ddd" : "MMM d");
     }
@@ -304,53 +170,5 @@ Rectangle {
     function daysAway(d) {
         const midnight = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
         return Math.round((midnight(d) - midnight(now)) / 86400000);
-    }
-
-    function statusLabel() {
-        const ev = upcoming;
-        if (!ev)
-            return "";
-        const nowMs = now.getTime();
-        if (ev.start <= nowMs && ev.end > nowMs)
-            return ev.allDay ? "" : `${duration(Math.ceil((ev.end - nowMs) / 60000))} left`;
-        return `in ${duration(Math.ceil((ev.start - nowMs) / 60000))}`;
-    }
-
-    function duration(mins) {
-        if (mins < 60)
-            return `${mins}m`;
-        if (mins < 1440) {
-            const h = Math.floor(mins / 60);
-            const m = mins % 60;
-            return m ? `${h}h ${m}m` : `${h}h`;
-        }
-        return `${Math.ceil(mins / 1440)}d`;
-    }
-
-    function rangeLabel() {
-        const ev = upcoming;
-        if (!ev)
-            return "";
-        if (ev.allDay)
-            return "All day";
-        return `${CalendarEvents.formatTime(ev.start)} – ${CalendarEvents.formatTime(ev.end)}`;
-    }
-
-    function progressVisible() {
-        const ev = upcoming;
-        if (!ev || ev.allDay)
-            return false;
-        const nowMs = now.getTime();
-        return ev.start <= nowMs && ev.end > nowMs;
-    }
-
-    function progressValue() {
-        const ev = upcoming;
-        if (!ev)
-            return 0;
-        const nowMs = now.getTime();
-        if (nowMs < ev.start || nowMs > ev.end)
-            return 0;
-        return (nowMs - ev.start) / (ev.end - ev.start);
     }
 }

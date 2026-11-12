@@ -10,8 +10,8 @@ import qs.services
 TooltipArea {
     id: root
     visible: Battery.available
-    implicitWidth: 16 * 2
-    implicitHeight: 16
+    implicitWidth: batteryRow.implicitWidth
+    implicitHeight: 14
 
     text: getTooltipText()
 
@@ -63,11 +63,25 @@ TooltipArea {
     //     source: Quickshell.iconPath(UPower.displayDevice.iconName)
     // }
 
-    ProgressBar {
-        anchors.fill: parent
-        progress: Battery.percentage
-        barColor: getBatteryColor()
-        backgroundColor: Appearance.colors.surface_container
-        animationDuration: Appearance.anim.durations.medium
+    Row {
+        id: batteryRow
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Appearance.spacing.small
+
+        // Row positions children by x only, so this needs its own
+        // vertical anchor or it sits flush against the row's top edge.
+        SegmentBar {
+            anchors.verticalCenter: parent.verticalCenter
+            width: 52
+            height: 8
+            segments: 8
+            progress: Battery.percentage
+            barColor: root.getBatteryColor()
+        }
+
+        HudLabel {
+            anchors.verticalCenter: parent.verticalCenter
+            label: `${Math.round(Battery.percentage * 100)}%`
+        }
     }
 }

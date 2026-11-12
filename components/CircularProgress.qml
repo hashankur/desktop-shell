@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Shapes
 
 import qs.config
 import qs.components
@@ -20,6 +21,8 @@ Item {
     // Animation properties
     property real animationDuration: Appearance.anim.durations.large
 
+    readonly property real arcRadius: size / 2 - strokeWidth / 2
+
     implicitWidth: size
     implicitHeight: size
 
@@ -30,46 +33,45 @@ Item {
         }
     }
 
-    Canvas {
-        id: canvas
+    Shape {
         anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
 
-        onPaint: {
-            const ctx = getContext("2d");
-            const centerX = width / 2;
-            const centerY = height / 2;
-            const radius = (Math.min(width, height) / 2) - (strokeWidth / 2);
+        ShapePath {
+            strokeColor: Appearance.colors.secondary_container
+            strokeWidth: circularProgress.strokeWidth
+            fillColor: "transparent"
+            PathAngleArc {
+                centerX: circularProgress.width / 2
+                centerY: circularProgress.height / 2
+                radiusX: circularProgress.arcRadius
+                radiusY: circularProgress.arcRadius
+                startAngle: 0
+                sweepAngle: 360
+            }
+        }
 
-            ctx.clearRect(0, 0, width, height);
-
-            // Background circle
-            ctx.strokeStyle = Appearance.colors.secondary_container;
-            ctx.lineWidth = strokeWidth;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.stroke();
-
-            // Progress arc
-            if (circularProgress.value > 0) {
-                ctx.strokeStyle = progressColor;
-                ctx.lineWidth = strokeWidth;
-                ctx.lineCap = "round";
-                ctx.lineJoin = "round";
-                ctx.beginPath();
-                const endAngle = -Math.PI / 2 + (2 * Math.PI * circularProgress.value);
-                ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
-                ctx.stroke();
+        ShapePath {
+            strokeColor: circularProgress.value > 0 ? circularProgress.progressColor : "transparent"
+            strokeWidth: circularProgress.strokeWidth
+            fillColor: "transparent"
+            capStyle: ShapePath.RoundCap
+            PathAngleArc {
+                centerX: circularProgress.width / 2
+                centerY: circularProgress.height / 2
+                radiusX: circularProgress.arcRadius
+                radiusY: circularProgress.arcRadius
+                startAngle: -90
+                sweepAngle: 360 * Math.min(1, Math.max(0, circularProgress.value))
             }
         }
     }
-
-    onValueChanged: canvas.requestPaint()
-    onProgressColorChanged: canvas.requestPaint()
 
     // Center icon
     Text {
         anchors.centerIn: parent
         text: icon
+        font.family: Appearance.font.mono
         font.pixelSize: Math.max(size * 0.4, 12)
         color: progressColor
         horizontalAlignment: Text.AlignHCenter

@@ -24,8 +24,8 @@ TooltipArea {
         return qsTr("Wi‑Fi: connected — %1%").arg(root.signal);
     }
 
-    implicitWidth: 16
-    implicitHeight: 16
+    implicitWidth: 14
+    implicitHeight: 14
 
     function iconName() {
         if (!root.connected)
@@ -42,12 +42,13 @@ TooltipArea {
     }
 
     Icon {
+        implicitSize: 14
         source: Quickshell.iconPath(iconName(), true)
     }
 
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: QuickSettings.toggle()
+        onClicked: Settings.toggle("network")
     }
 }

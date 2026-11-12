@@ -13,8 +13,9 @@ Item {
 
     readonly property string modeName: "clipboard"
     readonly property string iconSource: "edit-paste-symbolic"
-    readonly property string placeholderText: "Search clipboard history..."
+    readonly property string placeholderText: "SEARCH // CLIP"
     readonly property int maxVisibleEntries: 8
+    readonly property int maxEmptyEntries: 100
     // Taller rows so 48px image previews fit with normal padding.
     readonly property int entryHeight: 76
 
@@ -51,7 +52,7 @@ Item {
         var trimmed = query.toLowerCase().trim();
 
         if (trimmed === "") {
-            root.foundEntries = root._allEntries.map(function (e) {
+            root.foundEntries = root._allEntries.slice(0, root.maxEmptyEntries).map(function (e) {
                 return root._toDisplayEntry(e);
             });
         } else {

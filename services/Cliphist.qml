@@ -25,6 +25,7 @@ Singleton {
     }
 
     property var _parsedList: null
+    property string _lastRaw: ""
 
     function _parseEntries(raw) {
         if (raw === "") {
@@ -68,7 +69,10 @@ Singleton {
         stdout: StdioCollector {
             id: listCollector
             onStreamFinished: {
-                root._parsedList = root._parseEntries(listCollector.text);
+                if (listCollector.text !== root._lastRaw) {
+                    root._lastRaw = listCollector.text;
+                    root._parsedList = root._parseEntries(listCollector.text);
+                }
             }
         }
         onExited: function (exitCode, exitStatus) {

@@ -16,6 +16,7 @@ Singleton {
         case "music":
             return "mpris";
         case "system":
+        case "status":
         case "stats":
             return "system";
         case "calendar":
@@ -49,13 +50,22 @@ Singleton {
         }
     }
 
+    // Consumed (reset to null) by the Calendar once it has jumped to the day.
+    property var requestedDay: null
+
+    function openDay(date) {
+        requestedDay = date;
+        open("overview");
+    }
+
     function toggle(viewName) {
         if (!viewName) {
-            // No view requested (IPC toggle): plain open/close.
+            // No view requested (IPC toggle, bar clock): plain open/close.
+            // Reopening keeps the last-shown tab: never navigates.
             if (requestedVisible)
                 close();
             else
-                open("overview");
+                open(requestedView);
             return;
         }
         // View-aware: switching to the already-open view closes; requesting

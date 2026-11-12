@@ -28,7 +28,7 @@ Item {
     // position exact at the pause/resume moment.
     Timer {
         interval: 1000
-        running: root.activePlayer?.isPlaying ?? false
+        running: root.visible && (root.activePlayer?.isPlaying ?? false)
         repeat: true
         onTriggered: root.activePlayer?.positionChanged()
     }
@@ -56,8 +56,11 @@ Item {
         spacing: Appearance.spacing.large
 
         ClippingRectangle {
-            Layout.preferredWidth: 420
-            Layout.preferredHeight: 420
+            // Square, but never taller than the page: a fixed 420 overflowed
+            // the dashboard's viewStack and clipped the controls row at the
+            // bottom (RowLayout sized to the art, then viewStack cut both).
+            Layout.preferredWidth: Math.min(420, root.height)
+            Layout.preferredHeight: Math.min(420, root.height)
             Layout.alignment: Qt.AlignVCenter
             radius: Appearance.rounding.small
             color: Appearance.colors.surface_container
@@ -184,6 +187,7 @@ Item {
 
                     StyledText {
                         text: root.formatTime(root.activePlayer?.position ?? 0)
+                        mono: true
                         color: Appearance.colors.on_surface_variant
                         font.pixelSize: Appearance.fontSize.xs
                     }
@@ -194,6 +198,7 @@ Item {
 
                     StyledText {
                         text: root.formatTime(root.trackLength)
+                        mono: true
                         color: Appearance.colors.on_surface_variant
                         font.pixelSize: Appearance.fontSize.xs
                     }

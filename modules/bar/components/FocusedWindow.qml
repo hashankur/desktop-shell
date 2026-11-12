@@ -10,7 +10,7 @@ import qs.services
 Row {
     id: root
     spacing: 10
-    readonly property string appId: Niri.focusedWindow?.appId ?? ""
+    readonly property string appId: Compositor.focusedAppId
     readonly property string iconName: root.desktopIconName(root.appId)
     readonly property string symbolicSource: root.iconName !== "" ? Quickshell.iconPath(root.iconName + "-symbolic", true) : ""
     readonly property string fullSource: root.iconName !== "" && root.symbolicSource === "" ? Quickshell.iconPath(root.iconName, true) : ""
@@ -40,12 +40,13 @@ Row {
     }
 
     Icon {
+        implicitSize: 14
         source: root.symbolicSource
         visible: root.symbolicSource !== ""
     }
 
     IconImage {
-        implicitSize: 16
+        implicitSize: 14
         anchors.verticalCenter: parent.verticalCenter
         source: root.fullSource
         visible: root.fullSource !== ""
@@ -56,7 +57,9 @@ Row {
         width: 500
         elide: Text.ElideRight
         anchors.verticalCenter: parent.verticalCenter
-        text: Niri.focusedWindow?.title ?? "Desktop"
+        anchors.verticalCenterOffset: font.pixelSize / 10
+        text: Compositor.hasFocusedWindow ? Compositor.focusedTitle : "Desktop"
+        mono: true
         font.pixelSize: Appearance.fontSize.sm
     }
 }

@@ -3,11 +3,13 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Effects
 
+import qs.config
+
 Item {
     id: root
 
     property color color: "transparent"
-    property real radius: 24
+    property real radius: Appearance.rounding.normal
     property real thickness: 1
     property real inset: 0
 

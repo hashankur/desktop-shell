@@ -8,60 +8,61 @@ import Quickshell.Widgets
 import qs.components
 import qs.config
 
+// Session action cell: flat icon + label under an index tag. Cells are
+// divided by Rules in the pane, not boxed; hover is a color accent.
 Item {
     id: root
 
     property string iconSource: ""
     property string label: ""
     property color iconColor: Appearance.colors.on_surface
+    property string indexLabel: ""
+
+    readonly property color tint: mouseArea.containsMouse ? Appearance.colors.primary : root.iconColor
 
     signal clicked
 
     implicitWidth: 120
-    implicitHeight: 100
+    implicitHeight: 110
 
-    Rectangle {
-        id: bg
-        anchors.fill: parent
-        radius: Appearance.rounding.normal
-        color: mouseArea.containsMouse ? Appearance.colors.surface_container_high : Appearance.colors.surface_container
-        border.color: mouseArea.containsMouse ? Appearance.colors.outline_variant : "transparent"
+    HudLabel {
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.margins: Appearance.padding.normal
+        visible: root.indexLabel.length > 0
+        label: root.indexLabel
+        accent: true
+    }
 
-        Behavior on color {
-            ColorAnimation {
-                duration: Appearance.anim.durations.small
-                easing.bezierCurve: Appearance.anim.curves.standard
+    ColumnLayout {
+        anchors.centerIn: parent
+        spacing: Appearance.spacing.small
+
+        IconImage {
+            implicitSize: 32
+            source: root.iconSource
+            Layout.alignment: Qt.AlignHCenter
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                colorization: 1.0
+                colorizationColor: root.tint
+                brightness: 1.0
             }
         }
 
-        Behavior on border.color {
-            ColorAnimation {
-                duration: Appearance.anim.durations.small
-                easing.bezierCurve: Appearance.anim.curves.standard
-            }
-        }
+        StyledText {
+            text: root.label.toUpperCase()
+            mono: true
+            font.letterSpacing: Appearance.tracking.micro
+            font.pixelSize: Appearance.fontSize.sm
+            color: root.tint
+            Layout.alignment: Qt.AlignHCenter
 
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: Appearance.spacing.small
-
-            IconImage {
-                implicitSize: 32
-                source: root.iconSource
-                Layout.alignment: Qt.AlignHCenter
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    colorization: 1.0
-                    colorizationColor: root.iconColor
-                    brightness: 1.0
+            Behavior on color {
+                ColorAnimation {
+                    duration: Appearance.anim.durations.small
+                    easing.bezierCurve: Appearance.anim.curves.standard
                 }
-            }
-
-            StyledText {
-                text: root.label
-                font.pixelSize: Appearance.fontSize.sm
-                color: root.iconColor
-                Layout.alignment: Qt.AlignHCenter
             }
         }
     }

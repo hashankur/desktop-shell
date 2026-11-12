@@ -5,16 +5,17 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 
+import qs.config
 import qs.services
 import "components"
 
 PanelWindow {
     id: host
     color: "transparent"
-    implicitWidth: 400
+    implicitWidth: Notifications.toastWidth
     implicitHeight: stack.implicitHeight
     focusable: false
-    screen: Niri.focusedScreen
+    screen: Compositor.focusedScreen
     anchors.top: true
     anchors.right: true
     margins.top: 18
@@ -43,8 +44,8 @@ PanelWindow {
         id: stack
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: 12
-        width: 400
+        spacing: Appearance.spacing.normal
+        width: Notifications.toastWidth
     }
 
     function pushToast(notification) {

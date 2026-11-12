@@ -12,7 +12,7 @@ QtObject {
 
     readonly property string modeName: "apps"
     readonly property string iconSource: "system-search-symbolic"
-    readonly property string placeholderText: "Search applications..."
+    readonly property string placeholderText: "SEARCH // APPS"
     readonly property int maxVisibleEntries: 5
     readonly property int entryHeight: 64
 

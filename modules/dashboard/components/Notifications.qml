@@ -13,8 +13,9 @@ Item {
     id: root
 
     ColumnLayout {
+        // No internal inset: content starts at the pane's own margin, so
+        // the header lines up with the tab buttons above.
         anchors.fill: parent
-        anchors.margins: Appearance.padding.large
         spacing: Appearance.spacing.normal
 
         RowLayout {
@@ -22,20 +23,21 @@ Item {
             spacing: Appearance.spacing.small
 
             StyledText {
-                text: "Notifications"
+                text: "NOTIFICATIONS"
                 font.pixelSize: Appearance.fontSize.lg
             }
 
             StyledText {
                 visible: Notifications.historyModel.count > 0
                 text: `(${Notifications.historyModel.count})`
+                mono: true
                 color: Appearance.colors.on_surface_variant
                 font.pixelSize: Appearance.fontSize.sm
             }
 
             Rectangle {
                 visible: Notifications.dnd
-                radius: Appearance.rounding.full
+                radius: Appearance.rounding.normal
                 color: Appearance.colors.primary_container
                 implicitHeight: 22
                 implicitWidth: dndLabel.implicitWidth + Appearance.padding.small * 2
@@ -81,14 +83,14 @@ Item {
                     required property var model
                     required property int index
 
-                    width: listView.width
-                    implicitHeight: 100
+                    width: Notifications.toastWidth
+                    implicitHeight: toast.implicitHeight
 
                     NotificationToast {
+                        id: toast
                         anchors.fill: parent
                         notificationData: delegateRoot.model
                         autoHideEnabled: false
-                        allowMultilineBody: true
                         onDismissed: Notifications.removeHistory(delegateRoot.index)
                     }
                 }

@@ -12,7 +12,7 @@ ClippingRectangle {
     property int borderWidth: 0
     property int animationDuration: Appearance.anim.durations.medium
 
-    radius: height / 2
+    radius: Appearance.rounding.normal
     color: backgroundColor
     border.color: borderColor
     border.width: borderWidth
@@ -27,7 +27,7 @@ ClippingRectangle {
             margins: root.borderWidth
         }
         width: parent.width * root.progress - (2 * root.borderWidth)
-        radius: Math.min(parent.radius - root.borderWidth, width / 2)
+        radius: Math.max(0, parent.radius - root.borderWidth)
         color: root.barColor
 
         Behavior on width {

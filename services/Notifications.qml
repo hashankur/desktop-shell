@@ -9,12 +9,18 @@ Singleton {
     id: root
 
     property int maxHistory: 50
+    // Single source for the popup stack and the history rows.
+    readonly property int toastWidth: 480
     property bool persistenceEnabled: true
     // Do not disturb: suppresses toasts only, history still records.
     property bool dnd: false
     readonly property string persistencePath: Quickshell.env("HOME") + "/.config/quickshell/notifications.json"
 
     signal toastQueued(var notification)
+
+    // Arrivals since the Overview (which lists the history) was last on
+    // screen. In memory only: a shell restart starts from zero.
+    property int unreadCount: 0
 
     ListModel {
         id: historyModelStore
@@ -61,6 +67,7 @@ Singleton {
             };
 
             historyModelStore.insert(0, item);
+            root.unreadCount++;
             while (historyModelStore.count > root.maxHistory) {
                 historyModelStore.remove(historyModelStore.count - 1);
             }
@@ -82,10 +89,15 @@ Singleton {
         onTriggered: root.writeHistory()
     }
 
+    function markRead() {
+        root.unreadCount = 0;
+    }
+
     function clearHistory() {
         historyModelStore.clear();
+        root.unreadCount = 0;
         if (root.persistenceEnabled) {
-            root.writeHistory();
+            root.saveHistory();
         }
     }
 
@@ -95,7 +107,7 @@ Singleton {
         }
         historyModelStore.remove(index);
         if (root.persistenceEnabled) {
-            root.writeHistory();
+            root.saveHistory();
         }
     }
 

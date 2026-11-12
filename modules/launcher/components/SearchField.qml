@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 
+import qs.components
 import qs.config
 
 Item {
@@ -30,18 +31,29 @@ Item {
         searchField.text = "";
     }
 
+    // Focus the inner TextField, never this wrapper Item: forceActiveFocus
+    // on the wrapper steals activeFocus from the TextField and typed keys
+    // then go nowhere (clicking the field used to be the only fix).
+    function focusField() {
+        searchField.forceActiveFocus();
+    }
+
     Rectangle {
         anchors.fill: parent
-        radius: Appearance.rounding.full
+        radius: Appearance.rounding.normal
         color: Appearance.colors.surface_container
+        border.width: 1
+        border.color: Appearance.colors.outline_variant
 
-        IconImage {
+        // Tinted, not raw: a symbolic glyph straight from the theme is
+        // near-black and disappears against the dark field background.
+        Icon {
             id: searchIcon
-            anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.leftMargin: 16
-            width: 18
-            height: 18
+            implicitSize: 18
+            tint: Appearance.colors.on_surface_variant
+            tintAmount: 1
             source: Quickshell.iconPath(root.iconSource, true)
         }
 
@@ -56,6 +68,8 @@ Item {
                 color: "transparent"
             }
             placeholderText: root.placeholderText
+            font.family: Appearance.font.mono
+            font.letterSpacing: Appearance.tracking.label
             font.pixelSize: Appearance.fontSize.sm
             color: Appearance.colors.on_surface
             placeholderTextColor: Appearance.colors.on_surface_variant

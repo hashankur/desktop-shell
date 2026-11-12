@@ -27,7 +27,8 @@ Button {
     verticalPadding: Appearance.padding.smaller
 
     contentItem: StyledText {
-        text: control.text
+        // HUD voice: every button label renders uppercase.
+        text: control.text.toUpperCase()
         color: control.checked ? Appearance.colors.on_primary_container : (control.hovered ? control.hoverContentColor : Appearance.colors.on_surface)
         font.pixelSize: control.contentFontSize
         horizontalAlignment: Text.AlignHCenter
