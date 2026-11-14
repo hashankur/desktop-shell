@@ -190,6 +190,9 @@ pub mod list {
     pub const ROWS: f32 = 10.0;
     // the query keeps its last characters when it outgrows the column
     pub const QUERY_CHARS: usize = 12;
+    // a query typed as a sentence, like a task's title, sits smaller so more of it shows
+    pub const LONG_QUERY: f32 = 32.0;
+    pub const LONG_QUERY_CHARS: usize = 34;
     // a row's right-hand description is cut to this many characters
     pub const DESCRIPTION_CHARS: usize = 24;
     // the caret is a still, thin bar of this share of the query's size

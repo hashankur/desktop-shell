@@ -89,6 +89,7 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
         groups: groups(&list::query()),
         hints: &["↵ copy", "tab apps", "esc close"],
         pick: copy,
+        long_query: false,
     };
 
     list::view(theme, monitor, spec)

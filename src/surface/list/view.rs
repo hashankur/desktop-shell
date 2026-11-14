@@ -8,12 +8,14 @@ use crate::hover;
 use crate::text::shorten;
 use crate::theme::{MONO, SANS, Theme, grid, list, size, space};
 
-// what a list surface shows: its ghost word, its rows, its key hints, and what picking a row does
+// what a list surface shows: its ghost word, its rows, its key hints, and what picking a row does.
+// `long_query` sets what is typed smaller, for a query that is a sentence rather than a name
 pub struct Spec<'a> {
     pub placeholder: &'a str,
     pub groups: Vec<Group>,
     pub hints: &'a [&'a str],
     pub pick: fn(&str),
+    pub long_query: bool,
 }
 
 /*
@@ -35,7 +37,7 @@ pub fn view(theme: &Theme, monitor: &Monitor, spec: Spec) -> Rectangle {
     let total = query_height + space::LG + list_height + space::MD + meta_height;
 
     let column = Column::new(children![
-        query_line(&query, spec.placeholder, theme, query_height),
+        query_line(&query, spec.placeholder, spec.long_query, theme, query_height),
         spacer(space::LG),
         results(&spec, selected, theme, &monitor.name, list_height),
         spacer(space::MD),
@@ -71,17 +73,23 @@ fn spacer(height: f32) -> Rectangle {
 }
 
 // the one large element: what is typed, with a caret, or the ghost word before anything is
-fn query_line(query: &str, placeholder: &str, theme: &Theme, height: f32) -> Rectangle {
+fn query_line(query: &str, placeholder: &str, long: bool, theme: &Theme, height: f32) -> Rectangle {
+    let (size, chars) = if long {
+        (list::LONG_QUERY, list::LONG_QUERY_CHARS)
+    } else {
+        (size::LG, list::QUERY_CHARS)
+    };
+
     let caret = Rectangle::new()
-        .width(size::LG * list::CARET_WIDTH)
-        .height(size::LG * list::CARET_HEIGHT)
+        .width(size * list::CARET_WIDTH)
+        .height(size * list::CARET_HEIGHT)
         .fill(theme.primary);
 
     let large = |text: String, color: Color| {
         Text::new(text)
             .font(SANS)
             .weight(Weight::Light)
-            .size(size::LG)
+            .size(size)
             .color(color)
     };
 
@@ -92,7 +100,7 @@ fn query_line(query: &str, placeholder: &str, theme: &Theme, height: f32) -> Rec
         ]
     } else {
         vec![
-            Box::new(large(tail(query, list::QUERY_CHARS), theme.on_surface)),
+            Box::new(large(tail(query, chars), theme.on_surface)),
             Box::new(caret),
         ]
     };

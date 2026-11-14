@@ -1,3 +1,4 @@
+use super::task;
 use crate::surface::list::{Entry, Group};
 use crate::surface::{Kind, Surface, power, search};
 
@@ -6,13 +7,14 @@ pub const PREFIX: char = '>';
 
 /*
  * the commands, in the order they show before anything is typed: the
- * power surface first, then its actions. more join here as they come
- * (screenshot, wallpaper, ...)
+ * power surface first, then its actions, then adding a task. more join
+ * here as they come (screenshot, wallpaper, ...)
  */
 fn all() -> Vec<Entry> {
     let mut entries = vec![entry("power", "the power surface")];
 
     entries.extend(power::commands().map(|(label, description)| entry(label, description)));
+    entries.push(entry(task::WORD, "add a google task"));
 
     entries
 }
@@ -27,6 +29,10 @@ fn entry(name: &str, description: &str) -> Entry {
 
 // the commands matching what follows the prefix, best first; all of them when nothing does yet
 pub fn groups(query: &str) -> Vec<Group> {
+    if let Some(words) = task::words(query) {
+        return task::groups(words);
+    }
+
     let query = query.trim();
 
     if query.is_empty() {
@@ -56,9 +62,19 @@ pub fn groups(query: &str) -> Vec<Group> {
 
 /*
  * runs a picked command. power actions go through the power surface, which
- * asks before anything but lock, so none of them happens on a stray enter
+ * asks before anything but lock, so none of them happens on a stray enter.
+ * the task command fills in its word; a task's own rows go to it
  */
 pub fn run(name: &str) {
+    if name == task::WORD {
+        task::start();
+        return;
+    }
+
+    if task::run(name) {
+        return;
+    }
+
     match name {
         "power" => Surface::open(Kind::Power),
         label => power::start(label),

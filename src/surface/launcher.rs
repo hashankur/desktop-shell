@@ -1,5 +1,6 @@
 mod commands;
 mod history;
+mod task;
 
 use amane::{Apps, DesktopApp, Key, Monitor, Rectangle, Service};
 
@@ -116,12 +117,25 @@ fn commanding(query: &str) -> bool {
 pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
     let query = list::query();
 
-    let spec = if commanding(&query) {
+    let tasking = query
+        .strip_prefix(commands::PREFIX)
+        .is_some_and(|command| task::words(command).is_some());
+
+    let spec = if tasking {
+        Spec {
+            placeholder: "task",
+            groups: groups(&query),
+            hints: &["↵ add or tick", "end with a date: sat, 20 nov", "esc close"],
+            pick: commands::run,
+            long_query: true,
+        }
+    } else if commanding(&query) {
         Spec {
             placeholder: "apps",
             groups: groups(&query),
             hints: &["↵ run", "esc close"],
             pick: commands::run,
+            long_query: false,
         }
     } else {
         Spec {
@@ -129,6 +143,7 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
             groups: groups(&query),
             hints: &["↵ open", "> commands", "tab clipboard", "esc close"],
             pick: launch,
+            long_query: false,
         }
     };
 

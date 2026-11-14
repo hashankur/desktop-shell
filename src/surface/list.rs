@@ -45,6 +45,14 @@ pub fn query() -> String {
     ListState::read().query.clone()
 }
 
+// puts text in the query, as if typed, with the first row chosen
+pub fn set_query(text: &str) {
+    let mut state = ListState::write();
+
+    state.query = text.to_string();
+    state.selected = 0;
+}
+
 // what a key did beyond editing the query and moving the selection
 #[derive(Debug, PartialEq)]
 pub enum Outcome {
