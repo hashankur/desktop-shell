@@ -1,10 +1,10 @@
 use amane::{
-    Center, Column, Monitor, Padding, Parent, Pointer, Rectangle, Row, Service, Start, Text,
+    Center, Column, End, Monitor, Padding, Parent, Pointer, Rectangle, Row, Service, Start, Text,
     Weight, Widget, children,
 };
 
 use super::rows::{self, Action};
-use super::{Page, Settings, choose, open_page, scroll};
+use super::{Page, Settings, choose, open_page, preview, scroll};
 use crate::hover;
 use crate::text::shorten;
 use crate::theme::{MONO, SANS, Theme, grid, settings, size, space};
@@ -14,7 +14,7 @@ fn row_height() -> f32 {
 }
 
 /*
- * top left, on the grid's first four columns, lower than the dashboard: the
+ * bottom left, on the grid's first four columns, where the launcher sits: the
  * page's name as the one large element, the pages as small tabs under it,
  * then the page's rows, a name and its state, and what the keys do. the
  * rows keep one height whatever the page holds, so the hints never move
@@ -32,7 +32,8 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
     let list_height = row_height() * settings::ROWS as f32;
     let meta_height = size::SM * 1.5;
 
-    let column = Column::new(children![
+    // the name and the tabs, measured so the wallpaper preview starts level with the rows
+    let head = Column::new(children![
         Text::new(page.name())
             .font(SANS)
             .weight(Weight::Light)
@@ -41,16 +42,28 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
         spacer(space::MD),
         tabs(page, theme, &monitor.name),
         spacer(space::LG),
+    ])
+    .width(width);
+
+    let head_height = fixed(Widget::height(&head));
+
+    let thumb = match rows.get(selected).map(|row| &row.action) {
+        Some(Action::Wallpaper(path)) => Settings::read()
+            .pictures
+            .get(path)
+            .and_then(|picture| picture.thumb.clone()),
+        _ => None,
+    };
+
+    let column = Column::new(children![
+        head,
         list(&rows, selected, theme, &monitor.name, list_height),
         spacer(space::MD),
         meta(hints(&rows, selected), theme, meta_height),
     ])
     .width(width);
 
-    let height = match Widget::height(&column) {
-        amane::Size::Fixed(height) => height,
-        amane::Size::Parent => 0.0,
-    };
+    let height = fixed(Widget::height(&column));
 
     /*
      * a click anywhere on the surface closes it through the scrim below, so
@@ -62,17 +75,30 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
         .on_click(|_| {})
         .child(column);
 
+    let content = if page == Page::Appearance {
+        preview::beside(block, thumb, head_height, list_height, monitor.width as f32)
+    } else {
+        Row::new(children![block])
+    };
+
     Rectangle::new()
         .width(Parent)
         .height(Parent)
         .padding(Padding {
-            top: monitor.height as f32 * settings::TOP,
+            top: grid::MARGIN,
             right: grid::MARGIN,
             bottom: grid::MARGIN,
             left: grid::MARGIN,
         })
-        .align_child(Start, Start)
-        .child(block)
+        .align_child(Start, End)
+        .child(content)
+}
+
+fn fixed(size: amane::Size) -> f32 {
+    match size {
+        amane::Size::Fixed(size) => size,
+        amane::Size::Parent => 0.0,
+    }
 }
 
 fn spacer(height: f32) -> Rectangle {
@@ -83,7 +109,7 @@ fn small(text: impl Into<String>, color: amane::Color) -> Text {
     Text::new(text).font(MONO).size(size::SM).color(color)
 }
 
-// the pages in the small capitals every label uses; the open one brighter, a hovered one primary
+// the pages in the small capitals every label uses; the open one in the text tone, the rest dimmed to the hints' tone, a hovered one primary
 fn tabs(open: Page, theme: &Theme, monitor: &str) -> Row {
     let items: Vec<Box<dyn Widget>> = Page::ALL
         .into_iter()
@@ -93,7 +119,7 @@ fn tabs(open: Page, theme: &Theme, monitor: &str) -> Row {
             let rest = if page == open {
                 theme.on_surface
             } else {
-                theme.on_surface_variant
+                theme.outline
             };
 
             let color = hover::mix(&key, rest, theme.primary);

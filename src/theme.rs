@@ -209,14 +209,20 @@ pub mod dash {
 pub mod settings {
     // grid columns wide
     pub const COLUMNS: u32 = 4;
-    // how far down the screen the page name sits, as a share of its height
-    pub const TOP: f32 = 0.30;
     // rows shown at once; a longer page scrolls with the selection
     pub const ROWS: usize = 10;
     // a row's value is cut to this many characters
     pub const VALUE_CHARS: usize = 20;
     // how much a press or a wheel step moves the volume or the brightness, in percent
     pub const STEP: u8 = 5;
+    // the wallpaper preview starts after this many grid columns and spans this many
+    pub const PREVIEW_COLUMN: u32 = 5;
+    pub const PREVIEW_COLUMNS: u32 = 3;
+    // the preview's corners, the album cover's on the dashboard
+    pub const PREVIEW_RADIUS: f32 = super::dash::ART_RADIUS;
+    // the cached copy of a wallpaper covers at least this much, twice the preview for sharpness
+    pub const THUMB_WIDTH: u32 = 864;
+    pub const THUMB_HEIGHT: u32 = 540;
 }
 
 // a region screenshot: the frozen frame, dimmed outside the box being drawn

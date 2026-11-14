@@ -1,7 +1,10 @@
 mod actions;
+mod preview;
 mod rows;
+mod thumbs;
 mod view;
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Mutex, PoisonError};
@@ -57,6 +60,8 @@ pub struct Settings {
     selected: usize,
     profile: Option<String>,
     wallpapers: Vec<PathBuf>,
+    // the small copy and size of each wallpaper, filled in as they are found
+    pictures: HashMap<PathBuf, thumbs::Picture>,
 }
 
 impl Service for Settings {
@@ -76,10 +81,12 @@ pub fn reset() {
 
         settings.page = Page::Quick;
         settings.selected = 0;
-        settings.wallpapers = wallpapers;
+        settings.wallpapers = wallpapers.clone();
     }
 
     actions::read_profile();
+
+    thumbs::look_up(wallpapers, Wallpaper::read().path().map(PathBuf::from));
 }
 
 // a bluetooth scan only runs while it can be watched

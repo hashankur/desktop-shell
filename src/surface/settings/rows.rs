@@ -192,7 +192,7 @@ fn bluetooth() -> Vec<Row> {
     rows
 }
 
-// the wallpapers folder, the one in use marked; choosing one recolors the shell after it
+// the wallpapers folder by full name, each with its size once known and the one in use marked; choosing one recolors the shell after it
 fn appearance() -> Vec<Row> {
     let current = Wallpaper::read().path().map(Path::to_path_buf);
 
@@ -211,7 +211,13 @@ fn appearance() -> Vec<Row> {
                 .map(|stem| stem.to_string_lossy().into_owned())
                 .unwrap_or_default();
 
-            let value = if current.as_deref() == Some(path.as_path()) { "current" } else { "" };
+            let resolution = settings.pictures.get(path).and_then(|picture| picture.resolution());
+
+            let value = match (current.as_deref() == Some(path.as_path()), resolution) {
+                (true, Some(resolution)) => format!("current · {resolution}"),
+                (true, None) => String::from("current"),
+                (false, resolution) => resolution.unwrap_or_default(),
+            };
 
             row(name, value, Action::Wallpaper(path.clone()))
         })
