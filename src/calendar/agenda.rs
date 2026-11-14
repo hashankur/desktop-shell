@@ -1,4 +1,5 @@
 use super::Event;
+use super::days::on_day;
 use super::time::{DAY, midnight};
 use crate::clock::civil_date;
 
@@ -9,7 +10,7 @@ pub const AHEAD: i64 = 7;
 const SOON: i64 = 30;
 
 // 1970-01-01 was a thursday
-const WEEKDAYS: [&str; 7] = ["thu", "fri", "sat", "sun", "mon", "tue", "wed"];
+pub(super) const WEEKDAYS: [&str; 7] = ["thu", "fri", "sat", "sun", "mon", "tue", "wed"];
 
 const MONTHS: [&str; 12] = [
     "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec",
@@ -64,17 +65,7 @@ pub fn others_today(events: &[Event], shown: &Event, now: i64, offset: i64) -> u
 
 // everything on today, finished or not: all-day first, then by start
 pub fn today(events: &[Event], now: i64, offset: i64) -> Vec<&Event> {
-    let start = midnight(now, offset);
-    let end = start + DAY;
-
-    let mut on: Vec<&Event> = events
-        .iter()
-        .filter(|event| event.start < end && event.end > start)
-        .collect();
-
-    on.sort_by(|a, b| b.all_day.cmp(&a.all_day).then(a.start.cmp(&b.start)));
-
-    on
+    on_day(events, (now + offset).div_euclid(DAY), offset)
 }
 
 /*
@@ -127,25 +118,8 @@ pub fn duration(minutes: i64) -> String {
     format!("{}d", (minutes + 24 * 60 - 1) / (24 * 60))
 }
 
-/*
- * an event's time as today's list shows it: its start, "all day", or for
- * one that began before today, when it ends, so last night's 23:05 doesn't
- * read as tonight's
- */
-pub fn start_time(event: &Event, now: i64, offset: i64) -> String {
-    if event.all_day {
-        return String::from("all day");
-    }
-
-    if event.start < midnight(now, offset) {
-        return format!("to {}", clock_time(event.end, offset));
-    }
-
-    clock_time(event.start, offset)
-}
-
 // "09:30", in local time
-fn clock_time(utc: i64, offset: i64) -> String {
+pub(super) fn clock_time(utc: i64, offset: i64) -> String {
     let seconds = (utc + offset).rem_euclid(DAY);
 
     format!("{:02}:{:02}", seconds / 3600, seconds % 3600 / 60)
@@ -270,13 +244,5 @@ mod tests {
         assert_eq!(duration(120), "2h");
         assert_eq!(duration(130), "2h 10m");
         assert_eq!(duration(24 * 60 + 1), "2d");
-    }
-
-    #[test]
-    fn writes_start_times() {
-        assert_eq!(start_time(&timed("x", 9.5, 30), NOW, OFFSET), "09:30");
-        assert_eq!(start_time(&all_day("x", 0), NOW, OFFSET), "all day");
-        // from 23:05 last night to 00:05
-        assert_eq!(start_time(&timed("x", -55.0 / 60.0, 60), NOW, OFFSET), "to 00:05");
     }
 }

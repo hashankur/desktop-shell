@@ -6,12 +6,11 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use super::credentials::Credentials;
 use super::encode::{base64_url, form, query_value, random};
-use super::google::{jq, post_token, run};
-use super::store::Credentials;
+use super::http::{jq, post_token, run};
 
 const AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
-const SCOPE: &str = "https://www.googleapis.com/auth/calendar.readonly";
 
 // how long the browser has to come back before the sign-in gives up
 const WAIT: Duration = Duration::from_secs(300);
@@ -55,7 +54,7 @@ pub fn start(client: &Path) -> Result<(), String> {
             ("client_id", &client_id),
             ("redirect_uri", &redirect),
             ("response_type", "code"),
-            ("scope", SCOPE),
+            ("scope", &super::SCOPES.join(" ")),
             ("code_challenge", &challenge),
             ("code_challenge_method", "S256"),
             ("state", &state),
@@ -93,15 +92,16 @@ pub fn start(client: &Path) -> Result<(), String> {
             return;
         };
 
-        let Some(fields) = jq(r#".refresh_token // "", .access_token // "", .expires_in // 0"#, &reply) else {
+        let Some(fields) = jq(r#".refresh_token // "", .access_token // "", .expires_in // 0, .scope // """#, &reply) else {
             return;
         };
 
         let mut lines = fields.lines();
-        let (refresh_token, access_token, lasts) = (
+        let (refresh_token, access_token, lasts, scope) = (
             lines.next().unwrap_or_default().to_string(),
             lines.next().unwrap_or_default().to_string(),
             lines.next().and_then(|lasts| lasts.parse::<i64>().ok()).unwrap_or(0),
+            lines.next().unwrap_or_default().to_string(),
         );
 
         if refresh_token.is_empty() {
@@ -114,6 +114,7 @@ pub fn start(client: &Path) -> Result<(), String> {
             refresh_token,
             access_token,
             expires: super::now() + lasts,
+            scope,
         };
 
         if credentials.save() {
@@ -189,7 +190,7 @@ fn answer(mut stream: TcpStream, state: &str) -> Reply {
     let reply = parse_request(&request, state);
 
     let (status, text) = match reply {
-        Reply::Code(_) => ("200 OK", "yohaku is signed in to google calendar. this tab can be closed."),
+        Reply::Code(_) => ("200 OK", "yohaku is signed in to google. this tab can be closed."),
         Reply::Refused => ("200 OK", "yohaku was not signed in. this tab can be closed."),
         Reply::Other => ("404 Not Found", "not here."),
     };

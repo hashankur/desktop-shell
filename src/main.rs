@@ -4,6 +4,7 @@ mod charge;
 mod clock;
 mod compositor;
 mod files;
+mod google;
 mod hover;
 mod icons;
 mod lock;
@@ -13,6 +14,7 @@ mod screenshot;
 mod spotify;
 mod stats;
 mod surface;
+mod tasks;
 mod text;
 mod theme;
 mod toast;
@@ -25,6 +27,7 @@ use icons::Icons;
 use lock::Logind;
 use stats::Sensors;
 use theme::Scheme;
+use tasks::Tasks;
 use toast::Toast;
 use wallpaper::Wallpaper;
 
@@ -39,6 +42,8 @@ fn main() {
     drop(Logind::read());
     // starts the notification server too, unless another daemon already has the name
     drop(Toast::read());
+    // fetches tasks in the background, so they're there when the dashboard or launcher opens
+    drop(Tasks::read());
     // the app scan takes seconds, so it starts before the launcher is first opened
     drop(Apps::read());
 
@@ -58,6 +63,7 @@ fn main() {
         .ipc("dashboard", surface::dashboard_ipc)
         .ipc("settings", surface::settings_ipc)
         .ipc("calendar", calendar::ipc)
+        .ipc("tasks", tasks::ipc)
         .ipc("lock", lock::ipc)
         .ipc("wallpaper", wallpaper::ipc)
         .ipc("screenshot", screenshot::ipc)

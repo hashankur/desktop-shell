@@ -110,6 +110,27 @@ pub fn random(length: usize) -> Option<String> {
     )
 }
 
+// undoes @tsv's escapes; a title is one line, so breaks become spaces
+pub fn unescape(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars();
+
+    while let Some(c) = chars.next() {
+        if c != '\\' {
+            out.push(c);
+            continue;
+        }
+
+        match chars.next() {
+            Some('t' | 'n' | 'r') => out.push(' '),
+            Some(other) => out.push(other),
+            None => out.push('\\'),
+        }
+    }
+
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -153,5 +174,10 @@ mod tests {
         assert_eq!(one.len(), 43);
         assert!(one.bytes().all(unreserved));
         assert_ne!(one, random(43).unwrap());
+    }
+
+    #[test]
+    fn undoes_tsv_escapes() {
+        assert_eq!(unescape(r"a\tb\\c"), r"a b\c");
     }
 }
