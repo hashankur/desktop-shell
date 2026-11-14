@@ -23,7 +23,7 @@ pub const SANS: &str = "Outfit";
 // readouts: times, numbers, labels
 pub const MONO: &str = "Iosevka";
 
-// how surfaces and the poster come and go, in seconds and pixels
+// how surfaces come and go, in seconds and pixels
 pub mod timing {
     // coming in, and the beat the content waits behind the scrim
     pub const IN: f32 = 0.26;
@@ -75,9 +75,39 @@ pub mod space {
 // the type sizes surfaces pick from, three at most per surface
 pub mod size {
     pub const LG: f32 = 88.0;
-    pub const POSTER: f32 = 260.0;
     pub const MD: f32 = 18.0;
     pub const SM: f32 = 12.0;
+}
+
+// the lock screen's clock
+pub mod lock {
+    pub const TIME: f32 = 230.0;
+    // the am/pm after the time
+    pub const PERIOD: f32 = 30.0;
+    pub const DATE: f32 = 22.0;
+
+    // the fonts' vertical metrics per em (outfit, iosevka), read from their tables, to line
+    // the lock clock up by its ink: a text box runs from its ascent to its descent
+    const SANS_ASCENT: f32 = 1.0;
+    const SANS_DESCENT: f32 = 0.26;
+    const SANS_CAP: f32 = 0.676;
+    const MONO_DESCENT: f32 = 0.285;
+
+    // the empty room above the time's digits, which the clock is pulled up by
+    pub fn above_digits() -> f32 {
+        (SANS_ASCENT - SANS_CAP) * TIME
+    }
+
+    // how far the am/pm rises: aligned by their bottom edges, its baseline sits below the time's
+    // because the big text has far more room under its baseline
+    pub fn period_lift() -> f32 {
+        SANS_DESCENT * TIME - MONO_DESCENT * PERIOD
+    }
+
+    // how far the date rises, so it is measured from the time's baseline, not its bottom edge
+    pub fn date_rise() -> f32 {
+        SANS_DESCENT * TIME
+    }
 }
 
 // a notification toast, top right under the bar

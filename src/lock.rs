@@ -1,3 +1,5 @@
+mod background;
+mod clock;
 mod curtain;
 mod logind;
 mod password;
@@ -6,7 +8,6 @@ use std::thread;
 
 use amane::{End, LayerWindow, Monitor, Padding, Parent, Rectangle, Stack, Start, Widget};
 
-use crate::poster;
 use crate::theme::{self, grid};
 
 pub use curtain::{items as curtain_items, view as curtain_view};
@@ -15,7 +16,7 @@ pub use logind::Logind;
 /*
  * what every monitor shows while the session is locked. amane takes the
  * compositor's session lock and only lets go once pam accepts the password,
- * so this is only the picture: the time and date as on the poster, large at
+ * so this is only the picture: the clock, large at
  * the top left, and the password prompt bottom left, where the launcher sits.
  * the lock covers everything, so there is no bar and no desktop behind it
  */
@@ -31,16 +32,13 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         left: grid::MARGIN,
     };
 
-    let background = Rectangle::new()
-        .width(Parent)
-        .height(Parent)
-        .fill(theme.surface);
-
     let time = Rectangle::new()
         .width(Parent)
         .height(Parent)
         .padding(margin)
-        .child(poster::time_and_date(&theme));
+        // the digits' top, not the box's, sits on the margin
+        .translate(0.0, -theme::lock::above_digits())
+        .child(clock::view(&theme));
 
     let prompt = Rectangle::new()
         .width(Parent)
@@ -57,7 +55,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .width(1.0)
         .height(1.0)
         .child(Stack::new(vec![
-            Box::new(background) as Box<dyn Widget>,
+            Box::new(background::view(&theme)) as Box<dyn Widget>,
             Box::new(time),
             Box::new(prompt),
         ]))

@@ -8,7 +8,7 @@ use crate::theme::timing;
 const _: () = assert!(timing::OUT < timing::IN);
 
 /*
- * how a surface or the poster comes and goes: a fade plus a small slide, no
+ * how a surface comes and goes: a fade plus a small slide, no
  * springs, no overshoot. coming in, the scrim fades first and the content
  * follows a beat later, decelerating; going out the content leaves first and
  * the scrim follows, faster, accelerating. nothing moves at rest

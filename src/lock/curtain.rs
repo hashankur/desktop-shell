@@ -6,6 +6,7 @@ use amane::{
     Full, Layer, LayerWindow, Lock, Monitor, Parent, Rectangle, Service, Vertical, Zone,
 };
 
+use super::background;
 use crate::motion::{self, Presence};
 use crate::theme::{self, timing};
 
@@ -20,12 +21,12 @@ const LOCK_GIVE_UP: Duration = Duration::from_secs(10);
 static LOCK_DRAWN: AtomicBool = AtomicBool::new(false);
 
 /*
- * the desktop around a lock: the bar and poster leave first, then a cover
- * in the lock screen's own color comes over everything, and only then is
+ * the desktop around a lock: the bar leave first, then a cover
+ * of the lock screen's own picture comes over everything, and only then is
  * the session locked, so the lock screen opens without a seam. unlocking
- * plays it backwards: the cover lifts, and the bar and poster follow a beat
+ * plays it backwards: the cover lifts, and the bar follow a beat
  * later. it is the same timeline every surface uses: "shown" is the desktop,
- * the scrim is the cover's absence and the content is the bar and poster
+ * the scrim is the cover's absence and the content is the bar
  */
 pub struct Curtain {
     // the desktop is shown; false from the start of a lock until it is undone
@@ -41,14 +42,14 @@ impl Service for Curtain {
     fn listen() {}
 }
 
-// one frame of the curtain, for the bar, the poster and the cover; all share one timeline
+// one frame of the curtain, for the bar and the cover; all share one timeline
 pub fn presence() -> Presence {
     let shown = Curtain::read().shown;
 
     motion::presence("curtain", shown)
 }
 
-// how opaque the bar and poster are right now, 1 outside a lock
+// how opaque the bar are right now, 1 outside a lock
 pub fn items() -> f32 {
     presence().content
 }
@@ -75,7 +76,7 @@ pub fn close_then_lock() {
 
     LOCK_DRAWN.store(false, Ordering::Relaxed);
 
-    // the bar and poster leave, then the cover follows a beat later
+    // the bar leave, then the cover follows a beat later
     thread::sleep(Duration::from_secs_f32(timing::BEAT + timing::OUT));
 
     Lock::start();
@@ -121,7 +122,7 @@ pub fn open_when_accepted() {
 
 /*
  * the cover itself: one window per output, over everything including the
- * bar, in the lock screen's background color. it only exists on screen
+ * bar, with the lock screen's background. it only exists on screen
  * while a lock is coming or going, and never takes the pointer
  */
 pub fn view(_monitor: &Monitor) -> LayerWindow {
@@ -145,6 +146,7 @@ pub fn view(_monitor: &Monitor) -> LayerWindow {
             Rectangle::new()
                 .width(Parent)
                 .height(Parent)
-                .fill(theme::faded(theme.surface, cover)),
+                .opacity(cover)
+                .child(background::view(&theme)),
         )
 }

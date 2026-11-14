@@ -9,7 +9,6 @@ mod icons;
 mod lock;
 mod motion;
 mod osd;
-mod poster;
 mod screenshot;
 mod spotify;
 mod stats;
@@ -47,7 +46,6 @@ fn main() {
         .font(theme::MONO)
         .window_per_monitor(wallpaper::view)
         .window_per_monitor(bar::view)
-        .window_per_monitor(poster::view)
         .window_per_monitor(toast::view)
         .window_per_monitor(surface::view)
         .window_per_monitor(osd::view)
