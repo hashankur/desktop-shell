@@ -2,7 +2,6 @@ mod index;
 mod recolor;
 
 use std::collections::HashMap;
-use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
@@ -121,10 +120,5 @@ fn write_tinted(name: &str, source: &Path, [red, green, blue]: [u8; 3]) -> Optio
 }
 
 fn cache_folder() -> PathBuf {
-    let base = env::var_os("XDG_CACHE_HOME")
-        .map(PathBuf::from)
-        .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")))
-        .unwrap_or_else(|| PathBuf::from("/tmp"));
-
-    base.join("yohaku/icons")
+    crate::theme::cache_folder().join("icons")
 }

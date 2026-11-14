@@ -294,6 +294,16 @@ pub fn state_folder() -> PathBuf {
     base.join("yohaku")
 }
 
+// files yohaku can make again, like tinted icons and album covers
+pub fn cache_folder() -> PathBuf {
+    let base = env::var_os("XDG_CACHE_HOME")
+        .map(PathBuf::from)
+        .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")))
+        .unwrap_or_else(|| PathBuf::from("/tmp"));
+
+    base.join("yohaku")
+}
+
 // yohaku's own config, next to its code; nothing is read from another shell's folder
 pub fn config_folder() -> PathBuf {
     let base = env::var_os("XDG_CONFIG_HOME")
