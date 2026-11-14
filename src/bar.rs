@@ -10,7 +10,7 @@ mod window;
 mod workspaces;
 
 use amane::{
-    Center, Column, End, Full, Layer, LayerWindow, Monitor, Parent, Rectangle, Row, Size, Start,
+    Center, Column, End, Full, Layer, LayerWindow, Monitor, Parent, Rectangle, Row, Start,
     Vertical, Widget, Zone, children,
 };
 
@@ -32,7 +32,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
 
     let row = Row::new(children![
         left(&theme, &monitor.name),
-        center(&theme, &monitor.name),
+        clock::view(&theme, &monitor.name),
         right(&theme, &monitor.name)
     ])
     .width(Parent)
@@ -89,53 +89,18 @@ fn left(theme: &Theme, monitor: &str) -> Rectangle {
 }
 
 /*
- * the clock stays dead center: the next event before it and the bell after
- * it each get a side as wide as the wider of the two
- */
-fn center(theme: &Theme, monitor: &str) -> Row {
-    let before = event::view(theme, monitor);
-    let after = notifications::view(theme, monitor);
-
-    let width = |item: &Option<Rectangle>| {
-        item.as_ref().map_or(0.0, |item| match Widget::width(item) {
-            Size::Fixed(width) => width,
-            Size::Parent => 0.0,
-        })
-    };
-
-    let side = width(&before).max(width(&after));
-
-    let mut before_side = Rectangle::new()
-        .width(side)
-        .height(Parent)
-        .align_child(End, Center);
-
-    if let Some(event) = before {
-        before_side = before_side.child(event);
-    }
-
-    let mut after_side = Rectangle::new()
-        .width(side)
-        .height(Parent)
-        .align_child(Start, Center);
-
-    if let Some(bell) = after {
-        after_side = after_side.child(bell);
-    }
-
-    Row::new(children![before_side, clock::view(theme, monitor), after_side])
-        .height(Parent)
-        .gap(bar::GROUP_GAP)
-        .align(Center)
-}
-
-/*
- * media, then the connection, then the battery. media leaves when spotify
- * isn't open and the battery on a machine without one; power is a launcher
+ * the next event, media, the connection, the battery, then the bell in the
+ * corner the toasts come from. the event leaves when nothing is coming up,
+ * media when spotify isn't open, the battery on a machine without one and
+ * the bell while another daemon holds the notifications; power is a launcher
  * command and a keybind, not a button, and the volume shows in the osd
  */
 fn right(theme: &Theme, monitor: &str) -> Rectangle {
     let mut groups: Vec<Box<dyn Widget>> = Vec::new();
+
+    if let Some(event) = event::view(theme, monitor) {
+        groups.push(Box::new(event));
+    }
 
     if let Some(media) = media::view(theme, monitor) {
         groups.push(Box::new(media));
@@ -145,6 +110,10 @@ fn right(theme: &Theme, monitor: &str) -> Rectangle {
 
     if let Some(battery) = battery::view(theme, monitor) {
         groups.push(Box::new(battery));
+    }
+
+    if let Some(bell) = notifications::view(theme, monitor) {
+        groups.push(Box::new(bell));
     }
 
     Rectangle::new()

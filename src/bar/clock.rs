@@ -7,9 +7,9 @@ use crate::surface::{Kind, Surface};
 use crate::theme::{MONO, SANS, Theme, bar};
 
 /*
- * the time and the date set alike, a step up and in the sans, with the am/pm
- * small and quiet between them. a click opens the dashboard, where the day is
- * laid out in full
+ * the date and then the time, set alike, a step up and in the sans, with the
+ * am/pm small and quiet after the time. a click opens the dashboard, where
+ * the day is laid out in full
  */
 pub fn view(theme: &Theme, monitor: &str) -> Rectangle {
     let key = hover::key(monitor, "clock");
@@ -41,7 +41,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Rectangle {
 
     // bottom-aligned like the am/pm; the date is the time's font and size, so
     // the two share a baseline
-    let row = Row::new(children![time, large(date)])
+    let row = Row::new(children![large(date), time])
         .gap(bar::DATE_GAP)
         .align(amane::End);
 

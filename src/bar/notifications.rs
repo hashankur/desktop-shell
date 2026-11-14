@@ -7,7 +7,7 @@ use crate::toast::Quiet;
 use crate::theme::{MONO, Theme, bar};
 
 /*
- * the bell and how many notifications are waiting, right of the clock; a
+ * the bell and how many notifications are waiting, in the bar's right corner; a
  * click opens the dashboard, which lists them and clears them. none while
  * another daemon holds the notifications, so the bar never shows a false zero
  */

@@ -12,7 +12,7 @@ use crate::theme::{MONO, SANS, Theme, bar};
 const MOST_OTHERS: usize = 9;
 
 /*
- * neue's countdown chip, left of the clock: a dot, "in 18m", then "+2" for
+ * neue's countdown chip, first on the right: a dot, "in 18m", then "+2" for
  * the rest of today. the event's title waits for the pointer, so the bar
  * stays a readout; a click opens the dashboard, which lists the day. gone
  * when nothing is coming up this week, or the calendar isn't signed in
