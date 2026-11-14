@@ -208,7 +208,7 @@ fn key(key: Key) {
         Some(Kind::Clipboard) => clipboard::key(key),
         Some(Kind::Power) => power::key(key),
         Some(Kind::Settings) => settings::key(key),
-        Some(Kind::Dashboard) => {}
+        Some(Kind::Dashboard) => dashboard::key(key),
         None => {}
     }
 }

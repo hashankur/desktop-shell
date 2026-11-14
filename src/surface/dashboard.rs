@@ -1,239 +1,149 @@
+mod agenda;
+mod browse;
 mod calendar;
-mod events;
+mod expand;
+mod month;
+mod note;
 mod notes;
+mod parts;
 mod playing;
-mod system;
-
-use std::process::Command;
-use std::thread;
+mod task;
 
 use amane::{
-    Button, Center, Column, Monitor, Padding, Parent, Pointer, Rectangle, Row, Service, Size,
-    Start, Text, Weight, Widget, children,
+    Center, Column, Key, Monitor, Padding, Parent, Rectangle, Row, Service, Size, Start, Text,
+    Weight, Widget,
 };
 
 use crate::clock::Clock;
-use crate::hover;
-use crate::theme::{MONO, SANS, Theme, dash, grid, size, space};
+use crate::theme::{SANS, Theme, bar, dash, grid, size, space};
+use parts::{small, spacer};
 
-/*
- * what the dashboard looks up when it opens, things too slow to read in a
- * view. empty until the first look, and a failed look leaves it empty
- */
-#[derive(Default)]
-pub struct Dashboard {
-    // how full the filesystem holding home is, in percent
-    disk: Option<u8>,
-}
-
-impl Service for Dashboard {
-    fn new() -> Self {
-        Self::default()
-    }
-
-    // only changes when the dashboard opens
-    fn listen() {}
-}
-
-/*
- * asks df off the ui thread, each time the dashboard opens. it asks about
- * home, not /: with an impermanent root, / is a tmpfs that always reads
- * empty, and home is where the space actually runs out
- */
+// what the dashboard looks up when it opens, and what it opens on: this month, every sender folded
 pub fn refresh() {
     crate::calendar::refresh_if_stale();
-
-    thread::spawn(|| {
-        let home = std::env::var_os("HOME").unwrap_or_else(|| "/".into());
-
-        let disk = Command::new("df")
-            .arg("-P")
-            .arg(home)
-            .output()
-            .ok()
-            .and_then(|output| disk_percent(&String::from_utf8_lossy(&output.stdout)));
-
-        if Dashboard::read().disk != disk {
-            Dashboard::write().disk = disk;
-        }
-    });
+    crate::tasks::refresh_if_stale();
+    browse::reset();
+    expand::reset();
 }
 
-// `df -P` prints a header, then one line whose fifth field is like "41%"
-fn disk_percent(df: &str) -> Option<u8> {
-    df.lines()
-        .nth(1)?
-        .split_whitespace()
-        .nth(4)?
-        .trim_end_matches('%')
-        .parse()
-        .ok()
+pub fn key(key: Key) {
+    browse::key(key);
 }
 
 /*
- * top left, on the grid's first four columns, as the design table says:
- * the day as the one large element, the month under it, then what is
- * today's events, what is playing, the notifications, and the machine,
- * each a small block
+ * three columns of four on the grid, top left to top right: the day as the
+ * one large element over the month and what's on, then what is playing
+ * around its cover, then the notifications. the cover starts level with
+ * the month, under the day; the notifications start level with the day's
+ * letters
  */
 pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
-    let width = grid::span(dash::COLUMNS, monitor.width as f32);
+    let width = grid::span(dash::COLUMN, monitor.width as f32);
 
-    let clock = Clock::read();
-    let (days, day, month) = (
-        clock.days(),
-        clock.weekday_and_day(),
-        clock.month_and_year(),
-    );
-    drop(clock);
+    // the surface sits under the bar, with the grid's margin all round
+    let room = monitor.height as f32 - bar::HEIGHT - 2.0 * grid::MARGIN - dash::BESIDE;
 
-    let (_, week) = calendar::iso_week(days);
+    let art = dash::ART.min(width);
 
-    let mut items: Vec<Box<dyn Widget>> = vec![
-        Box::new(
-            Text::new(day)
-                .font(SANS)
-                .weight(Weight::Light)
-                .size(size::LG)
-                .color(theme.on_surface),
-        ),
-        Box::new(spacer(space::SM)),
-        Box::new(small(
-            format!("{month} · week {week}"),
-            theme.on_surface_variant,
-        )),
-        Box::new(spacer(space::LG)),
-        Box::new(calendar::view(days, theme)),
-    ];
+    let heading = heading(theme, width);
 
-    let blocks = [
-        events::view(theme),
-        playing::view(theme, &monitor.name, width),
-        notes::view(theme, &monitor.name),
-        Some(system::view(theme)),
-    ];
+    // the cover starts level with the month's grid, under the day
+    let below_heading = fixed_height(&heading);
 
-    for block in blocks.into_iter().flatten() {
-        items.push(Box::new(spacer(space::LG)));
-        items.push(Box::new(block));
-    }
+    let playing = playing::view(theme, &monitor.name, art)
+        .map(|playing| Column::new(vec![Box::new(spacer(below_heading)) as Box<dyn Widget>, Box::new(playing)]).width(art));
 
-    let column = Column::new(items).width(width);
+    let notes = notes::view(theme, &monitor.name, width, room)
+        .map(|notes| Column::new(vec![Box::new(spacer(dash::BESIDE)) as Box<dyn Widget>, Box::new(notes)]).width(width));
 
-    let height = match Widget::height(&column) {
-        Size::Fixed(height) => height,
-        Size::Parent => 0.0,
-    };
-
-    /*
-     * a click anywhere on the surface closes it through the scrim below, so
-     * the block takes its own clicks and does nothing with them
-     */
-    let block = Rectangle::new()
-        .width(width)
-        .height(height)
-        .on_click(|_| {})
-        .child(column);
+    let row = Row::new(vec![
+        Box::new(block(Some(calendar(theme, monitor, heading, width)), width)) as Box<dyn Widget>,
+        Box::new(block(playing, width)),
+        Box::new(block(notes, width)),
+    ])
+    .gap(grid::GUTTER)
+    .align(Start);
 
     Rectangle::new()
         .width(Parent)
         .height(Parent)
         .padding(Padding::from(grid::MARGIN))
         .align_child(Start, Start)
-        .child(block)
-}
-
-fn spacer(height: f32) -> Rectangle {
-    Rectangle::new().width(Parent).height(height)
-}
-
-fn small(text: impl Into<String>, color: amane::Color) -> Text {
-    Text::new(text).font(MONO).size(size::SM).color(color)
-}
-
-// a block's name, in the small capitals every label uses
-fn label(text: &str, theme: &Theme) -> Text {
-    small(text.to_uppercase(), theme.on_surface_variant)
-}
-
-// a block: its label, then its lines close under it
-fn block(head: Box<dyn Widget>, lines: Vec<Box<dyn Widget>>) -> Column {
-    let mut items = vec![head];
-
-    items.extend(lines);
-
-    Column::new(items).width(Parent).gap(space::XS)
-}
-
-fn line_height() -> f32 {
-    size::MD * 1.5
-}
-
-/*
- * a line of a block: something small in the left column, a name, and
- * something small at the end. hovered, all of it eases to primary;
- * `hovered` is how far, from 0 to 1
- */
-fn line(lead: &str, name: &str, trailing: &str, theme: &Theme, hovered: f32) -> Row {
-    let ease = |rest: amane::Color| <amane::Color as amane::Blend>::blend(rest, theme.primary, hovered);
-
-    let colors = (
-        ease(theme.on_surface_variant),
-        ease(theme.on_surface),
-        ease(theme.on_surface_variant),
-    );
-
-    tinted_line(lead, name, trailing, colors)
-}
-
-// the same line in colors of its own: the lead, the name, and the end
-fn tinted_line(
-    lead: &str,
-    name: &str,
-    trailing: &str,
-    (lead_color, name_color, trailing_color): (amane::Color, amane::Color, amane::Color),
-) -> Row {
-    let lead = Rectangle::new()
-        .width(dash::LEAD)
-        .height(line_height())
-        .align_child(Start, Center)
-        .child(small(lead, lead_color));
-
-    let name = Text::new(name)
-        .font(SANS)
-        .size(size::MD)
-        .color(name_color)
-        .elide();
-
-    Row::new(children![lead, name, small(trailing, trailing_color)])
-        .width(Parent)
-        .gap(space::MD)
-        .align(Center)
-}
-
-// a line that acts on click, under its own hover key
-fn clickable(row: Row, key: String, action: impl Fn(Button) + 'static) -> Rectangle {
-    Rectangle::new()
-        .width(Parent)
-        .height(line_height())
-        .cursor(Pointer)
-        .on_hover(move |inside| hover::set(&key, inside))
-        .on_click(action)
-        .align_child(Start, Center)
         .child(row)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// the day as the one large element, then the month and week under it, over the month's grid
+fn heading(theme: &Theme, width: f32) -> Column {
+    let clock = Clock::read();
+    let (days, day, month) = (clock.days(), clock.weekday_and_day(), clock.month_and_year());
+    drop(clock);
 
-    #[test]
-    fn reads_the_disk_from_df() {
-        let df = "Filesystem     1024-blocks      Used Available Capacity Mounted on\n\
-                  /dev/nvme0n1p2   488245288 199872332 286418920      42% /\n";
+    let (_, week) = calendar::iso_week(days);
 
-        assert_eq!(disk_percent(df), Some(42));
-        assert_eq!(disk_percent("Filesystem 1024-blocks\n"), None);
-        assert_eq!(disk_percent(""), None);
+    Column::new(vec![
+        Box::new(
+            Text::new(day)
+                .font(SANS)
+                .weight(Weight::Light)
+                .size(size::LG)
+                .color(theme.on_surface),
+        ) as Box<dyn Widget>,
+        Box::new(spacer(space::SM)),
+        Box::new(small(format!("{month} · week {week}"), theme.on_surface_variant)),
+        Box::new(spacer(space::LG)),
+    ])
+    .width(width)
+}
+
+// the left column: the heading, the month's grid and the agenda under it
+fn calendar(theme: &Theme, monitor: &Monitor, heading: Column, width: f32) -> Column {
+    let mut items: Vec<Box<dyn Widget>> = vec![
+        Box::new(heading),
+        Box::new(month::view(theme, &monitor.name, width)),
+    ];
+
+    if let Some(agenda) = agenda::view(theme, &monitor.name, width) {
+        items.push(Box::new(spacer(space::LG)));
+        items.push(Box::new(agenda));
     }
+
+    Column::new(items).width(width)
+}
+
+// how tall a column is, when it knows
+fn fixed_height(column: &Column) -> f32 {
+    match Widget::height(column) {
+        Size::Fixed(height) => height,
+        Size::Parent => 0.0,
+    }
+}
+
+/*
+ * one column's place, its content centred across it. a click anywhere on
+ * the surface closes it through the scrim below, so the content takes its
+ * own clicks and does nothing with them; the space under it still closes
+ */
+fn block(content: Option<Column>, width: f32) -> Rectangle {
+    let Some(content) = content else {
+        return Rectangle::new().width(width).height(0.0);
+    };
+
+    let height = fixed_height(&content);
+
+    let inner = match Widget::width(&content) {
+        Size::Fixed(inner) => inner,
+        Size::Parent => width,
+    };
+
+    Rectangle::new()
+        .width(width)
+        .height(height)
+        .align_child(Center, Start)
+        .child(
+            Rectangle::new()
+                .width(inner)
+                .height(height)
+                .on_click(|_| {})
+                .child(content),
+        )
 }

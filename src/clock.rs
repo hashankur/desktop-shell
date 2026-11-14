@@ -163,6 +163,15 @@ fn twelve_hour(today: i64) -> (String, &'static str) {
     (format!("{hours}:{minutes:02}"), period)
 }
 
+// a month's name in full, from 1, like "November"; empty for a number that isn't a month
+pub fn month_name(month: i64) -> &'static str {
+    usize::try_from(month - 1)
+        .ok()
+        .and_then(|index| MONTH_NAMES.get(index))
+        .copied()
+        .unwrap_or_default()
+}
+
 // `date +%z` prints like +0530; anything unreadable counts as utc
 pub fn read_offset() -> i64 {
     let text = amane::output("date +%z");

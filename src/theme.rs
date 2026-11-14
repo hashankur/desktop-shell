@@ -138,26 +138,71 @@ pub mod toast {
     }
 }
 
-// the dashboard, top left: the day, the month, and what is going on, in blocks
+// the dashboard, across the top: the calendar, what is playing, the notifications
 pub mod dash {
-    // grid columns wide
-    pub const COLUMNS: u32 = 4;
-    // the small left column of a row: a time, an app, a player
-    pub const LEAD: f32 = 72.0;
-    // the name column of the system block
-    pub const KEY: f32 = 110.0;
-    // the month is narrower than the column, so its numbers stay close together
-    pub const CALENDAR: f32 = 340.0;
-    pub const CALENDAR_ROW_GAP: f32 = 2.0;
-    // the line under today
-    pub const UNDERLINE: f32 = 1.0;
-    // the newest notifications listed; the label counts them all
-    pub const NOTES: usize = 5;
-    // the playing track's progress line
-    pub const TRACK: f32 = 1.0;
-    // the left column's text and the end of a line, like an artist, cut to this many characters
-    pub const LEAD_CHARS: usize = 10;
-    pub const TRAILING_CHARS: usize = 24;
+    /*
+     * its own type steps, a size up from the shared ones: it is read at a
+     * glance from across the desk, not typed into. the day stays size::LG
+     */
+    pub const TEXT: f32 = 20.0;
+    pub const SMALL: f32 = 14.0;
+    // an event or task line in the agenda, the size of a launcher or clipboard line
+    pub const AGENDA: f32 = super::size::MD;
+
+    // three columns this many grid columns wide: the calendar, what is playing, the notifications
+    pub const COLUMN: u32 = 4;
+    // the middle and right columns start this far down, level with the day's letters, not its line's top
+    pub const BESIDE: f32 = 38.0;
+
+    /*
+     * the type steps past TEXT and SMALL: the track's title, the month's
+     * name and the artist, and a notification's body and the month's numbers
+     */
+    pub const TITLE: f32 = 32.0;
+    pub const TITLE_WEIGHT: super::Weight = super::Weight::Medium;
+    pub const HEADING: f32 = 22.0;
+    pub const BODY: f32 = 16.0;
+    // a notification's summary, a weight up from the body under it
+    pub const SUMMARY_WEIGHT: super::Weight = super::Weight::Medium;
+
+    // the month: a day's cell, today's circle, and the dots for what is on
+    pub const CELL: f32 = 44.0;
+    pub const MARK: f32 = 30.0;
+    // between a number, or today's circle, and its dots, so the circle never touches them
+    pub const MARK_GAP: f32 = 3.0;
+    pub const DOT: f32 = 4.0;
+    pub const DOT_GAP: f32 = 3.0;
+    pub const DOTS: usize = 3;
+    // how strongly the dots show, quieter under the days from the months either side
+    pub const DOT_OPACITY: f32 = 0.7;
+    pub const OUTSIDE_DOT_OPACITY: f32 = 0.35;
+    // the arrows that move between months
+    pub const ARROW: f32 = 20.0;
+
+    // the agenda's time column, wide enough for "13:00–14:00"
+    pub const TIME: f32 = 118.0;
+    /*
+     * days listed, today first, and lines across all of them, events and
+     * tasks together, so a busy week can't run off the screen
+     */
+    pub const AGENDA_DAYS: usize = 3;
+    pub const AGENDA_LINES: usize = 7;
+
+    // a task's tick in the agenda: an empty ring, filled with a check once done
+    pub const TICK: f32 = 18.0;
+    pub const TICK_BORDER: f32 = 1.5;
+    pub const CHECK: f32 = 12.0;
+    // a day with a task due shows a ring beside its event dots, drawn this thick
+    pub const RING_BORDER: f32 = 1.0;
+
+    // the cover, at most this big, and only as wide as its column on a small screen
+    pub const ART: f32 = 420.0;
+    pub const ART_RADIUS: f32 = 10.0;
+    pub const PROGRESS: f32 = 3.0;
+
+    // a notification's app icon, and its body cut after this many lines
+    pub const ICON: f32 = 40.0;
+    pub const BODY_LINES: usize = 2;
 }
 
 // settings, top left below where the dashboard starts: the page, its tabs, then its rows
@@ -364,6 +409,8 @@ pub struct Theme {
     pub outline: Color,
     pub outline_variant: Color,
     pub primary: Color,
+    // text on a primary fill, like today in the dashboard's month
+    pub on_primary: Color,
     pub error: Color,
 }
 
@@ -378,6 +425,7 @@ pub fn current() -> Theme {
         outline: scheme.get("outline"),
         outline_variant: scheme.get("outline_variant"),
         primary: scheme.get("primary"),
+        on_primary: scheme.get("on_primary"),
         error: scheme.get("error"),
     }
 }
