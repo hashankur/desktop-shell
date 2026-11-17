@@ -1,5 +1,6 @@
 mod bar;
 mod calendar;
+mod cast;
 mod charge;
 mod clock;
 mod compositor;
@@ -22,6 +23,7 @@ mod wallpaper;
 
 use amane::{App, Apps, Service};
 
+use cast::Cast;
 use compositor::Desktop;
 use icons::Icons;
 use lock::Logind;
@@ -37,6 +39,8 @@ fn main() {
     drop(Wallpaper::read());
     drop(Desktop::read());
     drop(Sensors::read());
+    // listens before the first frame, so a share already running shows at once
+    drop(Cast::read());
     drop(Icons::read());
     // listens for logind asking to lock, like `loginctl lock-session` or an idle daemon
     drop(Logind::read());

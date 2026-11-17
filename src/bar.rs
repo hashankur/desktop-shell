@@ -1,4 +1,5 @@
 mod battery;
+mod cast;
 mod clock;
 mod event;
 mod media;
@@ -89,9 +90,10 @@ fn left(theme: &Theme, monitor: &str) -> Rectangle {
 }
 
 /*
- * the next event, media, the connection, the battery, then the bell in the
- * corner the toasts come from. the event leaves when nothing is coming up,
- * media when spotify isn't open, the battery on a machine without one and
+ * the next event, media, screen sharing, the connection, the battery, then
+ * the bell in the corner the toasts come from. the event leaves when nothing
+ * is coming up, media when spotify isn't open, sharing when nothing is being
+ * shared, the battery on a machine without one and
  * the bell while another daemon holds the notifications; power is a launcher
  * command and a keybind, not a button, and the volume shows in the osd
  */
@@ -104,6 +106,10 @@ fn right(theme: &Theme, monitor: &str) -> Rectangle {
 
     if let Some(media) = media::view(theme, monitor) {
         groups.push(Box::new(media));
+    }
+
+    if let Some(cast) = cast::view(theme, monitor) {
+        groups.push(Box::new(cast));
     }
 
     groups.push(Box::new(net::view(theme, monitor)));

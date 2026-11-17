@@ -293,6 +293,8 @@ pub mod bar {
     pub const EVENT_DOT: f32 = 5.0;
     // the event's title, shown while hovered, is cut to this many characters
     pub const EVENT_CHARS: usize = 32;
+    // the apps watching a screen share, shown while hovered, are cut to this many characters
+    pub const CAST_CHARS: usize = 32;
 }
 
 /*
