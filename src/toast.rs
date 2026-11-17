@@ -16,7 +16,7 @@ use amane::{
 use crate::compositor;
 use crate::hover;
 use crate::motion;
-use crate::theme::{self, SCRIM_OPACITY, grid, timing, toast};
+use crate::theme::{self, grid, timing, toast};
 
 // how often the toast checks whether the newest notification should still show
 const POLL: Duration = Duration::from_millis(250);
@@ -42,13 +42,22 @@ impl Service for Toast {
 
     // the time a toast has left can't be waited on, so it is checked a few times a second
     fn listen() {
+        // when the pointer was last over the toast, so its time runs from when it left
+        let mut left: Option<SystemTime> = None;
+
         loop {
             thread::sleep(POLL);
 
-            let next = if hover::within("toast") {
+            let held = hover::within("toast");
+
+            if held {
+                left = Some(SystemTime::now());
+            }
+
+            let next = if held {
                 Self::read().shown.clone()
             } else {
-                pick()
+                pick(&Self::read().shown, left)
             };
 
             if identity(&Self::read().shown) == identity(&next) {
@@ -68,20 +77,39 @@ impl Service for Toast {
 
 // a notification replaced by its sender gets a new time, so it shows again
 fn identity(note: &Option<Notification>) -> Option<(u32, SystemTime)> {
-    note.as_ref().map(|note| (note.id(), note.received()))
+    note.as_ref().map(stamp)
 }
 
-// do not disturb lets only critical ones through
-fn pick() -> Option<Notification> {
+fn stamp(note: &Notification) -> (u32, SystemTime) {
+    (note.id(), note.received())
+}
+
+/*
+ * how long a notification has been waiting out its time: since it came, or
+ * since the pointer last left it, whichever is later. a clock that moved
+ * backwards reads as new
+ */
+fn idle(received: SystemTime, left: Option<SystemTime>, now: SystemTime) -> f32 {
+    let since = left.map_or(received, |left| left.max(received));
+
+    now.duration_since(since).map_or(0.0, |idle| idle.as_secs_f32())
+}
+
+/*
+ * do not disturb lets only critical ones through. only the toast on screen
+ * has its time restarted by the pointer, not an older one that would
+ * otherwise come back when it left
+ */
+fn pick(shown: &Option<Notification>, left: Option<SystemTime>) -> Option<Notification> {
     let now = SystemTime::now();
     let quiet = Quiet::read().on();
+    let shown = identity(shown);
 
     let fresh = |note: &&Notification| {
+        let left = left.filter(|_| Some(stamp(note)) == shown);
+
         note.urgency() == Urgency::Critical
-            || !quiet
-                && now
-                    .duration_since(note.received())
-                    .map_or(true, |age| age.as_secs_f32() < timing::TOAST)
+            || !quiet && idle(note.received(), left, now) < timing::TOAST
     };
 
     Notifications::read().list().iter().rev().find(fresh).cloned()
@@ -141,7 +169,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .translate(0.0, -fade)
         .shadow(
             Shadow::drop(theme.scrim)
-                .opacity(SCRIM_OPACITY)
+                .opacity(toast::SCRIM_OPACITY)
                 .blur(toast::WASH),
         );
 
@@ -204,4 +232,38 @@ fn place(window: LayerWindow) -> LayerWindow {
         .layer(Layer::Top)
         .space(Zone::Respect)
         .namespace("yohaku-toast")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn time_runs_from_arrival_until_the_pointer_has_been_over_it() {
+        let now = SystemTime::now();
+        let came = now - Duration::from_secs(8);
+
+        assert_eq!(idle(came, None, now).round(), 8.0);
+
+        // the pointer was on it two seconds ago, so it starts over from there
+        let left = now - Duration::from_secs(2);
+
+        assert_eq!(idle(came, Some(left), now).round(), 2.0);
+    }
+
+    #[test]
+    fn a_pointer_that_left_before_it_came_changes_nothing() {
+        let now = SystemTime::now();
+        let came = now - Duration::from_secs(3);
+        let left = now - Duration::from_secs(9);
+
+        assert_eq!(idle(came, Some(left), now).round(), 3.0);
+    }
+
+    #[test]
+    fn a_clock_that_moved_backwards_reads_as_new() {
+        let now = SystemTime::now();
+
+        assert_eq!(idle(now + Duration::from_secs(30), None, now), 0.0);
+    }
 }

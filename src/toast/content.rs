@@ -9,7 +9,7 @@ use crate::theme::{MONO, SANS, Theme, size, space, toast};
 
 /*
  * a line or two of text and nothing around it: who sent it and when, small;
- * what it says, medium; the body, small, cut after two lines; then whatever
+ * what it says, medium; the body, in the sans, cut after two lines; then whatever
  * buttons it asked for, as small text. a critical one says so with its
  * first line in the accent
  */
@@ -26,11 +26,13 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
     let head = Text::new(format!("{} · {}", sender(note), age(note.received())))
         .font(MONO)
         .size(size::SM)
+        .weight(toast::WEIGHT)
         .color(accent);
 
     let summary = Text::new(note.summary().to_string())
         .font(SANS)
         .size(size::MD)
+        .weight(toast::SUMMARY_WEIGHT)
         .color(summary_color)
         .elide();
 
@@ -39,9 +41,10 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
     if !note.body().trim().is_empty() {
         lines.push(Box::new(
             Text::new(note.body().trim().to_string())
-                .font(MONO)
-                .size(size::SM)
-                .color(theme.on_surface_variant)
+                .font(SANS)
+                .size(toast::BODY)
+                .weight(toast::WEIGHT)
+                .color(theme.on_surface)
                 .wrap()
                 .max_lines(toast::BODY_LINES),
         ));
@@ -94,6 +97,7 @@ fn actions(note: &Notification, theme: &Theme, monitor: &str) -> Row {
             let label = Text::new(action.label().to_lowercase())
                 .font(MONO)
                 .size(size::SM)
+                .weight(toast::WEIGHT)
                 .color(color);
 
             let width = Widget::width(&label);

@@ -6,7 +6,7 @@ use amane::{
 use super::{Osd, Reading};
 use crate::compositor;
 use crate::motion;
-use crate::theme::{self, MONO, SCRIM_OPACITY, Theme, grid, osd, size, toast};
+use crate::theme::{self, MONO, Theme, grid, osd, size, toast};
 
 /*
  * bottom right on the grid's margin, on the output being worked on: what
@@ -50,7 +50,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .height(inset + height + margin + fade)
         .shadow(
             Shadow::drop(theme.scrim)
-                .opacity(SCRIM_OPACITY)
+                .opacity(toast::SCRIM_OPACITY)
                 .blur(toast::WASH),
         );
 

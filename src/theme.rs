@@ -34,8 +34,8 @@ pub mod timing {
     pub const SHIFT: f32 = 12.0;
     // a bar item easing into and out of its hovered colour, and unfolding its details
     pub const HOVER: f32 = 0.18;
-    // how long a toast stays, unless it is critical or under the pointer
-    pub const TOAST: f32 = 4.0;
+    // how long a toast stays after it comes, or after the pointer leaves it, unless it is critical
+    pub const TOAST: f32 = 5.0;
     // how long the osd stays after the last change
     pub const OSD: f32 = 1.5;
     // how long after the shell starts a level change is taken as settling, not a key
@@ -117,6 +117,14 @@ pub mod toast {
     // the body is cut after this many lines
     pub const BODY_LINES: usize = 2;
 
+    // small text over a window needs more than the surfaces' scrim, so the wash is denser
+    pub const SCRIM_OPACITY: f32 = 0.80;
+    // a weight up from regular, so thin strokes hold over a window
+    pub const WEIGHT: super::Weight = super::Weight::Medium;
+    pub const SUMMARY_WEIGHT: super::Weight = super::Weight::SemiBold;
+    // the body is a sentence, so it is set in the sans, a step above the small mono labels
+    pub const BODY: f32 = 14.0;
+
     /*
      * the scrim comes in from the screen's corner instead of sitting behind
      * the text: full strength over the text and off the edges, fading out
@@ -126,10 +134,11 @@ pub mod toast {
 
     /*
      * the wash's edge sits this far past the text, so the text stays on the
-     * dense part: a blur spans two deviations, and 1.3 of them in is ~90%
+     * dense part: a blur spans two deviations, and 1.8 of them in is ~96%,
+     * so a long line doesn't run out onto the thin edge
      */
     pub const fn inset() -> f32 {
-        WASH * 0.65
+        WASH * 0.9
     }
 
     // how far past its edge the wash still shows; it is gone by three deviations
