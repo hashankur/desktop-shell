@@ -1,9 +1,9 @@
 use amane::{Center, Rectangle, Row, Service, Text, Widget};
 
 use super::parts::{clickable, hover_icon, hovered_color};
-use crate::text::shorten;
 use crate::hover;
 use crate::spotify::Spotify;
+use crate::text::shorten;
 use crate::theme::{SANS, Theme, bar};
 
 // spotify's track, none while it isn't open; the icon is the action a click takes, as in neue
@@ -38,6 +38,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
         Text::new(shorten(&label, bar::MEDIA_CHARS))
             .font(SANS)
             .size(bar::TEXT)
+            .weight(bar::TEXT_WEIGHT)
             .color(color),
     ));
 

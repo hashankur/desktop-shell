@@ -24,6 +24,7 @@ pub fn unit(label: &str, theme: &Theme) -> Text {
     Text::new(label)
         .font(MONO)
         .size(bar::SMALL)
+        .weight(bar::TEXT_WEIGHT)
         .color(theme.outline)
 }
 
@@ -36,6 +37,7 @@ pub fn reading(value: impl Into<String>, label: &str, theme: &Theme) -> Row {
         Text::new(value)
             .font(MONO)
             .size(bar::TEXT)
+            .weight(bar::TEXT_WEIGHT)
             .color(theme.on_surface_variant),
         unit(label, theme),
     ])

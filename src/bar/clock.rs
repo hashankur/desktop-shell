@@ -34,6 +34,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Rectangle {
         Text::new(period)
             .font(MONO)
             .size(bar::SMALL)
+            .weight(bar::TEXT_WEIGHT)
             .color(quiet_color),
     ])
     .gap(bar::ITEM_GAP)

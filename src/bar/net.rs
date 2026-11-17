@@ -35,6 +35,7 @@ fn network_detail(theme: &Theme) -> Row {
         Text::new(word)
             .font(SANS)
             .size(bar::TEXT)
+            .weight(bar::TEXT_WEIGHT)
             .color(theme.on_surface_variant)
     };
 

@@ -28,6 +28,7 @@ pub fn view(theme: &Theme) -> Row {
         Text::new(title)
             .font(SANS)
             .size(bar::TEXT)
+            .weight(bar::TEXT_WEIGHT)
             .color(color)
             .elide(),
     ));

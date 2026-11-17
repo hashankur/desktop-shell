@@ -274,6 +274,7 @@ pub mod bar {
     // between the readings an item spells out on hover, "12% cpu  40% mem"
     pub const READING_GAP: f32 = 12.0;
     pub const TEXT: f32 = 14.0;
+    pub const TEXT_WEIGHT: super::Weight = super::Weight::Medium;
     // the small size: units after a value and the clock's am/pm
     pub const SMALL: f32 = 12.0;
     // the clock's time, the one thing in the bar a step up
@@ -288,9 +289,8 @@ pub mod bar {
     pub const RING_STROKE: f32 = 2.0;
     // "artist - title" is cut to this many characters, so a long track can't crowd the clock
     pub const MEDIA_CHARS: usize = 48;
-    // the next event's dot, and its countdown a weight up from the rest of the bar
+    // the next event's dot
     pub const EVENT_DOT: f32 = 5.0;
-    pub const EVENT_WEIGHT: super::Weight = super::Weight::SemiBold;
     // the event's title, shown while hovered, is cut to this many characters
     pub const EVENT_CHARS: usize = 32;
 }

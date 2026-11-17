@@ -42,6 +42,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
             Text::new(count.to_string())
                 .font(MONO)
                 .size(bar::TEXT)
+                .weight(bar::TEXT_WEIGHT)
                 .color(count_color),
         ));
     }

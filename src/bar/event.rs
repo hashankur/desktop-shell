@@ -53,7 +53,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
             Text::new(countdown)
                 .font(MONO)
                 .size(bar::TEXT)
-                .weight(bar::EVENT_WEIGHT)
+                .weight(bar::TEXT_WEIGHT)
                 .color(label_color),
         ),
     ];
@@ -63,6 +63,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
             Text::new(format!("+{}", others.min(MOST_OTHERS)))
                 .font(MONO)
                 .size(bar::TEXT)
+                .weight(bar::TEXT_WEIGHT)
                 .color(quiet_color),
         ));
     }
@@ -70,6 +71,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
     let title = Text::new(shorten(&title, bar::EVENT_CHARS))
         .font(SANS)
         .size(bar::TEXT)
+        .weight(bar::TEXT_WEIGHT)
         .color(label_color);
 
     // the gap is part of the reveal, so it unfolds with the title instead of jumping in
