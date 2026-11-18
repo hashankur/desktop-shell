@@ -148,7 +148,7 @@ impl Clock {
 }
 
 // seconds into the day as a 12-hour time without a leading zero, and its period
-fn twelve_hour(today: i64) -> (String, &'static str) {
+pub fn twelve_hour(today: i64) -> (String, &'static str) {
     let hours = today / 3600;
     let minutes = today % 3600 / 60;
 

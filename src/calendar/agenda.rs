@@ -1,13 +1,16 @@
 use super::Event;
 use super::days::on_day;
 use super::time::{DAY, midnight};
-use crate::clock::civil_date;
+use crate::clock::{civil_date, twelve_hour};
 
 // how far ahead the bar looks for something coming up, in days after today
 pub const AHEAD: i64 = 7;
 
 // up to this many minutes away, the countdown counts minutes
 const SOON: i64 = 30;
+
+// past this many minutes the bar shows the time of day, not a countdown
+const FAR: i64 = 3 * 60;
 
 // 1970-01-01 was a thursday
 pub(super) const WEEKDAYS: [&str; 7] = ["thu", "fri", "sat", "sun", "mon", "tue", "wed"];
@@ -73,6 +76,19 @@ pub fn today(events: &[Event], now: i64, offset: i64) -> Vec<&Event> {
  * up to half an hour, then "in 2h 10m", then the weekday, then the date
  */
 pub fn countdown(event: &Event, now: i64, offset: i64) -> String {
+    count(event, now, offset, false)
+}
+
+/*
+ * the same for the bar, where a long wait reads as the time of day instead
+ * ("at 7:30 PM", as in the bar's clock), so the text holds still until the event is close. the
+ * dashboard keeps the exact countdown, as it lists the hours beside it
+ */
+pub fn glance(event: &Event, now: i64, offset: i64) -> String {
+    count(event, now, offset, true)
+}
+
+fn count(event: &Event, now: i64, offset: i64, clock: bool) -> String {
     if event.start <= now {
         return String::from(if event.all_day { "today" } else { "now" });
     }
@@ -81,6 +97,12 @@ pub fn countdown(event: &Event, now: i64, offset: i64) -> String {
 
     if minutes <= SOON {
         return format!("in {minutes}m");
+    }
+
+    if clock && minutes > FAR && minutes < 24 * 60 {
+        let (time, period) = twelve_hour((event.start + offset).rem_euclid(DAY));
+
+        return format!("at {time} {period}");
     }
 
     if minutes < 24 * 60 {
@@ -226,6 +248,19 @@ mod tests {
         assert_eq!(at(24.0 * 2.0 + 9.0), "fri");
         assert_eq!(at(24.0 * 6.0 + 9.0), "tue");
         assert_eq!(at(24.0 * 10.0 + 9.0), "nov 21");
+    }
+
+    #[test]
+    fn the_bar_shows_the_time_of_day_when_far() {
+        let at = |hours: f64| glance(&timed("x", hours, 30), NOW, OFFSET);
+
+        assert_eq!(at(10.0 + 18.0 / 60.0), "in 18m");
+        assert_eq!(at(12.0 + 10.0 / 60.0), "in 2h 10m");
+        assert_eq!(at(13.0), "in 3h");
+        assert_eq!(at(13.0 + 1.0 / 60.0), "at 1:01 PM");
+        assert_eq!(at(19.5), "at 7:30 PM");
+        assert_eq!(at(24.0 + 0.5), "at 12:30 AM");
+        assert_eq!(at(24.0 * 2.0 + 9.0), "fri");
     }
 
     #[test]

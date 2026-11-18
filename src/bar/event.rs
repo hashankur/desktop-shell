@@ -28,7 +28,7 @@ pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
 
     let next = agenda::next(events, now, offset)?;
     let (countdown, others, title) = (
-        agenda::countdown(next, now, offset),
+        agenda::glance(next, now, offset),
         agenda::others_today(events, next, now, offset),
         next.title.clone(),
     );
