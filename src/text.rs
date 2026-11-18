@@ -13,7 +13,9 @@ pub fn shorten(text: &str, limit: usize) -> String {
 /*
  * a notification body as plain text: senders may use the spec's simple
  * markup (<b>, <i>, <a href>) and its escapes, which would otherwise show
- * as typed. a line break tag becomes a break
+ * as typed. a line break tag becomes a break, and blank lines are dropped:
+ * a body is cut after a few lines, and browsers put an empty one between
+ * the site and the message, which would push the message out
  */
 pub fn plain(markup: &str) -> String {
     let mut text = String::with_capacity(markup.len());
@@ -40,14 +42,19 @@ pub fn plain(markup: &str) -> String {
 
     text.push_str(rest);
 
-    text.replace("&lt;", "<")
+    let text = text
+        .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
         .replace("&apos;", "'")
         .replace("&#39;", "'")
-        .replace("&amp;", "&")
-        .trim()
-        .to_string()
+        .replace("&amp;", "&");
+
+    text.lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[cfg(test)]
@@ -61,6 +68,7 @@ mod tests {
         assert_eq!(plain("<a href=\"x\">link</a> &amp; more"), "link & more");
         assert_eq!(plain("1 < 2"), "1 < 2");
         assert_eq!(plain("  plain  "), "plain");
+        assert_eq!(plain("site\n\n\nmessage\n"), "site\nmessage");
     }
 
     #[test]

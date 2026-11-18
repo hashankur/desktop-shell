@@ -5,6 +5,7 @@ use amane::{
 };
 
 use crate::hover;
+use crate::text::plain;
 use crate::theme::{MONO, SANS, Theme, size, space, toast};
 
 /*
@@ -38,9 +39,11 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
 
     let mut lines: Vec<Box<dyn Widget>> = vec![Box::new(head), Box::new(summary)];
 
-    if !note.body().trim().is_empty() {
+    let body = plain(note.body());
+
+    if !body.is_empty() {
         lines.push(Box::new(
-            Text::new(note.body().trim().to_string())
+            Text::new(body)
                 .font(SANS)
                 .size(toast::BODY)
                 .weight(toast::WEIGHT)
