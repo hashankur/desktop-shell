@@ -128,6 +128,7 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
             hints: &["↵ add or tick", "end with a date: sat, 20 nov", "esc close"],
             pick: commands::run,
             long_query: true,
+            beside: None,
         }
     } else if commanding(&query) {
         Spec {
@@ -136,6 +137,7 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
             hints: &["↵ run", "esc close"],
             pick: commands::run,
             long_query: false,
+            beside: None,
         }
     } else {
         Spec {
@@ -144,6 +146,7 @@ pub fn view(theme: &Theme, monitor: &Monitor) -> Rectangle {
             hints: &["↵ open", "> commands", "tab clipboard", "esc close"],
             pick: launch,
             long_query: false,
+            beside: None,
         }
     };
 

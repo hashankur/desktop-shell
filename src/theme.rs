@@ -234,6 +234,22 @@ pub mod settings {
     pub const THUMB_HEIGHT: u32 = 540;
 }
 
+// the clipboard's preview of the selected clip, and how it tells clips apart
+pub mod clipboard {
+    // the preview starts after this many grid columns and spans this many, past settings' three for longer lines
+    pub const PREVIEW_COLUMN: u32 = 5;
+    pub const PREVIEW_COLUMNS: u32 = 4;
+    // the most of a clip read for the preview; a long one is cut, a huge image not shown
+    pub const TEXT_BYTES: usize = 16 * 1024;
+    pub const IMAGE_BYTES: usize = 32 * 1024 * 1024;
+    // a hidden clip's dots, always this many so they don't give its length away
+    pub const MASK: usize = 14;
+    // a password-like clip is one word this long, switching kind of letter at least this often per letter
+    pub const SECRET_MIN: usize = 8;
+    pub const SECRET_MAX: usize = 64;
+    pub const SECRET_SWITCHES: f32 = 0.35;
+}
+
 // a region screenshot: the frozen frame, dimmed outside the box being drawn
 pub mod shot {
     // how much of the scrim covers the frame outside the box

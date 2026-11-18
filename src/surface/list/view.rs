@@ -16,6 +16,21 @@ pub struct Spec<'a> {
     pub hints: &'a [&'a str],
     pub pick: fn(&str),
     pub long_query: bool,
+
+    // something shown beside the list, level with its top, like the clipboard's preview
+    pub beside: Option<Beside>,
+}
+
+// a block that starts after `column` grid columns and spans `columns`, as tall as the list or shorter
+pub struct Beside {
+    pub column: u32,
+    pub columns: u32,
+    pub content: Rectangle,
+}
+
+// the list's fixed height, which anything shown beside it keeps to
+pub fn list_height() -> f32 {
+    size::MD * 1.5 * list::ROWS + space::MD * 2.0
 }
 
 /*
@@ -23,7 +38,7 @@ pub struct Spec<'a> {
  * the list has a fixed height, so the query above it stays where it is
  * however many results there are
  */
-pub fn view(theme: &Theme, monitor: &Monitor, spec: Spec) -> Rectangle {
+pub fn view(theme: &Theme, monitor: &Monitor, mut spec: Spec) -> Rectangle {
     let state = ListState::read();
     let (query, selected) = (state.query.clone(), state.selected);
     drop(state);
@@ -31,7 +46,7 @@ pub fn view(theme: &Theme, monitor: &Monitor, spec: Spec) -> Rectangle {
     let width = grid::span(4, monitor.width as f32);
 
     let query_height = size::LG * 1.1;
-    let list_height = size::MD * 1.5 * list::ROWS + space::MD * 2.0;
+    let list_height = list_height();
     let meta_height = size::SM * 1.5;
 
     let total = query_height + space::LG + list_height + space::MD + meta_height;
@@ -55,6 +70,11 @@ pub fn view(theme: &Theme, monitor: &Monitor, spec: Spec) -> Rectangle {
         .on_click(|_| {})
         .child(column);
 
+    let content = match spec.beside.take() {
+        Some(beside) => next_to(block, beside, query_height + space::LG, width, monitor.width as f32),
+        None => Row::new(children![block]),
+    };
+
     Rectangle::new()
         .width(Parent)
         .height(Parent)
@@ -65,7 +85,20 @@ pub fn view(theme: &Theme, monitor: &Monitor, spec: Spec) -> Rectangle {
             left: grid::MARGIN,
         })
         .align_child(Start, End)
-        .child(block)
+        .child(content)
+}
+
+// the list block, then the other block from its own grid column, starting `top` down
+fn next_to(block: Rectangle, beside: Beside, top: f32, block_width: f32, screen_width: f32) -> Row {
+    let start = grid::span(beside.column, screen_width) + grid::GUTTER;
+
+    let gap = Rectangle::new().width(start - block_width).height(1.0);
+
+    let width = grid::span(beside.columns, screen_width);
+
+    let column = Column::new(children![spacer(top), beside.content]).width(width);
+
+    Row::new(children![block, gap, column])
 }
 
 fn spacer(height: f32) -> Rectangle {

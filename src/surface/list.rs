@@ -2,7 +2,7 @@ mod view;
 
 use amane::{Key, Service};
 
-pub use view::{Spec, view};
+pub use view::{Beside, Spec, list_height, view};
 
 // one row: `id` is what picking it hands back, `name` and `description` are what it shows
 #[derive(Clone, PartialEq)]
@@ -111,6 +111,11 @@ pub fn picked(groups: Vec<Group>) -> Option<Entry> {
         .into_iter()
         .flat_map(|group| group.entries)
         .nth(selected)
+}
+
+// which row is chosen, counted down through every group
+pub fn selected() -> usize {
+    ListState::read().selected
 }
 
 pub fn count(groups: &[Group]) -> usize {
