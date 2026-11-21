@@ -1,26 +1,29 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use std::time::SystemTime;
 
 use amane::{
-    Apps, Center, Color, Column, Notification, Notifications, Parent, Rectangle, Row, Service,
-    Size, Widget,
+    Center, Color, Column, Notification, Notifications, Parent, Rectangle, Row, Service, Size,
+    Widget,
 };
 
+use super::handle::Handle;
+use super::icon::icon;
 use super::{expand, note};
 use super::parts::{label, line, small, spacer, text_button};
+use crate::history::{self, Saved};
 use crate::hover;
-use crate::icons;
 use crate::text::plain;
 use crate::theme::{Theme, dash, space};
 use crate::toast::{age, sender};
 
-// one notification, copied out so the service isn't held while drawing
+// one notification, live or kept, copied out so the service isn't held while drawing
 pub struct Note {
-    pub id: u32,
+    pub handle: Handle,
     pub summary: String,
     pub body: String,
     pub age: String,
     pub icon: Option<PathBuf>,
-    // each button's key and its label
+    // each button's key and its label; a kept notification has none
     pub actions: Vec<(String, String)>,
 }
 
@@ -28,8 +31,8 @@ pub struct Note {
  * how many are waiting, then each sender's newest, newest sender first, so
  * a chatty app takes one place instead of the whole column. senders are
  * listed while there is `room` for them, then counted. clear all dismisses
- * every one. none while another daemon holds the notifications, so it
- * never shows a false zero
+ * every one, the ones kept from an earlier run too. none while another
+ * daemon holds the notifications, so it never shows a false zero
  */
 pub fn view(theme: &Theme, monitor: &str, width: f32, room: f32) -> Option<Column> {
     let notifications = Notifications::read();
@@ -38,16 +41,25 @@ pub fn view(theme: &Theme, monitor: &str, width: f32, room: f32) -> Option<Colum
         return None;
     }
 
-    let count = notifications.list().len();
+    let tint = theme.on_surface_variant;
 
-    let items: Vec<(String, Note)> = notifications
+    // the live ones, then the ones kept from before, which are older
+    let mut items: Vec<(String, Note)> = notifications
         .list()
         .iter()
         .rev()
-        .map(|note| (sender(note), copy(note, theme.on_surface_variant)))
+        .map(|note| (sender(note.app_name()), copy(note, tint)))
         .collect();
 
     drop(notifications);
+
+    items.extend(
+        history::restored()
+            .iter()
+            .map(|saved| (sender(&saved.app), kept(saved, tint))),
+    );
+
+    let count = items.len();
 
     let noun = if count == 1 { "notification" } else { "notifications" };
 
@@ -59,7 +71,7 @@ pub fn view(theme: &Theme, monitor: &str, width: f32, room: f32) -> Option<Colum
     if count > 0 {
         let key = hover::key(monitor, "dash/clear");
 
-        head.push(Box::new(text_button("clear all", key, theme, |_| Notifications::clear())));
+        head.push(Box::new(text_button("clear all", key, theme, |_| history::clear_all())));
     }
 
     let mut column: Vec<Box<dyn Widget>> = vec![
@@ -102,21 +114,38 @@ pub fn view(theme: &Theme, monitor: &str, width: f32, room: f32) -> Option<Colum
 }
 
 fn copy(note: &Notification, tint: Color) -> Note {
+    let actions = note
+        .actions()
+        .iter()
+        .map(|action| (action.key().to_string(), action.label().to_string()))
+        .collect();
+
+    let icon = icon(note.image(), note.icon(), note.app_name(), tint);
+
+    make(Handle::Live(note.id()), (note.summary(), note.body()), note.received(), icon, actions)
+}
+
+// one from an earlier run: its buttons went with its sender
+fn kept(saved: &Saved, tint: Color) -> Note {
+    let icon = icon(&saved.image, &saved.icon, &saved.app, tint);
+
+    make(Handle::Saved(saved.key), (&saved.summary, &saved.body), saved.received, icon, Vec::new())
+}
+
+fn make(
+    handle: Handle,
+    (title, text): (&str, &str),
+    received: SystemTime,
+    icon: Option<PathBuf>,
+    actions: Vec<(String, String)>,
+) -> Note {
     Note {
-        id: note.id(),
-        summary: summary(note.summary(), note.body()),
-        body: if note.summary().trim().is_empty() {
-            String::new()
-        } else {
-            plain(note.body())
-        },
-        age: age(note.received()),
-        icon: icon(note, tint),
-        actions: note
-            .actions()
-            .iter()
-            .map(|action| (action.key().to_string(), action.label().to_string()))
-            .collect(),
+        handle,
+        summary: summary(title, text),
+        body: if title.trim().is_empty() { String::new() } else { plain(text) },
+        age: age(received),
+        icon,
+        actions,
     }
 }
 
@@ -129,50 +158,6 @@ fn summary(summary: &str, body: &str) -> String {
     }
 
     plain(body).lines().next().unwrap_or_default().trim().to_string()
-}
-
-/*
- * the notification's own picture if it sent one, like an avatar, then its
- * icon if that's a file, then the icon of the app it names or comes from.
- * a system one names a theme icon instead, like "battery-low", which has
- * no app, so last comes the symbolic icon, tinted like the text beside it
- */
-fn icon(note: &Notification, tint: Color) -> Option<PathBuf> {
-    full_color(note).or_else(|| {
-        let (name, app) = (note.icon().trim(), note.app_name().trim());
-
-        (!name.is_empty())
-            .then(|| icons::symbolic(name, tint))
-            .flatten()
-            .or_else(|| icons::app(app, tint))
-    })
-}
-
-fn full_color(note: &Notification) -> Option<PathBuf> {
-    let file = |text: &str| {
-        let path = text.trim().strip_prefix("file://").unwrap_or(text.trim());
-
-        path.starts_with('/').then(|| PathBuf::from(path))
-    };
-
-    if let Some(path) = file(note.image()).or_else(|| file(note.icon())) {
-        return Some(path);
-    }
-
-    let (name, app) = (note.icon().trim(), note.app_name().trim());
-
-    let matches = |text: &str, wanted: &str| !wanted.is_empty() && text.eq_ignore_ascii_case(wanted);
-
-    Apps::read()
-        .list()
-        .iter()
-        .find(|entry| {
-            let icon = entry.icon().unwrap_or_default();
-
-            matches(icon, name) || matches(icon, app) || matches(entry.name(), app)
-        })
-        .and_then(|entry| entry.icon_path())
-        .map(Path::to_path_buf)
 }
 
 // keeps the order keys first appear in, so the newest sender comes first

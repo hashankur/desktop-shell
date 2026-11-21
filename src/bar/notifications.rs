@@ -1,6 +1,7 @@
 use amane::{Center, Notifications, Rectangle, Row, Service, Text, Widget};
 
 use super::parts::{clickable, hover_icon};
+use crate::history;
 use crate::hover;
 use crate::surface::{Kind, Surface};
 use crate::toast::Quiet;
@@ -13,8 +14,11 @@ use crate::theme::{MONO, Theme, bar};
  */
 pub fn view(theme: &Theme, monitor: &str) -> Option<Rectangle> {
     let notifications = Notifications::read();
-    let (running, count) = (notifications.running(), notifications.list().len());
+    let (running, live) = (notifications.running(), notifications.list().len());
     drop(notifications);
+
+    // the ones kept from an earlier run wait too
+    let count = live + history::restored_count();
 
     if !running {
         return None;

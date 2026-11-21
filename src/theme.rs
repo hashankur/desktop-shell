@@ -147,6 +147,13 @@ pub mod toast {
     }
 }
 
+// notifications kept across restarts, until they are dismissed or too old
+pub mod history {
+    pub const KEEP_DAYS: u64 = 3;
+    // the most kept at once; the oldest restored ones go first
+    pub const MAX: usize = 200;
+}
+
 // the dashboard, across the top: the calendar, what is playing, the notifications
 pub mod dash {
     /*
@@ -212,6 +219,8 @@ pub mod dash {
     // a notification's app icon, and its body cut after this many lines
     pub const ICON: f32 = 40.0;
     pub const BODY_LINES: usize = 2;
+    // unfolded, a body still stops here, so one long message never pushes the rest off the screen
+    pub const BODY_LINES_OPEN: usize = 12;
 }
 
 // settings, top left below where the dashboard starts: the page, its tabs, then its rows

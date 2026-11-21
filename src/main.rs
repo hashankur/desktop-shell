@@ -6,6 +6,7 @@ mod clock;
 mod compositor;
 mod files;
 mod google;
+mod history;
 mod hover;
 mod icons;
 mod lock;
@@ -30,6 +31,7 @@ use lock::Logind;
 use stats::Sensors;
 use theme::Scheme;
 use tasks::Tasks;
+use history::History;
 use toast::Toast;
 use wallpaper::Wallpaper;
 
@@ -46,6 +48,8 @@ fn main() {
     drop(Logind::read());
     // starts the notification server too, unless another daemon already has the name
     drop(Toast::read());
+    // loads the notifications kept from before, and keeps the new ones as they arrive
+    drop(History::read());
     // fetches tasks in the background, so they're there when the dashboard or launcher opens
     drop(Tasks::read());
     // the app scan takes seconds, so it starts before the launcher is first opened

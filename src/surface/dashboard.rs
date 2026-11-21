@@ -1,7 +1,10 @@
 mod agenda;
+mod body;
 mod browse;
 mod calendar;
 mod expand;
+mod handle;
+mod icon;
 mod month;
 mod note;
 mod notes;

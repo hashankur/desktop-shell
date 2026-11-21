@@ -24,7 +24,7 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
         theme.on_surface_variant
     };
 
-    let head = Text::new(format!("{} · {}", sender(note), age(note.received())))
+    let head = Text::new(format!("{} · {}", sender(note.app_name()), age(note.received())))
         .font(MONO)
         .size(size::SM)
         .weight(toast::WEIGHT)
@@ -61,8 +61,8 @@ pub fn view(note: &Notification, theme: &Theme, width: f32, monitor: &str) -> Co
 }
 
 // the app's name, lowercased like every small label; some senders leave it empty
-pub fn sender(note: &Notification) -> String {
-    let name = note.app_name().trim();
+pub fn sender(app: &str) -> String {
+    let name = app.trim();
 
     if name.is_empty() {
         String::from("notification")
@@ -80,7 +80,8 @@ pub fn age(received: SystemTime) -> String {
     match seconds {
         0..60 => String::from("now"),
         60..3600 => format!("{}m", seconds / 60),
-        _ => format!("{}h", seconds / 3600),
+        3600..86400 => format!("{}h", seconds / 3600),
+        _ => format!("{}d", seconds / 86400),
     }
 }
 
@@ -135,6 +136,7 @@ mod tests {
         assert_eq!(age(now), "now");
         assert_eq!(age(now - Duration::from_secs(5 * 60 + 10)), "5m");
         assert_eq!(age(now - Duration::from_secs(2 * 3600)), "2h");
+        assert_eq!(age(now - Duration::from_secs(3 * 86400 + 5)), "3d");
 
         // a clock that moved backwards still reads as new
         assert_eq!(age(now + Duration::from_secs(30)), "now");
