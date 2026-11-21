@@ -10,6 +10,7 @@ mod history;
 mod hover;
 mod icons;
 mod lock;
+mod lowbattery;
 mod motion;
 mod osd;
 mod screenshot;
@@ -28,6 +29,7 @@ use cast::Cast;
 use compositor::Desktop;
 use icons::Icons;
 use lock::Logind;
+use lowbattery::LowBattery;
 use stats::Sensors;
 use theme::Scheme;
 use tasks::Tasks;
@@ -50,6 +52,8 @@ fn main() {
     drop(Toast::read());
     // loads the notifications kept from before, and keeps the new ones as they arrive
     drop(History::read());
+    // watches the charge, so a low battery is warned about even before anything draws it
+    drop(LowBattery::read());
     // fetches tasks in the background, so they're there when the dashboard or launcher opens
     drop(Tasks::read());
     // the app scan takes seconds, so it starts before the launcher is first opened
@@ -62,6 +66,7 @@ fn main() {
         .window_per_monitor(toast::view)
         .window_per_monitor(surface::view)
         .window_per_monitor(osd::view)
+        .window_per_monitor(lowbattery::view)
         .window_per_monitor(screenshot::view)
         .window_per_monitor(lock::curtain_view)
         .lock(lock::view)

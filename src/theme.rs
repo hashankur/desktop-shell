@@ -38,6 +38,8 @@ pub mod timing {
     pub const TOAST: f32 = 5.0;
     // how long the osd stays after the last change
     pub const OSD: f32 = 1.5;
+    // how long a low battery warning stays
+    pub const LOW_BATTERY: f32 = 10.0;
     // how long after the shell starts a level change is taken as settling, not a key
     pub const OSD_SETTLE: f32 = 1.0;
 }
@@ -48,6 +50,13 @@ pub mod osd {
     // the level line under the label, and the gap above it
     pub const TRACK: f32 = 1.0;
     pub const TRACK_GAP: f32 = 8.0;
+}
+
+// the low battery warning, bottom left, over everything; the charges are percents
+pub mod low_battery {
+    pub const LOW: u8 = 15;
+    pub const CRITICAL: u8 = 5;
+    pub const WIDTH: f32 = 260.0;
 }
 
 // the 12-column grid every surface snaps to, and the spacing steps between things
