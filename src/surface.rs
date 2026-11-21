@@ -1,4 +1,5 @@
 mod clipboard;
+mod cover;
 mod dashboard;
 mod launcher;
 mod list;
@@ -7,13 +8,16 @@ mod search;
 mod settings;
 
 use amane::{
-    Full, Key, Keyboard, Layer, LayerWindow, Monitor, Parent, Rectangle, Service, Stack, Widget,
-    Zone,
+    Full, Key, Keyboard, Layer, LayerWindow, Monitor, Padding, Parent, Rectangle, Service, Stack,
+    Widget, Zone,
 };
 
+use crate::bar;
 use crate::compositor;
-use crate::motion;
+use crate::lock;
 use crate::theme::{self, SCRIM_OPACITY};
+
+pub use cover::{bar_tint, cover};
 
 // the full-screen surfaces; more are added here as they are built
 #[derive(Clone, Copy, PartialEq)]
@@ -130,12 +134,9 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
 
     let surface = Surface::read();
     let (open, last) = (surface.open, surface.last);
-    let (here, on_output) = (surface.shows(&monitor.name), surface.on_output(&monitor.name));
     drop(surface);
 
-    let motion = motion::presence(&format!("surface/{}", monitor.name), here);
-
-    let drawn = on_output && (here || motion.moving);
+    let cover::Cover { here, drawn, motion } = cover(&monitor.name);
 
     // the dashboard and settings sit at the top, so they come down from above; the others rise into place
     let shift = match open.or(last) {
@@ -157,21 +158,40 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     let scrim = Rectangle::new()
         .width(Parent)
         .height(Parent)
-        .fill(theme::faded(theme.scrim, SCRIM_OPACITY * motion.scrim))
+        .fill(theme::faded(theme.scrim, cover::surface_tint(SCRIM_OPACITY, motion.scrim)))
         .on_click(|_| Surface::close());
 
+    // the window runs under the bar too, so the content starts below it, where it always has
     let content = Rectangle::new()
         .width(Parent)
         .height(Parent)
+        .padding(Padding { top: theme::bar::HEIGHT, right: 0.0, bottom: 0.0, left: 0.0 })
         .opacity(motion.content)
         .translate(0.0, shift)
         .child(content);
+
+    // the bar, drawn here while the window covers it; its own click is a no-op, so the empty bar does not close the surface
+    let mut layers: Vec<Box<dyn Widget>> = vec![Box::new(scrim), Box::new(content)];
+
+    if drawn {
+        let tint = cover::strip_tint(SCRIM_OPACITY, motion.scrim);
+
+        layers.push(Box::new(
+            Rectangle::new()
+                .width(Parent)
+                .height(theme::bar::HEIGHT)
+                .fill(theme::faded(theme.scrim, tint))
+                .opacity(lock::curtain_items())
+                .on_click(|_| {})
+                .child(bar::strip(&monitor.name, &theme)),
+        ));
+    }
 
     let window = LayerWindow::new()
         .width(Full)
         .height(Full)
         .layer(Layer::Overlay)
-        .space(Zone::Respect)
+        .space(Zone::Ignore)
         .namespace("yohaku-surface")
         .visible(drawn)
         .keyboard(if here {
@@ -180,7 +200,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
             Keyboard::None
         })
         .on_key(key)
-        .child(Stack::new(vec![Box::new(scrim) as Box<dyn Widget>, Box::new(content)]));
+        .child(Stack::new(layers));
 
     // while it fades out, a click belongs to the windows below
     if here { window } else { window.click_through() }

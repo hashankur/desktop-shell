@@ -17,6 +17,7 @@ use amane::{
 
 use crate::compositor;
 use crate::lock;
+use crate::surface;
 use crate::theme::{self, SCRIM_OPACITY, Theme, bar};
 
 /*
@@ -24,17 +25,57 @@ use crate::theme::{self, SCRIM_OPACITY, Theme, bar};
  * below it the left and right groups take equal shares of the free width,
  * so the clock stays centered whatever they hold. groups are set apart by
  * space alone, no rules or labels, and the bar sits on the surfaces' scrim.
- * each group lives in its own module; this file only places them
+ * each group lives in its own module; this file only places them.
+ *
+ * an open surface covers the whole output, bar included, so that its scrim
+ * and its blur run unbroken from the top edge down, with no seam where the
+ * bar ends. it draws the strip itself, and while it is over this output the
+ * bar keeps nothing but a tint that fades out as the surface's fades in
  */
 pub fn view(monitor: &Monitor) -> LayerWindow {
     let theme = theme::current();
 
-    let spaces = compositor::spaces_on(&monitor.name);
+    let cover = surface::cover(&monitor.name);
+
+    let tint = surface::bar_tint(SCRIM_OPACITY, cover.motion.scrim);
+
+    // covered, the strip is the surface's, so it is not drawn twice, which would also blur it into a halo
+    let content = if cover.drawn {
+        Rectangle::new().width(Parent).height(Parent)
+    } else {
+        Rectangle::new()
+            .width(Parent)
+            .height(Parent)
+            .child(strip(&monitor.name, &theme))
+    };
+
+    LayerWindow::new()
+        .width(Full)
+        .height(bar::HEIGHT)
+        .anchor_vertical(Vertical::Top)
+        .layer(Layer::Top)
+        .space(Zone::Reserve)
+        .namespace("yohaku-bar")
+        .child(
+            Rectangle::new()
+                .width(Parent)
+                .height(Parent)
+                // the same scrim a surface lays over the windows
+                .fill(theme::faded(theme.scrim, tint))
+                // leaves first when the session locks, and comes back last
+                .opacity(lock::curtain_items())
+                .child(content),
+        )
+}
+
+// the workspace line over the groups: what the bar is, whoever draws it
+pub fn strip(monitor: &str, theme: &Theme) -> Column {
+    let spaces = compositor::spaces_on(monitor);
 
     let row = Row::new(children![
-        left(&theme, &monitor.name),
-        clock::view(&theme, &monitor.name),
-        right(&theme, &monitor.name)
+        left(theme, monitor),
+        clock::view(theme, monitor),
+        right(theme, monitor)
     ])
     .width(Parent)
     .height(Parent)
@@ -52,26 +93,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         })
         .child(row);
 
-    LayerWindow::new()
-        .width(Full)
-        .height(bar::HEIGHT)
-        .anchor_vertical(Vertical::Top)
-        .layer(Layer::Top)
-        .space(Zone::Reserve)
-        .namespace("yohaku-bar")
-        .child(
-            Rectangle::new()
-                .width(Parent)
-                .height(Parent)
-                // the same scrim a surface lays over the windows
-                .fill(theme::faded(theme.scrim, SCRIM_OPACITY))
-                // leaves first when the session locks, and comes back last
-                .opacity(lock::curtain_items())
-                .child(Column::new(children![
-                    workspaces::view(&spaces, &theme, &monitor.name),
-                    content
-                ])),
-        )
+    Column::new(children![workspaces::view(&spaces, theme, monitor), content])
 }
 
 // the stats rings, then the focused window in what's left
